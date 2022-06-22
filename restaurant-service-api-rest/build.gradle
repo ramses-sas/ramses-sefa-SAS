@@ -1,0 +1,9 @@
+dependencies {
+	compileOnly "org.projectlombok:lombok:${lombokVersion}"
+	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+	implementation "io.netty:netty-resolver-dns-native-macos:4.1.78.Final:osx-aarch_64"
+}
+
+jar {
+    enabled = true
+}
