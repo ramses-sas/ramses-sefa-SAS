@@ -4,20 +4,17 @@ plugins {
 }
 
 dependencies {
-	implementation project(":restaurant-service-api-rest")
+	implementation project(":restaurant-service-restapi")
 	
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.hsqldb:hsqldb'
-
-	compileOnly 'org.springframework.boot:spring-boot-starter-aop'
-
-	compileOnly "org.projectlombok:lombok:${lombokVersion}"
-	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
 	implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
 
+	compileOnly 'org.springframework.boot:spring-boot-starter-aop'
+	compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
 
