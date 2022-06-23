@@ -68,7 +68,7 @@ public class RestaurantServiceLoggingAspect {
 
     /* Eseguito se è stata sollevata un'eccezione */
     @AfterThrowing(value="restaurantServiceMethods()", throwing="exception")
-    public void logErrorApplication(JoinPoint joinPoint, Object exception) {
+    public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }
 

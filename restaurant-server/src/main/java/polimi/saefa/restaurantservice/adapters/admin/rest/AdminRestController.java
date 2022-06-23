@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import polimi.saefa.restaurantservice.domain.*;
 import polimi.saefa.restaurantservice.restapi.admin.*;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;
+import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 
 import java.util.*; 
 import java.util.stream.*;
@@ -18,12 +22,12 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping(path="/admin/rest")
-public class RestaurantRestController {
+public class AdminRestController {
 
 	@Autowired 
 	private RestaurantService restaurantService;
 	
-    private final Logger logger = Logger.getLogger(RestaurantRestController.class.toString());
+    private final Logger logger = Logger.getLogger(AdminRestController.class.toString());
 
 	/* Crea un nuovo ristorante. */ 
 	@PostMapping("/restaurants")

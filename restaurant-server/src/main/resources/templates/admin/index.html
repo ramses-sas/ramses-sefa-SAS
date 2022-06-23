@@ -23,8 +23,8 @@
         <!-- Navbar links -->
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="/admin/web">Home</a></li>
-                <li class="active"><a href="/admin/web/restaurants">Restaurants list</a></li>
+                <li class="active"><a href="/admin/web">Home</a></li>
+                <li><a href="/admin/web/restaurants">Restaurants list</a></li>
                 <li><a href="/admin/web/restaurants?add">Add restaurant</a></li>
                 <!--<li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Manage <span class="caret"></span></a>
@@ -38,30 +38,8 @@
 </nav>
 
 <div class="content">
-    <h4>Available restaurants</h4>
-    <table>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Id</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="restaurant : ${restaurants}">
-            <td>
-                <a th:href="@{'/admin/web/restaurants/'+${restaurant.id}}">
-                    <span th:text="${restaurant.name}">link</span>
-                </a>
-            </td>
-            <td th:text="${restaurant.location}">location goes here</td>
-            <td th:text="${restaurant.id}">id goes here</td>
-        </tr>
-        </tbody>
-    </table>
+    <p>From the admin app you can manage the restaurants</p>
 </div>
-
-<hr/>
 
 </body> 
 </html>

@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.restapi.admin;
+package polimi.saefa.restaurantservice.restapi.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MenuItemElement {
+public class GetRestaurantResponse {
 
-	private String id;
+	private Long restaurantId;
+	
 	private String name; 
-	private double price;	
+	private String location;	
 }
 

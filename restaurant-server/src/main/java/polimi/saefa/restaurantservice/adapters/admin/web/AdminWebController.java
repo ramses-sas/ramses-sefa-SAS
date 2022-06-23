@@ -17,11 +17,17 @@ import java.util.logging.Logger;
 
 @Controller
 @RequestMapping(path="/admin/web")
-public class RestaurantWebController {
-	private final Logger logger = Logger.getLogger(RestaurantWebController.class.toString());
+public class AdminWebController {
+	private final Logger logger = Logger.getLogger(AdminWebController.class.toString());
 
 	@Autowired 
 	private RestaurantService restaurantService;
+
+	/* Mostra client home page */
+	@GetMapping("")
+	public String index() {
+		return "admin/index";
+	}
 	
 	/* Trova il ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}")
