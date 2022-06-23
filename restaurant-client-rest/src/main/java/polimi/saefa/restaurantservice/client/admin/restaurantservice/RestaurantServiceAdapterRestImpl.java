@@ -1,13 +1,12 @@
-package polimi.saefa.restaurantservice.client.restaurantservice.rest;
+package polimi.saefa.restaurantservice.client.admin.restaurantservice;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
-import polimi.saefa.restaurantservice.client.domain.MenuItem;
-import polimi.saefa.restaurantservice.client.domain.Restaurant;
-import polimi.saefa.restaurantservice.client.domain.RestaurantServiceAdapter;
+import polimi.saefa.restaurantservice.client.admin.domain.*;
 
+import polimi.saefa.restaurantservice.restapi.admin.*;
 import reactor.core.publisher.Mono;
 import org.springframework.web.reactive.function.BodyInserters; 
 

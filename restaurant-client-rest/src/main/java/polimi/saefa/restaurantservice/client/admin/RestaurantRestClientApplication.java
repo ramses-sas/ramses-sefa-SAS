@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.client;
+package polimi.saefa.restaurantservice.client.admin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

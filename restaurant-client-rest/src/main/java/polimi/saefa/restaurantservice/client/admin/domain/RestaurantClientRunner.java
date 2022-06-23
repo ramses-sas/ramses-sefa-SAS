@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.client.domain;
+package polimi.saefa.restaurantservice.client.admin.domain;
 
 import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
