@@ -17,7 +17,6 @@ public class SpringCloudConfig {
                         .uri("http://localhost:8081/"))
                 .route(r -> r.path("/admin/**")
                         .uri("http://localhost:8081/"))
-
                 .route(r -> r.path("/restaurants/**")
                         .uri("http://localhost:8081/"))
                 .build();
