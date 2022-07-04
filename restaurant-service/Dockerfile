@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64/v8 arm64v8/openjdk
+FROM adoptopenjdk/openjdk16
 RUN mkdir /app
 WORKDIR /app
 COPY build/libs/restaurant-service-latest.jar ./spring-boot-application.jar
