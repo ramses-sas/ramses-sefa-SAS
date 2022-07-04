@@ -36,5 +36,3 @@ while getopts ":ih:" option; do
 done
 
 docker start $DEFOPT $SERVICE_NAME
-PORT=`docker port "$SERVICE_NAME" | awk -v FS="=" 'NF>1{print $2}'`
-echo "Running service $SERVICE_NAME on port $PORT"
