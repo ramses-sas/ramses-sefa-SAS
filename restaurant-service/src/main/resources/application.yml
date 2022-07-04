@@ -2,7 +2,7 @@ spring:
   application:
     name: restaurant-service
 server:
-  port: 8083
+  port: 8081
 eureka:
   instance:
     prefer-ip-address: true
