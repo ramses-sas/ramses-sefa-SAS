@@ -5,7 +5,7 @@ dependencies {
 }
 
 group 'polimi.saefa'
-version 'latest'
+version 'unspecified'
 
 jar {
     enabled = true

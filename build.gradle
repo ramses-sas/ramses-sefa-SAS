@@ -28,7 +28,7 @@ subprojects {
 	apply plugin: 'java'
 
 	group = 'polimi.saefa'
-	sourceCompatibility = '16'
+	//sourceCompatibility = '16'
 
 	repositories {
 		mavenCentral()
