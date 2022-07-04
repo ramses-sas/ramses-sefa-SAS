@@ -11,9 +11,10 @@ Help()
    echo "r     Use a random port to run on."
    echo "t     Specify target platform for the container. Defaults to linux/arm64/v8."
    echo "h     Display help."
+   echo "a     Change the default IP address set to 172.0.0.1. Notice that you can only change the last two digits (last 16 bits)"
    echo
 }
-
+IP=""
 SERVICE_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
 if [ "$SERVICE_NAME" = "" ]; then
     echo "UNKNOWN SERVICE NAME. Make sure that spring.application.name is set in application.properties"
@@ -26,10 +27,14 @@ if [ "$SERVICE_PORT" = "" ]; then
     exit 1
 fi
 
-PORT="8080"
+if [ "$SERVICE_NAME" = "eureka-service-registry" ]; then
+  IP="--ip 172.0.0.10"
+fi
+
+PORT=${SERVICE_PORT}
 PORT_OPTION="${PORT}:${SERVICE_PORT}"
 TARGET="linux/arm64/v8"
-while getopts "p:rht:" option; do
+while getopts "p:rht:a:" option; do
    case $option in
       h) # display Help
         Help
@@ -42,6 +47,8 @@ while getopts "p:rht:" option; do
         PORT="";;
       t) # Target
         TARGET="${OPTARG}";;
+      a)#Change ip
+        IP="--ip ${OPTARG}";;
      \?) # Wrong option
          echo "UNKNOWN OPTION $option"
          exit;;
@@ -49,10 +56,11 @@ while getopts "p:rht:" option; do
 done
 
 ../gradlew build
+docker network create --subnet=172.0.0.0/16 saefaNetwork
 docker build --platform=$TARGET -t $SERVICE_NAME .
 docker stop $SERVICE_NAME >& /dev/null
 docker rm $SERVICE_NAME >& /dev/null
-docker create -p $PORT_OPTION -i -t --name $SERVICE_NAME $SERVICE_NAME
+docker create --network saefaNetwork $IP -p $PORT_OPTION -i -t --name $SERVICE_NAME $SERVICE_NAME
 if [ "$PORT" = "" ]; then
     echo "Exposing service $SERVICE_NAME on a random port"
 else

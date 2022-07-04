@@ -5,5 +5,5 @@ include "restaurant-service"
 include "client-rest"
 include 'api-gateway-service'
 include 'ordering-service'
-include 'Eureka-Service-Registry'
+include 'eureka-service-registry'
 
