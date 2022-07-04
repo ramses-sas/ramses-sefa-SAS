@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'polimi.saefa'
-version 'unspecified'
+version 'latest'
 
 repositories {
     mavenCentral()
