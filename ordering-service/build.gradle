@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'polimi.saefa'
-version 'unspecified'
+version 'latest'
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"

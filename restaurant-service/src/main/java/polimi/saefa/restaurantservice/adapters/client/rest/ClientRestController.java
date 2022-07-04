@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import polimi.saefa.orderingservice.domain.OrderingService;
 import polimi.saefa.restaurantservice.domain.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
 
@@ -39,6 +40,7 @@ public class ClientRestController {
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurant " + restaurantId); 
 		Restaurant restaurant = restaurantService.getRestaurant(restaurantId);
+		//restaurant.setName(orderingService.dummyMethod("TESTINJECTION"));
 		return restaurantToGetRestaurantResponse(restaurant);
 	}
 	

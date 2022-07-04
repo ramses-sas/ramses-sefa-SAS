@@ -1,4 +1,4 @@
-package polimi.saefa.apigateway.config;
+package polimi.saefa.apigatewayservice.config;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
