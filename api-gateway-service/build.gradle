@@ -3,7 +3,11 @@ plugins {
     id 'io.spring.dependency-management'
 
 }
-
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
 ext {
     set('springCloudVersion', "2021.0.3")
 }
