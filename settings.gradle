@@ -3,6 +3,6 @@ rootProject.name = 'saefa'
 include "restaurant-service-restapi"
 include "restaurant-service"
 include "client-rest"
-include 'API-Gateway-service'
+include 'api-gateway-service'
 include 'ordering-service'
 
