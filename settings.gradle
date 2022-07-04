@@ -4,4 +4,5 @@ include "client-rest"
 rootProject.name = 'saefa'
 include 'API-Gateway-service'
 include 'ordering-service'
+include 'Eureka-Service-Registry'
 
