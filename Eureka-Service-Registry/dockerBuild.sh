@@ -11,7 +11,7 @@ Help()
    echo "r     Use a random port to run on."
    echo "t     Specify target platform for the container. Defaults to linux/arm64/v8."
    echo "h     Display help."
-   echo "a     Change the default IP address set to 172.0.0.1. Notice that you can only change the last two digits (last 16 bits)"
+   echo "a     Change the default IP address set to 172.0.0.10. Notice that you can only change the last two digits (last 16 bits)"
    echo
 }
 IP=""
