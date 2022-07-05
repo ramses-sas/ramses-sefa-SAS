@@ -4,6 +4,9 @@ dependencies {
 	implementation "io.netty:netty-resolver-dns-native-macos:4.1.78.Final:osx-aarch_64"
 }
 
+group 'polimi.saefa'
+version 'latest'
+
 jar {
     enabled = true
 }

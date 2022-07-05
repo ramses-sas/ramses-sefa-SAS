@@ -4,21 +4,31 @@ buildscript {
 		springDependencyManagementVersion = '1.0.11.RELEASE'
 		lombokVersion = '1.18.22'
 		springdocVersion = '1.6.6'
+		set('springCloudVersion', "2021.0.3")
 	}
 	repositories {
 		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "io.spring.gradle:dependency-management-plugin:${springDependencyManagementVersion}"
+		classpath "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 	}
 }
+//apply plugin: "io.spring.dependency-management"
+
+
+
 
 subprojects {
 
 	apply plugin: 'java'
 
-	group = 'asw.efood'
-	sourceCompatibility = '11'
+	group = 'polimi.saefa'
+	sourceCompatibility = '16'
 
 	repositories {
 		mavenCentral()
