@@ -15,9 +15,7 @@ public class SpringCloudConfig {
     private EurekaClient discoveryClient;
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
-        InstanceInfo restaurantService = discoveryClient.getNextServerFromEureka("RESTAURANT-SERVICE", false);
-        InstanceInfo orderingService = discoveryClient.getNextServerFromEureka("ORDERING-SERVICE", false);
-        String restaurantServiceUrl = restaurantService.getHomePageUrl();
+        String restaurantServiceUrl = "lb://RESTAURANT-SERVICE";
         return builder.routes()
                 .route(r -> r.path("/client/**")
                         .uri(restaurantServiceUrl))
