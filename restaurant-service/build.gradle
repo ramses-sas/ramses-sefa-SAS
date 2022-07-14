@@ -32,7 +32,8 @@ dependencies {
 	implementation 'org.hsqldb:hsqldb'
 	implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	compileOnly 'org.springframework.boot:spring-boot-starter-aop'
 	compileOnly "org.projectlombok:lombok:${lombokVersion}"
