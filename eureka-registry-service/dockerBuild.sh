@@ -27,7 +27,7 @@ if [ "$SERVICE_PORT" = "" ]; then
     exit 1
 fi
 
-if [ "$SERVICE_NAME" = "eureka-service-registry" ]; then
+if [ "$SERVICE_NAME" = "eureka-registry-service" ]; then
   IP="--ip 172.0.0.10"
 fi
 

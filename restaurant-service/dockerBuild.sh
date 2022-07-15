@@ -7,12 +7,12 @@ Help()
    # Display Help
    echo "Syntax: dockerBuild [-p|r|t|h|a]"
    echo "Options:"
+   echo "h     Display help."
    echo "p     Select port to run on. Defaults to the port used by the service."
    echo "r     Use a random port to run on."
    echo "t     Specify target platform for the container. Defaults to linux/arm64/v8."
-   echo "h     Display help."
    echo "a     Change the default IP address set to 172.0.0.10. Notice that you can only change the last two digits (last 16 bits)"
-   echo
+   echo "e     Display help."
 }
 
 export HOST="$(curl https://ipinfo.io/ip)"
@@ -30,7 +30,7 @@ if [ "$SERVICE_PORT" = "" ]; then
     exit 1
 fi
 
-if [ "$SERVICE_NAME" = "eureka-service-registry" ]; then
+if [ "$SERVICE_NAME" = "eureka-registry-service" ]; then
   IP="--ip 172.0.0.10"
 fi
 
