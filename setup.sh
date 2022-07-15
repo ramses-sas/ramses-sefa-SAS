@@ -1,5 +1,5 @@
 for d in */; do
-    if [ ! "$d" = "eureka-service-registry/" ] ; then
+    if [ "${d: -7}" == "service" ] && [! "$d" = "eureka-registry-service/"] ; then
       echo "Starting $d"
       cd "$d" || return
       bash dockerBuild.sh
