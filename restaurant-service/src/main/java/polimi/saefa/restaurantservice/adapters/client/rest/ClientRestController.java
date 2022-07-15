@@ -67,9 +67,7 @@ public class ClientRestController {
 				.stream()
 				.map(this::menuItemToMenuItemElement)
 				.collect(Collectors.toList());
-		GetRestaurantMenuResponse response = 
-			new GetRestaurantMenuResponse(restaurantId, menuItemElements);
-		return response; 
+		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
 
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {
