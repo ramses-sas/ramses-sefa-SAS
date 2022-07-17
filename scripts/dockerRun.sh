@@ -5,16 +5,14 @@
 Help()
 {
    # Display Help
-   echo "Syntax: dockerRun [-i|h]"
+   echo "Syntax: dockerRun [-h|i]"
    echo "Options:"
-   echo "i     Run in interactive mode."
    echo "h     Display help."
+   echo "i     Run in interactive mode (i.e., attach STDIN, STDOUT, STDERR)."
    echo
 }
 
-############################################################
-# Main program                                             #
-############################################################
+
 SERVICE_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
 if [ "$SERVICE_NAME" = "" ]; then
     echo "UNKNOWN SERVICE NAME. Make sure that spring.application.name is set in application.properties"
@@ -31,8 +29,10 @@ while getopts ":ih:" option; do
       i) # Interactive
          DEFOPT="-a -i";;
      \?) # Run in BG
-         echo "Container will run in background";;
+         echo "UNKNOWN OPTION $option"
+         exit;;
    esac
 done
 
 docker start $DEFOPT $SERVICE_NAME
+echo "Container $SERVICE_NAME running."

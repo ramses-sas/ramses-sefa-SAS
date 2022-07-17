@@ -31,21 +31,38 @@ Each microservice can be executed as an independent Java application from a `.ja
 ### Execution in a Docker container
 Each microservice is provided with a `Dockerfile` providing the directives for the container, which requires the `.jar` file to execute. The `.jar` file can be obtained running `../gradlew build` in the microservice directory.
 
-However, since the creation of the container and its configuration can be tricky, each microservice is provided with 2 bash scripts to create and run each container.
+However, since the creation of the container and its configuration can be tricky, it can be automated using 2 bash scripts which create and run each container.
 
 - `dockerBuild.sh` – it builds and creates the container for the microservice.
 - `dockerRun.sh` – it run the microservice in the just created container.
 
-To look at the configuration options of the scripts, run them with the `-h` option (e.g., `./dockerBuild.sh -h`). 
+To use them, navigate to the microservice main directory and run `bash ../scripts/dockerXXX.sh`.
 
-To execute all the microservices locally, with the exception of the Eureka Service, run the `setup.sh` bash script in the project root folder.
+To look at the configuration options of the scripts, run them with the `-h` option (e.g., `dockerBuild -h`). If no option is specified, the microservice is run with the following configuration:
+- The port exposed is the one specified in the `application.properties` file
+- The container image is a `linux/arm64/v8`
+- The instance IP is the public IP address of the host, obtained through an external service. The host must be reachable from that address (i.e., you might need to enable port forwarding).
+- The Eureka Registry address is the one specified in the `application.properties` file
 
-### Simple execution flow
+To execute all the microservices locally, run the `setup.sh` bash script in the project root folder. If no option is specified, it uses the default Eureka Service made public for this project. Otherwise, run it with the `-e` option to run also the Eureka Service locally. 
+
+### Simple execution flow - default Eureka Service
+It requires that the machines hosting the microservices are publicly accessible from the Internet at the respective microservices ports. Hence, you may need to enable port forwarding on the gateway. 
+
+**DO NOT USE THIS METHOD IF CONDITIONS OTHERWISE.**
+
 1. Clone this GitHub repository
-2. Navigate to the `eureka-registry-service` folder and run `./dockerBuild.sh; ./dockerRun.sh`
-3. Make sure that the machine can be reached from the Internet and take note of the public IP address. You may need to enable port forwarding on the gateway for port 8761.
-4. Run `export EUREKA_IP_PORT=public_ip_of_eureka:8761` and `./setup.sh` from the project root folder. This will create and run a container for each microservice.
-5. The API Gateway (i.e., the REST API exposed by all the services) can be reached on the port 58080 of the hosting machine.
+2. Navigate to the project root directory
+3. Run `bash setup.sh`. This will create and run a container for each microservice.
+4. The API Gateway (i.e., the REST API exposed by all the services) can be reached at `localhost:58080`.
+
+
+### Simple execution flow (services running locally)
+Useful for testing all on the same machine.
+1. Clone this GitHub repository
+2. Navigate to the project root directory
+3. Run `bash setup.sh -e`. This will create and run a container for each microservice.
+4. The API Gateway (i.e., the REST API exposed by all the services) can be reached at `localhost:58080`.
 
 
 ## Default deployment settings
