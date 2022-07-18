@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping(path="/rest/customer")
-public class ClientRestController {
+public class CustomerRestController {
 
 	@Autowired 
 	private RestaurantService restaurantService;
@@ -31,7 +31,7 @@ public class ClientRestController {
 		return instance.getHomePageUrl();
 	}
 
-    private final Logger logger = Logger.getLogger(ClientRestController.class.toString());
+    private final Logger logger = Logger.getLogger(CustomerRestController.class.toString());
 
 
 	/* Trova il ristorante con restaurantId. */ 
