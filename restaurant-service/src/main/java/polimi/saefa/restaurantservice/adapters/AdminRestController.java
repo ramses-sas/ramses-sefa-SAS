@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.adapters.admin.rest;
+package polimi.saefa.restaurantservice.adapters;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +21,7 @@ import java.util.stream.*;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping(path="/admin/rest")
+@RequestMapping(path="/rest/admin")
 public class AdminRestController {
 
 	@Autowired 

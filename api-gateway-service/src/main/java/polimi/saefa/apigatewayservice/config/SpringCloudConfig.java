@@ -17,7 +17,7 @@ public class SpringCloudConfig {
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
         String restaurantServiceUrl = "lb://RESTAURANT-SERVICE";
         return builder.routes()
-                .route(r -> r.path("/client/**")
+                .route(r -> r.path("/customer/**")
                         .uri(restaurantServiceUrl))
                 .route(r -> r.path("/")
                         .uri(restaurantServiceUrl))

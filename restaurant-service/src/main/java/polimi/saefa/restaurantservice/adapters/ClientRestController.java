@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.adapters.client.rest;
+package polimi.saefa.restaurantservice.adapters;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import polimi.saefa.orderingservice.domain.OrderingService;
 import polimi.saefa.restaurantservice.domain.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
 
@@ -17,7 +16,7 @@ import java.util.stream.*;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping(path="/client/rest")
+@RequestMapping(path="/rest/customer")
 public class ClientRestController {
 
 	@Autowired 
