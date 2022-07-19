@@ -6,9 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import polimi.saefa.orderingservice.domain.*;
+import polimi.saefa.orderingservice.restapi.common.*;
+import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/rest/")
@@ -26,29 +30,25 @@ public class OrderingRestController {
 		return orderingService.dummyMethod(myString);
 	}
 
-	@PostMapping(path = "addItem",
-			consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Cart> addItemToCart(@RequestBody Integer cartId, @RequestBody String restaurantId,
-											  @RequestBody String itemId, @RequestBody int quantity,
-											  @RequestBody List<CartItem> items){
-		Cart cart;
-		if (cartId == null || cartId==0){
-			cart = new Cart(restaurantId);
-		} else {
-			cart = new Cart(cartId, restaurantId, items);
+	@PostMapping(path = "addItem")
+	public AddItemToCartResponse addItemToCart(@RequestBody AddItemToCartRequest request){
+
+		logger.info("REST CALL: addItem to cart " + request.getCartId() + " for restaurant " + request.getRestaurantId() + " item " + request.getItemId() + " * " + request.getItemId());
+
+		Cart cart = orderingService.addItemToCart(request.getCartId(), request.getRestaurantId(), request.getItemId(), request.getQuantity());
+
+		if(orderingService.updateCartPrice(cart)) {
+			List<CartItemElement> cartItemElements =
+					cart.getItemList()
+							.stream()
+							.map(i -> cartItemToCartItemElement(i))
+							.collect(Collectors.toList());
+			return new AddItemToCartResponse(cart.getId(), cart.getRestaurantId(), cart.getTotalPrice(), cartItemElements);
 		}
-
-		logger.info("REST CALL: addItem to cart " + cart + " for item " + itemId + " * " + quantity);
-
-		if(orderingService.addItemToCart(cart, restaurantId, itemId, quantity)) {
-
-			orderingService.updateCartPrice(cart);
-
-			return new ResponseEntity<>(cart, HttpStatus.ACCEPTED);
-		}
-		else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
+		else return null;
 	}
 
+	private CartItemElement cartItemToCartItemElement(CartItem item) {
+		return new CartItemElement(item.getId(), item.getQuantity());
+	}
 }

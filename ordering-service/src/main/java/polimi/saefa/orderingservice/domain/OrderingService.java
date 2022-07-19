@@ -10,15 +10,20 @@ import java.util.*;
 @Transactional
 public class OrderingService {
 
-//	@Autowired
-//	private RestaurantRepository restaurantRepository;
+	@Autowired
+	private OrderingRepository orderingRepository;
 
  	public String dummyMethod(String myString) {
 		return myString;
 	}
 
-	public boolean addItemToCart(Cart cart, String restaurantId, String item, int quantity){
-		 return cart.addItem(item, restaurantId, quantity);
+	public Cart addItemToCart(Long cartId, String restaurantId, String item, int quantity){
+		 Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
+
+		 if(cart.addItem(item, restaurantId, quantity)) {
+			 orderingRepository.save(cart);
+		 }
+		 return cart;
 	}
 	public boolean notifyRestaurant(Cart cart){
 		 //method to invoke the restaurantService API in order to notify it about a completed order
@@ -37,12 +42,13 @@ public class OrderingService {
 
 	public boolean updateCartPrice(Cart cart){
 		 double totalPrice = 0;
-		 for(CartItem item:cart.getItems()){
+		 for(CartItem item:cart.getItemList()){
 			 //chiama il rest service e chiedi il prezzo dell'item
 			 double itemPrice = 0;
 			 totalPrice+=item.getQuantity()*itemPrice;
 		 }
 		 cart.setTotalPrice(totalPrice);
+		 orderingRepository.save(cart);
 		 return true;
 	}
 
