@@ -25,6 +25,15 @@ public class OrderingService {
 		 }
 		 return cart;
 	}
+
+	public Cart removeItemFromCart(Long cartId, String restaurantId, String item, int quantity){
+		Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
+
+		if(cart.removeItem(item, restaurantId, quantity)) {
+			orderingRepository.save(cart);
+		}
+		return cart;
+	}
 	public boolean notifyRestaurant(Cart cart){
 		 //method to invoke the restaurantService API in order to notify it about a completed order
 		return true;

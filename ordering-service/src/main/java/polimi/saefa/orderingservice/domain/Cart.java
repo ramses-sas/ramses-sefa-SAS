@@ -48,6 +48,21 @@ public class Cart {
         return false;
     }
 
+    public boolean removeItem(String itemId, String restaurantId, int quantity){
+        if(!paid && restaurantId.equals(this.restaurantId)){
+            CartItem item = items.get(itemId);
+            if(item != null)
+                if(item.getQuantity() == quantity)
+                    items.remove(itemId);
+                else
+                    item.removeQuantity(quantity);
+            else
+                return false;
+            return true;
+        }
+        return false;
+    }
+
     public List<CartItem> getItemList(){
         Set<String> IDs = items.keySet();
         return IDs

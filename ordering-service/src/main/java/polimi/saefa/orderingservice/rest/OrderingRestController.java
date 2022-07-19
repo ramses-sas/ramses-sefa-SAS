@@ -48,6 +48,24 @@ public class OrderingRestController {
 		else return null;
 	}
 
+	@PostMapping(path = "removeItem")
+	public RemoveItemFromCartResponse removeItemFromCart(@RequestBody RemoveItemFromCartRequest request){
+
+		logger.info("REST CALL: removeItem to cart " + request.getCartId() + " for restaurant " + request.getRestaurantId() + " item " + request.getItemId() + " * " + request.getItemId());
+
+		Cart cart = orderingService.removeItemFromCart(request.getCartId(), request.getRestaurantId(), request.getItemId(), request.getQuantity());
+
+		if(orderingService.updateCartPrice(cart)) {
+			List<CartItemElement> cartItemElements =
+					cart.getItemList()
+							.stream()
+							.map(i -> cartItemToCartItemElement(i))
+							.collect(Collectors.toList());
+			return new RemoveItemFromCartResponse(cart.getId(), cart.getRestaurantId(), cart.getTotalPrice(), cartItemElements);
+		}
+		else return null;
+	}
+
 	private CartItemElement cartItemToCartItemElement(CartItem item) {
 		return new CartItemElement(item.getId(), item.getQuantity());
 	}
