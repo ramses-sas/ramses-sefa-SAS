@@ -18,18 +18,18 @@
     <!-- Logo and responsive toggle -->
     <div class="navbar-header">
       <a class="navbar-brand" href="/">SAEFA</a>
-      <a class="navbar-brand" href="/admin/web/">Admin App</a>
+      <a class="navbar-brand" href="/admin/">Admin App</a>
     </div>
     <!-- Navbar links -->
     <div class="collapse navbar-collapse" id="navbar">
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="/admin/web">Home</a></li>
-        <li class="active"><a href="/admin/web/restaurants">Restaurants list</a></li>
-        <li><a href="/admin/web/restaurants?add">Add restaurant</a></li>
+        <li><a href="/admin">Home</a></li>
+        <li class="active"><a href="/admin/restaurants">Restaurants list</a></li>
+        <li><a href="/admin/restaurants?add">Add restaurant</a></li>
         <!--<li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Manage <span class="caret"></span></a>
             <ul class="dropdown-menu" aria-labelledby="about-us">
-                <li><a href="/admin/web/restaurants?add">Add restaurant</a></li>
+                <li><a href="/admin/restaurants?add">Add restaurant</a></li>
             </ul>
         </li>-->
       </ul>
@@ -41,7 +41,7 @@
   <h4>Add menu of Restaurant <span th:text="${restaurant.name}">name goes here</span></h4>
 
   <div>
-      <form th:action="@{'/admin/web/restaurants/'+${restaurant.id}+'/menu'}" method="POST" th:object="${form}">
+      <form th:action="@{'/admin/restaurants/'+${restaurant.id}+'/menu'}" method="POST" th:object="${form}">
           <table>
             <thead>
               <tr>

@@ -42,7 +42,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="menuItem : ${menu.menuItems}">
+            <tr th:each="menuItem : ${menu.getMenuItems()}">
                 <td th:text="${menuItem.id}">id goes here</td>
                 <td th:text="${menuItem.name}">name goes here</td>
                 <td th:text="${menuItem.price}">price goes here</td>

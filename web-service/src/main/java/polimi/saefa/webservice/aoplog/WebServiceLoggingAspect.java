@@ -13,10 +13,10 @@ import java.util.Arrays;
 public class WebServiceLoggingAspect {
 
     /* Pointcut per il servizio dei ristoranti */
-    @Pointcut("execution(public * polimi.saefa.webservice.domain.WebService.*(..))")
+    @Pointcut("execution(public * polimi.saefa.webservice.domain.admin.AdminWebService.*(..))")
     public void webServiceMethods() {}
 
-    @Pointcut("execution(public void polimi.saefa.webservice.domain.WebService.*(..))")
+    @Pointcut("execution(public void polimi.saefa.webservice.domain.admin.AdminWebService.*(..))")
     public void webServiceVoidMethods() {}
 
 	/* metodi di log */ 

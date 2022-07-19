@@ -36,27 +36,23 @@ public class AdminRestController {
 		String location = request.getLocation();
 		logger.info("REST CALL: createRestaurant " + name + ", " + location); 
 		Restaurant restaurant = restaurantService.createRestaurant(name, location);
-		CreateRestaurantResponse response = new CreateRestaurantResponse(restaurant.getId()); 
-		return response; 
+		return new CreateRestaurantResponse(restaurant.getId(), restaurant.getName(), restaurant.getLocation());
 	}	
 
 	/* Crea o modifica il menu del del ristorante con restaurantId. */ 
 	@PutMapping("/restaurants/{restaurantId}/menu")
 	public CreateRestaurantMenuResponse createRestaurantMenu(@RequestBody CreateRestaurantMenuRequest request) {
+		logger.warning("REST CALL: starting createRestaurantMenu ");
+		logger.warning(request.toString());
 		Long restaurantId = request.getRestaurantId(); 
 		List<MenuItem> menuItems =
 			request.getMenuItems() 
 				.stream()
-				.map(i -> menuItemElementToMenuItem(i))
+				.map(this::menuItemElementToMenuItem)
 				.collect(Collectors.toList());
 		logger.info("REST CALL: createRestaurantMenu " + restaurantId + ", " + menuItems); 
 		Restaurant restaurant = restaurantService.createOrUpdateRestaurantMenu(restaurantId, menuItems);
-		CreateRestaurantMenuResponse response = new CreateRestaurantMenuResponse(restaurant.getId()); 
-		return response; 
-	}	
-
-	private MenuItem menuItemElementToMenuItem(MenuItemElement item) {
-		return new MenuItem(item.getId(), item.getName(), item.getPrice());
+		return new CreateRestaurantMenuResponse(restaurant.getId());
 	}
 
 	/* Trova il ristorante con restaurantId. */ 
@@ -66,14 +62,6 @@ public class AdminRestController {
 		Restaurant restaurant = restaurantService.getRestaurant(restaurantId);
 		GetRestaurantResponse response = restaurantToGetRestaurantResponse(restaurant); 
 		return response;
-	}
-
-	private GetRestaurantResponse restaurantToGetRestaurantResponse(Restaurant restaurant) {
-		if (restaurant!=null) {
-			return new GetRestaurantResponse(restaurant.getId(), restaurant.getName(), restaurant.getLocation());
-		} else {
-			return null;
-		}
 	}
 	
 	/* Trova tutti i ristoranti. */ 
@@ -104,8 +92,21 @@ public class AdminRestController {
 		return response; 
 	}
 
+
+	private GetRestaurantResponse restaurantToGetRestaurantResponse(Restaurant restaurant) {
+		if (restaurant != null) {
+			return new GetRestaurantResponse(restaurant.getId(), restaurant.getName(), restaurant.getLocation());
+		} else {
+			return null;
+		}
+	}
+
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {
 		return new MenuItemElement(item.getId(), item.getName(), item.getPrice());
+	}
+
+	private MenuItem menuItemElementToMenuItem(MenuItemElement item) {
+		return new MenuItem(item.getId(), item.getName(), item.getPrice());
 	}
 
 }
