@@ -70,6 +70,17 @@ public class ClientRestController {
 		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
 
+	@GetMapping("/restaurants/{restaurantId}/item/{itemId}")
+	public GetMenuItemPriceResponse getMenuItemPrice(@PathVariable Long restaurantId, @PathVariable String itemId) {
+		logger.info("REST CALL: getMenuItemPrice restaurant: " + restaurantId + " item: " + itemId);
+		RestaurantMenu menu = restaurantService.getRestaurantMenu(restaurantId);
+		for (MenuItem item:menu.getMenuItems()){
+			if(item.getId().equals(itemId))
+				return new GetMenuItemPriceResponse(item.getPrice());
+		}
+		return new GetMenuItemPriceResponse();
+	}
+
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {
 		return new MenuItemElement(item.getId(), item.getName(), item.getPrice());
 	}
