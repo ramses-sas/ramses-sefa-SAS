@@ -55,6 +55,8 @@ public class OrderingRestController {
 
 	@PostMapping(path = "confirmOrder")
 	public ConfirmOrderResponse confirmOrder(@RequestBody ConfirmOrderRequest request){
+		logger.info("REST CALL: confirmOrder to cart " + request.getCartId());
+
 		PaymentInfo paymentInfo;
 		try{
 			paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
@@ -64,7 +66,8 @@ public class OrderingRestController {
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
 
 		if(orderingService.processPayment(request.getCartId(), paymentInfo))
-			orderingService.processDelivery(request.getCartId(), deliveryInfo);
+			if(orderingService.processDelivery(request.getCartId(), deliveryInfo))
+				orderingService.notifyRestaurant(request.getCartId());
 
 		return new ConfirmOrderResponse();
 
