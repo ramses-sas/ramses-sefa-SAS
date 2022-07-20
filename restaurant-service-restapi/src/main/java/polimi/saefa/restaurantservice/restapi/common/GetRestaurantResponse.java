@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GetRestaurantResponse {
 
-	private Long restaurantId;
+	private Long id;
 	
 	private String name; 
 	private String location;	
