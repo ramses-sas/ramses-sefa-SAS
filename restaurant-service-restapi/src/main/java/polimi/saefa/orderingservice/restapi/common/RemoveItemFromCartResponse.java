@@ -11,7 +11,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class RemoveItemFromCartResponse {
     private Long id;
-    private String restaurantId;
+    private Long restaurantId;
     private double totalPrice = 0;
     private Collection<CartItemElement> items;
 }

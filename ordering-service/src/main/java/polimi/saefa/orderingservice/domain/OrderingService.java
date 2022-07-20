@@ -13,11 +13,10 @@ public class OrderingService {
 	@Autowired
 	private OrderingRepository orderingRepository;
 
- 	public String dummyMethod(String myString) {
-		return myString;
-	}
+	@Autowired
+	private RestaurantServiceClient restaurantServiceClient;
 
-	public Cart addItemToCart(Long cartId, String restaurantId, String item, int quantity){
+	public Cart addItemToCart(Long cartId, Long restaurantId, String item, int quantity){
 		 Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
 
 		 if(cart.addItem(item, restaurantId, quantity)) {
@@ -26,7 +25,7 @@ public class OrderingService {
 		 return cart;
 	}
 
-	public Cart removeItemFromCart(Long cartId, String restaurantId, String item, int quantity){
+	public Cart removeItemFromCart(Long cartId, Long restaurantId, String item, int quantity){
 		Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
 
 		if(cart.removeItem(item, restaurantId, quantity)) {
@@ -34,31 +33,41 @@ public class OrderingService {
 		}
 		return cart;
 	}
-	public boolean notifyRestaurant(Cart cart){
-		 //method to invoke the restaurantService API in order to notify it about a completed order
-		return true;
+	public boolean notifyRestaurant(Long cartId){
+		Optional<Cart> cart = orderingRepository.findById(cartId);
+		if(cart.isPresent()) {
+			restaurantServiceClient.notifyRestaurant(cart.get().getRestaurantId(), cart.get().getId());
+			return true;
+		}
+		return false;
 	}
 
-	public boolean processPayment(Cart cart, PaymentInfo paymentInfo){
-		 //contact the payment proxy
-		 return true;
+	public boolean processPayment(Long cartId, PaymentInfo paymentInfo){
+		Optional<Cart> cart = orderingRepository.findById(cartId);
+		if(cart.isPresent()) {
+
+			return true;
+		}
+		return false;
 	}
 
-	public boolean processDelivery(Cart cart, DeliveryInfo deliveryInfo){
-		//contact the delivery proxy
-		return true;
+	public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo){
+		Optional<Cart> cart = orderingRepository.findById(cartId);
+		if(cart.isPresent()) {
+
+			return true;
+		}
+		return false;
 	}
 
-	public boolean updateCartPrice(Cart cart){
+	public double updateCartPrice(Cart cart){
 		 double totalPrice = 0;
-		 for(CartItem item:cart.getItemList()){
-			 //chiama il rest service e chiedi il prezzo dell'item
-			 double itemPrice = 0;
-			 totalPrice+=item.getQuantity()*itemPrice;
+		 for (CartItem item : cart.getItemList()) {
+			 totalPrice += restaurantServiceClient.getMenuItemPrice(cart.getRestaurantId(), item.getId()).getPrice() * item.getQuantity();
 		 }
 		 cart.setTotalPrice(totalPrice);
 		 orderingRepository.save(cart);
-		 return true;
+		 return cart.getTotalPrice();
 	}
 
 	

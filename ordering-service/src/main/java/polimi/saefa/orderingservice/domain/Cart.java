@@ -19,25 +19,25 @@ public class Cart {
     @Id
     @GeneratedValue
     private Long id;
-    private String restaurantId;
+    private Long restaurantId;
     private double totalPrice = 0;
     @ElementCollection
     private Map<String, CartItem> items;
 
     private boolean paid = false;
 
-    public Cart(String restaurantId) {
+    public Cart(Long restaurantId) {
         this.restaurantId = restaurantId;
         items = new HashMap<>();
     }
 
-    public Cart(String restaurantId, Map<String, CartItem> items) {
+    public Cart(Long restaurantId, Map<String, CartItem> items) {
         this.restaurantId = restaurantId;
         this.items = items;
     }
 
-    public boolean addItem(String itemId, String restaurantId, int quantity){
-        if(!paid && restaurantId.equals(this.restaurantId)){
+    public boolean addItem(String itemId, Long restaurantId, int quantity){
+        if(!paid && Objects.equals(restaurantId, this.restaurantId)){
             CartItem item = items.get(itemId);
             if(item != null)
                 item.addQuantity(quantity);
@@ -48,8 +48,8 @@ public class Cart {
         return false;
     }
 
-    public boolean removeItem(String itemId, String restaurantId, int quantity){
-        if(!paid && restaurantId.equals(this.restaurantId)){
+    public boolean removeItem(String itemId, Long restaurantId, int quantity){
+        if(!paid && Objects.equals(restaurantId, this.restaurantId)){
             CartItem item = items.get(itemId);
             if(item != null)
                 if(item.getQuantity() == quantity)
