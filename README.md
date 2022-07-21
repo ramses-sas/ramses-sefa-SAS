@@ -17,7 +17,7 @@ The project is made of multiple microservices, which can be found in the directo
 Furthermore, there are additional directories containing utilities for the execution:
 
 1.  `client-rest` - a REST client made to simulate a complete interaction with the software
-2.  `*-service-restapi` - directories containing the models for the request and response of the RESTful API endpoints for each service.
+2.  `services-restapi` - directories containing the models for the request and response of the RESTful API endpoints for each service.
 
 
 ## Environment setup
@@ -49,7 +49,7 @@ To execute all the microservices locally, run the `setup.sh` bash script in the 
 ### Simple execution flow - default Eureka Service
 It requires that the machines hosting the microservices are publicly accessible from the Internet at the respective microservices ports. Hence, you may need to enable port forwarding on the gateway. 
 
-**DO NOT USE THIS METHOD IF CONDITIONS OTHERWISE.**
+**DO NOT USE THIS METHOD IF CONDITIONS ARE NOT MET.**
 
 1. Clone this GitHub repository
 2. Navigate to the project root directory
@@ -75,4 +75,4 @@ Useful for testing all on the same machine.
 
 
 ## REST API Documentation
-Once the project is up and running, the REST API documentation is available under `/swagger-ui/index.html` of the API Gateway URL.
+Once the project is up and running, the REST API documentation of each microservice is available under `/api.html` of the microservice URL .
