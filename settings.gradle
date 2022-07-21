@@ -2,8 +2,9 @@ rootProject.name = 'saefa'
 //rootProject.buildFileName = 'build.gradle.kts'
 include "restaurant-service-restapi"
 include "restaurant-service"
-include "client-rest"
+//include "client-rest"
 include 'api-gateway-service'
+include 'web-service'
 include 'ordering-service'
-include 'eureka-service-registry'
+include 'eureka-registry-service'
 
