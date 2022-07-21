@@ -69,6 +69,23 @@ public class CustomerRestController {
 		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
 
+	/* Ottiene il prezzo del prodotto specificato dal menù del ristorante selezionato. */
+	@GetMapping("/restaurants/{restaurantId}/item/{itemId}")
+	public GetMenuItemPriceResponse getMenuItemPrice(@PathVariable Long restaurantId, @PathVariable String itemId) {
+		logger.info("REST CALL: getMenuItemPrice restaurant: " + restaurantId + " item: " + itemId);
+		RestaurantMenu menu = restaurantService.getRestaurantMenu(restaurantId);
+		for (MenuItem item:menu.getMenuItems()){
+			if(item.getId().equals(itemId))
+				return new GetMenuItemPriceResponse(item.getPrice());
+		}
+		return new GetMenuItemPriceResponse();
+	}
+
+	@GetMapping("/restaurants/{restaurantId}/notify/{orderNumber}")
+	public NotifyRestaurantResponse notifyRestaurant(@PathVariable Long restaurantId, @PathVariable Long orderNumber) {
+		logger.info("REST CALL: notifyRestaurant " + restaurantId + " order " + orderNumber);
+		return new NotifyRestaurantResponse();
+	}
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {
 		return new MenuItemElement(item.getId(), item.getName(), item.getPrice());
 	}
