@@ -2,9 +2,6 @@ package polimi.saefa.orderingservice.domain;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
-import polimi.saefa.orderingservice.restapi.common.CartItemElement;
-import reactor.util.function.Tuple2;
 
 import javax.persistence.*;
 
@@ -37,9 +34,9 @@ public class Cart {
     }
 
     public boolean addItem(String itemId, Long restaurantId, int quantity){
-        if(!paid && Objects.equals(restaurantId, this.restaurantId)){
+        if (!paid && Objects.equals(restaurantId, this.restaurantId)) {
             CartItem item = items.get(itemId);
-            if(item != null)
+            if (item != null)
                 item.addQuantity(quantity);
             else
                 items.put(itemId, new CartItem(itemId, quantity));
@@ -52,7 +49,7 @@ public class Cart {
         if(!paid && Objects.equals(restaurantId, this.restaurantId)){
             CartItem item = items.get(itemId);
             if(item != null)
-                if(item.getQuantity() == quantity)
+                if (item.getQuantity() == quantity)
                     items.remove(itemId);
                 else
                     item.removeQuantity(quantity);

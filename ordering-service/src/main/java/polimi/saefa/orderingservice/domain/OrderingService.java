@@ -1,7 +1,10 @@
 package polimi.saefa.orderingservice.domain;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -16,7 +19,7 @@ public class OrderingService {
 	public Cart addItemToCart(Long cartId, Long restaurantId, String item, int quantity){
 		 Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
 
-		 if(cart.addItem(item, restaurantId, quantity)) {
+		 if (cart.addItem(item, restaurantId, quantity)) {
 			 orderingRepository.save(cart);
 		 }
 		 return cart;
@@ -25,7 +28,7 @@ public class OrderingService {
 	public Cart removeItemFromCart(Long cartId, Long restaurantId, String item, int quantity){
 		Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
 
-		if(cart.removeItem(item, restaurantId, quantity)) {
+		if (cart.removeItem(item, restaurantId, quantity)) {
 			orderingRepository.save(cart);
 		}
 		return cart;
@@ -41,20 +44,12 @@ public class OrderingService {
 
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo){
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-		if(cart.isPresent()) {
-
-			return true;
-		}
-		return false;
+		return cart.isPresent();
 	}
 
 	public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo){
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-		if(cart.isPresent()) {
-
-			return true;
-		}
-		return false;
+		return cart.isPresent();
 	}
 
 	public double updateCartPrice(Cart cart){

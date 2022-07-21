@@ -2,8 +2,7 @@ package polimi.saefa.webservice.domain.admin;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
-import polimi.saefa.restaurantservice.restapi.admin.*;
-import polimi.saefa.restaurantservice.restapi.common.*;
+
 import java.util.*;
 import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuRequest;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantRequest;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;
+import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 
 @Service
 @Transactional

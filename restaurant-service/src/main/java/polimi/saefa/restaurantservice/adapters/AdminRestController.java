@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import polimi.saefa.restaurantservice.domain.*;
-import polimi.saefa.restaurantservice.restapi.admin.*;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuRequest;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuResponse;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantRequest;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;

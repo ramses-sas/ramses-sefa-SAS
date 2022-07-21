@@ -6,7 +6,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 import polimi.saefa.restaurantservice.client.admin.domain.*;
 
-import polimi.saefa.restaurantservice.restapi.admin.*;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;

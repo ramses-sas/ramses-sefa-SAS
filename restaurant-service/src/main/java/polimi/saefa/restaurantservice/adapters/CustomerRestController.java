@@ -61,7 +61,7 @@ public class CustomerRestController {
 	public GetRestaurantMenuResponse getRestaurantMenu(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurantMenu " + restaurantId); 
 		RestaurantMenu menu = restaurantService.getRestaurantMenu(restaurantId);
-		List<MenuItemElement> menuItemElements = 
+		List<MenuItemElement> menuItemElements =
 			menu.getMenuItems() 
 				.stream()
 				.map(this::menuItemToMenuItemElement)

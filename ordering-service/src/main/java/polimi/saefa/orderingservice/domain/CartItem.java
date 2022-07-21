@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Data
 @Embeddable
 @NoArgsConstructor
-public class CartItem{
+public class CartItem {
     private String id;
     private int quantity;
 

@@ -1,4 +1,4 @@
-package polimi.saefa.orderingservice.restapi.common;
+package polimi.saefa.orderingservice.restapi;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

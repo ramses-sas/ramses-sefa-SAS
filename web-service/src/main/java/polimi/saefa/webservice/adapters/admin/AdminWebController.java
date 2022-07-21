@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping; 
 import org.springframework.ui.Model;
-import polimi.saefa.restaurantservice.restapi.admin.*;
-import polimi.saefa.restaurantservice.restapi.common.*;
+import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
+import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
+import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 import polimi.saefa.webservice.domain.admin.AdminWebService;
 
 import javax.servlet.http.HttpServletRequest;

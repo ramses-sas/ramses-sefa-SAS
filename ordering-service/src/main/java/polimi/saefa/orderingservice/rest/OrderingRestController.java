@@ -4,7 +4,7 @@ package polimi.saefa.orderingservice.rest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import polimi.saefa.orderingservice.domain.*;
-import polimi.saefa.orderingservice.restapi.common.*;
+import polimi.saefa.orderingservice.restapi.*;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -58,19 +58,18 @@ public class OrderingRestController {
 		logger.info("REST CALL: confirmOrder to cart " + request.getCartId());
 
 		PaymentInfo paymentInfo;
-		try{
+		try {
 			paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
-		} catch (PaymentInfo.PaymentDetailsNotValidException e){
+		} catch (PaymentInfo.PaymentDetailsNotValidException e) {
 			return new ConfirmOrderResponse();
 		}
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
 
-		if(orderingService.processPayment(request.getCartId(), paymentInfo))
-			if(orderingService.processDelivery(request.getCartId(), deliveryInfo))
+		if (orderingService.processPayment(request.getCartId(), paymentInfo))
+			if (orderingService.processDelivery(request.getCartId(), deliveryInfo))
 				orderingService.notifyRestaurant(request.getCartId());
 
 		return new ConfirmOrderResponse();
-
 	}
 
 	private CartItemElement cartItemToCartItemElement(CartItem item) {
