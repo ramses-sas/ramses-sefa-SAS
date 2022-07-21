@@ -60,8 +60,7 @@ public class AdminRestController {
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurant " + restaurantId); 
 		Restaurant restaurant = restaurantService.getRestaurant(restaurantId);
-		GetRestaurantResponse response = restaurantToGetRestaurantResponse(restaurant); 
-		return response;
+		return restaurantToGetRestaurantResponse(restaurant);
 	}
 	
 	/* Trova tutti i ristoranti. */ 
@@ -72,7 +71,7 @@ public class AdminRestController {
 		Collection<GetRestaurantResponse> restaurantResponses = 
 			restaurants
 				.stream()
-				.map(r -> restaurantToGetRestaurantResponse(r))
+				.map(this::restaurantToGetRestaurantResponse)
 				.collect(Collectors.toList());
 		return new GetRestaurantsResponse(restaurantResponses);
 	}
@@ -85,11 +84,9 @@ public class AdminRestController {
 		List<MenuItemElement> menuItemElements = 
 			menu.getMenuItems() 
 				.stream()
-				.map(i -> menuItemToMenuItemElement(i))
+				.map(this::menuItemToMenuItemElement)
 				.collect(Collectors.toList());
-		GetRestaurantMenuResponse response = 
-			new GetRestaurantMenuResponse(restaurantId, menuItemElements);
-		return response; 
+		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
 
 

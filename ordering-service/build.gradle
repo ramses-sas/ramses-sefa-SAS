@@ -16,7 +16,7 @@ ext {
 }
 
 dependencies {
-    implementation project(":restaurant-service-restapi")
+    implementation project(":services-restapi")
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

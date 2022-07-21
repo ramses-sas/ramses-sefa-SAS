@@ -13,7 +13,6 @@ import polimi.saefa.restaurantservice.restapi.common.*;
 import polimi.saefa.webservice.domain.admin.AdminWebService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 

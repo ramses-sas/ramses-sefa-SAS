@@ -8,17 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuRequest;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuResponse;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantRequest;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;
-import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 

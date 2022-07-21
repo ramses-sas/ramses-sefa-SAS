@@ -23,7 +23,7 @@ ext {
 }
 
 dependencies {
-	implementation project(":restaurant-service-restapi")
+	implementation project(":services-restapi")
 	implementation project(":ordering-service")
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'

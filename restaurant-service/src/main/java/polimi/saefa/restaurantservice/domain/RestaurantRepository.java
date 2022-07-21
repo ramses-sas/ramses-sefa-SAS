@@ -13,13 +13,13 @@ public interface RestaurantRepository extends CrudRepository<Restaurant, Long> {
             "FROM Restaurant r LEFT JOIN FETCH r.menu.menuItems " +
             "WHERE r.id = :id " 
             )
-	public Restaurant findByIdWithMenu(@Param("id") Long id);
+	Restaurant findByIdWithMenu(@Param("id") Long id);
 
- 	public Restaurant findByName(String name); 
+ 	Restaurant findByName(String name);
 	
-	public Collection<Restaurant> findAll();
+	Collection<Restaurant> findAll();
 	
-	public Collection<Restaurant> findAllByLocation(String location);
+	Collection<Restaurant> findAllByLocation(String location);
 
 }
 

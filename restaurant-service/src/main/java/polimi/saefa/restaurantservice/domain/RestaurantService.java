@@ -35,29 +35,24 @@ public class RestaurantService {
 	}
 	
  	public Restaurant getRestaurant(Long id) {
-		Restaurant restaurant = restaurantRepository.findById(id).orElse(null);
-		return restaurant;
+		return restaurantRepository.findById(id).orElse(null);
 	}
 
  	public RestaurantMenu getRestaurantMenu(Long id) {
 		Restaurant restaurant = restaurantRepository.findByIdWithMenu(id);
-		RestaurantMenu menu = restaurant.getMenu();
-		return menu; 
+		return restaurant.getMenu();
 	}
 
  	public Restaurant getRestaurantByName(String name) {
-		Restaurant restaurant = restaurantRepository.findByName(name);
-		return restaurant;
+		return restaurantRepository.findByName(name);
 	}
 	
 	public Collection<Restaurant> getAllRestaurants() {
-		Collection<Restaurant> restaurants = restaurantRepository.findAll(); 
-		return restaurants;
+		return restaurantRepository.findAll();
 	}
 	
 	public Collection<Restaurant> getAllRestaurantsByLocation(String location) {
-		Collection<Restaurant> restaurants = restaurantRepository.findAllByLocation(location);
-		return restaurants;
+		return restaurantRepository.findAllByLocation(location);
 	}
 	
 }
