@@ -13,5 +13,5 @@ public class GetCartResponse {
     private Long id;
     private Long restaurantId;
     private double totalPrice = 0;
-    private Collection<CartItemElement> items;
+    private Collection<CartItemElementExtended> items;
 }

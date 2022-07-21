@@ -72,6 +72,8 @@ public class OrderingRestController {
 		return new ConfirmOrderResponse();
 	}
 
+	//TODO implement getCart
+
 	private CartItemElement cartItemToCartItemElement(CartItem item) {
 		return new CartItemElement(item.getId(), item.getQuantity());
 	}

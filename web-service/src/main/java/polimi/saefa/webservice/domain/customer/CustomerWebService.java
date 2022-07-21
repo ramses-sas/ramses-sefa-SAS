@@ -80,9 +80,12 @@ public class CustomerWebService {
 		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
 		String url = osUrl+"getCart/"+cartId.toString();
 		RestTemplate restTemplate = new RestTemplate();
+		//TODO
 		ResponseEntity<GetCartResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetCartResponse.class);
 		return response.getBody();
 	}
+
+	//TODO implement getCart
 
 	public ConfirmOrderResponse confirmOrder(
 		Long cartId,
