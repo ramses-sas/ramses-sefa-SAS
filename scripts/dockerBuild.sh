@@ -59,7 +59,7 @@ while getopts "hp:t:a:e:" option; do
       t) # Target
         TARGET="${OPTARG}";;
       a) # Set IP address of the service instance
-        HOST="${OPTARG}";;
+        HOST="${OPTARG}"; IP="--ip ${HOST}";;
       e) # Set IP address and port of the Eureka service
         EUREKA_IP_PORT="${OPTARG}";;
      \?) # Wrong option
