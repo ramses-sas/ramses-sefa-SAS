@@ -1,1 +1,0 @@
-Allo stesso modo, cos'è questo?

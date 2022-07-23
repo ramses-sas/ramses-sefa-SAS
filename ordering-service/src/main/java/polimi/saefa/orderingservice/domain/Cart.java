@@ -33,7 +33,7 @@ public class Cart {
         this.items = items;
     }
 
-    public boolean addItem(String itemId, Long restaurantId, int quantity){
+    public boolean addItem(String itemId, Long restaurantId, int quantity) {
         if (!paid && Objects.equals(restaurantId, this.restaurantId)) {
             CartItem item = items.get(itemId);
             if (item != null)
