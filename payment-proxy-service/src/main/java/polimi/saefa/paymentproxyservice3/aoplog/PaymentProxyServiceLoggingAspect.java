@@ -1,4 +1,4 @@
-package polimi.saefa.paymentproxyservice.aoplog;
+package polimi.saefa.paymentproxyservice3.aoplog;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -13,10 +13,10 @@ import java.util.Arrays;
 public class PaymentProxyServiceLoggingAspect {
 
     /* Pointcut per il servizio dei ristoranti */
-    @Pointcut("execution(public * polimi.saefa.paymentproxyservice.domain.PaymentProxyService.*(..))")
+    @Pointcut("execution(public * polimi.saefa.paymentproxyservice3.domain.PaymentProxyService.*(..))")
     public void paymentProxyServiceMethods() {}
 
-    @Pointcut("execution(public void polimi.saefa.paymentproxyservice.domain.PaymentProxyService.*(..))")
+    @Pointcut("execution(public void polimi.saefa.paymentproxyservice3.domain.PaymentProxyService.*(..))")
     public void paymentProxyServiceVoidMethods() {}
 
 	/* metodi di log */ 
@@ -24,28 +24,28 @@ public class PaymentProxyServiceLoggingAspect {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("CALL PaymentProxyService.{} {}", methodName, args);
+        log.info("CALL PaymentProxyService from proxy 3.{} {}", methodName, args);
     }
 
     private void logTermination(JoinPoint joinPoint, Object retValue) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     PaymentProxyService.{} {} -> {}", methodName, args, retValue.toString());
+        log.info("     PaymentProxyService from proxy 3.{} {} -> {}", methodName, args, retValue.toString());
     }
 
     private void logVoidTermination(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     PaymentProxyService.{} {} -> RETURN", methodName, args);
+        log.info("     PaymentProxyService from proxy 3.{} {} -> RETURN", methodName, args);
     }
 
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     ERROR IN PaymentProxyService.{} {} -> {}", methodName, args, exception.toString());
+        log.info("     ERROR IN PaymentProxyService from proxy 3.{} {} -> {}", methodName, args, exception.toString());
     }
 
     /* Eseguito prima dell'esecuzione del metodo */

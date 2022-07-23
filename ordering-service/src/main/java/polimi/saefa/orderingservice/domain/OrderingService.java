@@ -42,7 +42,7 @@ public class OrderingService {
 		return false;
 	}
 
-	public boolean processPayment(Long cartId, PaymentInfo paymentInfo){
+	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		return cart.isPresent();
 	}

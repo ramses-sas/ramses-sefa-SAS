@@ -23,7 +23,7 @@ public class PaymentInfo {
             throw new PaymentDetailsNotValidException("Card number not valid");
         if (!r.matcher(cardNumber).find() || cvv.length()!=3)
             throw new PaymentDetailsNotValidException("CVV not valid");
-        if(expMonth<0 || expMonth>12 || expYear< Calendar.getInstance().get(Calendar.YEAR) ||
+        if (expMonth<0 || expMonth>12 || expYear< Calendar.getInstance().get(Calendar.YEAR) ||
                 (expYear == Calendar.getInstance().get(Calendar.YEAR) && expMonth<Calendar.getInstance().get(Calendar.MONTH)))
             throw new PaymentDetailsNotValidException("Card expiration not valid");
 
@@ -33,7 +33,7 @@ public class PaymentInfo {
         this.cvv = cvv;
     }
 
-    public static class PaymentDetailsNotValidException extends Exception{
+    public static class PaymentDetailsNotValidException extends Exception {
         public PaymentDetailsNotValidException(String message) {
             super(message);
         }
