@@ -22,28 +22,24 @@ public class PaymentProxyServiceLoggingAspect {
 	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("CALL PaymentProxyService from proxy 1.{} {}", methodName, args);
     }
 
     private void logTermination(JoinPoint joinPoint, Object retValue) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     PaymentProxyService from proxy 1.{} {} -> {}", methodName, args, retValue.toString());
     }
 
     private void logVoidTermination(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     PaymentProxyService from proxy 1.{} {} -> RETURN", methodName, args);
     }
 
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     ERROR IN PaymentProxyService from proxy 1.{} {} -> {}", methodName, args, exception.toString());
     }

@@ -2,12 +2,10 @@ package polimi.saefa.paymentproxy2service.domain;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import polimi.saefa.paymentproxy2service.externalinterface.PaymentRequest;
 
 @Service
-@Transactional
 public class PaymentProxyService {
 	@Value("${payment.service2.uri}")
 	private String paymentServiceUri;

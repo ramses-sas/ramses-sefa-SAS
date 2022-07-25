@@ -39,7 +39,6 @@ public class CustomerRestController {
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurant " + restaurantId); 
 		Restaurant restaurant = restaurantService.getRestaurant(restaurantId);
-		//restaurant.setName(orderingService.dummyMethod("TESTINJECTION"));
 		return restaurantToGetRestaurantResponse(restaurant);
 	}
 	

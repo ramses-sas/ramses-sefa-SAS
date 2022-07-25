@@ -22,28 +22,24 @@ public class OrderingServiceLoggingAspect {
 	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("CALL OrderingService.{} {}", methodName, args);
     }
 
     private void logTermination(JoinPoint joinPoint, Object retValue) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     OrderingService.{} {} -> {}", methodName, args, retValue.toString());
     }
 
     private void logVoidTermination(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     OrderingService.{} {} -> RETURN", methodName, args);
     }
 
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
-//        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
         log.info("     ERROR IN OrderingService.{} {} -> {}", methodName, args, exception.toString());
     }
