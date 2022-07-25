@@ -4,7 +4,7 @@ buildscript {
 		springDependencyManagementVersion = '1.0.11.RELEASE'
 		lombokVersion = '1.18.22'
 		springdocVersion = '1.6.6'
-		set('springCloudVersion', "2021.0.3")
+		springCloudVersion = '2021.0.3'
 	}
 	repositories {
 		mavenCentral()

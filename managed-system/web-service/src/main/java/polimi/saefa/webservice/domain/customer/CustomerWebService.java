@@ -5,21 +5,17 @@ import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import polimi.saefa.restaurantservice.restapi.common.*;
 import polimi.saefa.orderingservice.restapi.*;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 
 @Service
-@Transactional
 public class CustomerWebService {
 	private final Logger logger = Logger.getLogger(CustomerWebService.class.toString());
 	@Autowired

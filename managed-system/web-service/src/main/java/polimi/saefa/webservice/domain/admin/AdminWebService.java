@@ -6,7 +6,6 @@ import com.netflix.discovery.EurekaClient;
 import java.util.*;
 import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +23,6 @@ import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;
 import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
 
 @Service
-@Transactional
 public class AdminWebService {
 	private final Logger logger = Logger.getLogger(AdminWebService.class.toString());
 	@Autowired
