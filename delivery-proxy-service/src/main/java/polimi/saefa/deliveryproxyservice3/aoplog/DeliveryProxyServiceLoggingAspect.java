@@ -1,4 +1,4 @@
-package polimi.saefa.deliveryproxyservice.aoplog;
+package polimi.saefa.deliveryproxyservice3.aoplog;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -13,10 +13,10 @@ import java.util.Arrays;
 public class DeliveryProxyServiceLoggingAspect {
 
     /* Pointcut per il servizio dei ristoranti */
-    @Pointcut("execution(public * polimi.saefa.deliveryproxyservice.domain.DeliveryProxyService.*(..))")
+    @Pointcut("execution(public * polimi.saefa.deliveryproxyservice3.domain.DeliveryProxyService.*(..))")
     public void deliveryProxyServiceMethods() {}
 
-    @Pointcut("execution(public void polimi.saefa.deliveryproxyservice.domain.DeliveryProxyService.*(..))")
+    @Pointcut("execution(public void polimi.saefa.deliveryproxyservice3.domain.DeliveryProxyService.*(..))")
     public void deliveryProxyServiceVoidMethods() {}
 
 	/* metodi di log */ 
@@ -24,28 +24,28 @@ public class DeliveryProxyServiceLoggingAspect {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("CALL DeliveryProxyService.{} {}", methodName, args);
+        log.info("CALL DeliveryProxyService from proxy 3.{} {}", methodName, args);
     }
 
     private void logTermination(JoinPoint joinPoint, Object retValue) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     DeliveryProxyService.{} {} -> {}", methodName, args, retValue.toString());
+        log.info("     DeliveryProxyService from proxy 3.{} {} -> {}", methodName, args, retValue.toString());
     }
 
     private void logVoidTermination(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     DeliveryProxyService.{} {} -> RETURN", methodName, args);
+        log.info("     DeliveryProxyService from proxy 3.{} {} -> RETURN", methodName, args);
     }
 
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
 //        final String methodName = joinPoint.getSignature().toShortString().replace("(..)", "()");
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     ERROR IN DeliveryProxyService.{} {} -> {}", methodName, args, exception.toString());
+        log.info("     ERROR IN DeliveryProxyService from proxy 3.{} {} -> {}", methodName, args, exception.toString());
     }
 
     /* Eseguito prima dell'esecuzione del metodo */

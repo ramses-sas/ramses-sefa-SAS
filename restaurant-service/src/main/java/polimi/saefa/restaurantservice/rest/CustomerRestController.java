@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.adapters;
+package polimi.saefa.restaurantservice.rest;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;

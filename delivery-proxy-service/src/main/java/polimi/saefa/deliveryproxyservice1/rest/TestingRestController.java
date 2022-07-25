@@ -1,4 +1,4 @@
-package polimi.saefa.deliveryproxyservice.rest;
+package polimi.saefa.deliveryproxyservice1.rest;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestingRestController {
 
     @GetMapping("/{echovar}")
-    public String getRestaurant(@PathVariable String echovar) {
+    public String dummy(@PathVariable String echovar) {
         return echovar;
     }
 }

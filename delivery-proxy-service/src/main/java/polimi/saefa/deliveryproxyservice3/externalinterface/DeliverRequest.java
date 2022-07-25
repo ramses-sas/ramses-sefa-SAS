@@ -1,4 +1,4 @@
-package polimi.saefa.orderingservice.domain;
+package polimi.saefa.deliveryproxyservice3.externalinterface;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeliveryInfo {
+public class DeliverRequest {
     private String address;
     private String city;
     private int number;
@@ -17,3 +17,4 @@ public class DeliveryInfo {
     private String telephoneNumber;
     private Date scheduledTime;
 }
+

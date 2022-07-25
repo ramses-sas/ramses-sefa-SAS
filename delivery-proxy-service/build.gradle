@@ -7,8 +7,9 @@ group 'polimi.saefa'
 version 'latest'
 
 tasks.named('jar') {
+    // Uses the proxy 1 as default build target
     manifest {
-        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version)
+        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version, 'StartClass': 'polimi.saefa.deliveryproxyservice1.DeliveryProxyServiceApplication')
     }
 }
 
@@ -18,11 +19,15 @@ dependencyManagement {
     }
 }
 
+
+
 ext {
     set('springCloudVersion', "2021.0.3")
 }
 
 dependencies {
+    implementation project(":services-restapi")
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

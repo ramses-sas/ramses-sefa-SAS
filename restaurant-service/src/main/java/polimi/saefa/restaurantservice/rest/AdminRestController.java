@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.adapters;
+package polimi.saefa.restaurantservice.rest;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
