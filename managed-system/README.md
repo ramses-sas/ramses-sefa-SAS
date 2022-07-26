@@ -3,7 +3,7 @@ MSc final thesis project by Vincenzo Riccio and Giancarlo Sorrentino.
 
 ## Project architecture and structure
 
-![Component Diagram](./documents/Component%20Diagram.png)
+![Component Diagram](../documents/Component%20Diagram.png)
 
 The project is made of multiple microservices, which can be found in the directories named _***-service**_.
 
@@ -12,8 +12,8 @@ The project is made of multiple microservices, which can be found in the directo
 3. `web-service` - the **Web Service** is the microservice acting as web frontend for the project.
 4. `restaurant-service` - the **Restaurant Service** is the microservice used to search for restaurants and their menu, and to send each order to the respective restaurant.
 5. `ordering-service` - the **Ordering Service** is the service used to create and process the order made from a user.
-6. `delivery-proxy-service` - the **Delivery Proxy** is the service acting as a bridge to the 3rd party service used for the delivery of the orders, according to the _proxy_ design pattern.
-7. `payment-proxy-service` - the **Payment Proxy** is the service acting as a bridge to the 3rd party service used to process the payment of the orders, according to the _proxy_ design pattern.
+6. `delivery-proxy-X-service` - the **Delivery Proxy** is the service acting as a bridge to the 3rd party service used for the delivery of the orders, according to the _proxy_ design pattern. There is one delivery proxy per 3rd party delivery service.
+7. `payment-proxy-X-service` - the **Payment Proxy** is the service acting as a bridge to the 3rd party service used to process the payment of the orders, according to the _proxy_ design pattern. There is one payment proxy per 3rd party payment service.
 
 Furthermore, there are additional directories containing utilities for the execution:
 
@@ -47,7 +47,7 @@ To look at the configuration options of the scripts, run them with the `-h` opti
 
 To execute all the microservices locally, run the `dockerRunAll.sh` bash script in the project root folder. If no option is specified, it uses the default Eureka Service made public for this project. Otherwise, run it with the `-e` option to run also the Eureka Service locally. 
 
-### Simple execution flow - default Eureka Service
+### Simple execution flow – default Eureka Service
 It requires that the machines hosting the microservices are publicly accessible from the Internet at the respective microservices ports. Hence, you may need to enable port forwarding on the gateway. **DO NOT USE THIS METHOD IF CONDITIONS ARE NOT MET.**
 
 1. Clone this GitHub repository
@@ -57,7 +57,7 @@ It requires that the machines hosting the microservices are publicly accessible 
 5. The API Gateway (i.e., the REST API exposed by all the services) can be reached at `localhost:58081`.
 
 
-### Simple execution flow (services running locally)
+### Simple execution flow – services running locally
 Useful for testing all on the same machine.
 1. Clone this GitHub repository
 2. Navigate to the project root directory
@@ -67,14 +67,38 @@ Useful for testing all on the same machine.
 
 
 ## Default deployment settings
-1. the **Web Service** is run by default on port 58080.
-2. the **API Gateway Service** is run by default on port 58081.
-3. the **Eureka Registry Service** is run by default on port 58082. This is the only service requiring a fixed IP address that the other microservices must know. That address, together with its port, must be specified as value of the key `EUREKA_IP_PORT` in the `application.properties` file of each microservice or set as an environmental variable (as before, with name `EUREKA_IP_PORT`).
-4. the **Restaurant Service** is run by default on port 58085.
-5. the **Ordering Service** is run by default on port 58086.
-6. the **Payment Proxy** is run by default on port 58087.
-7. the **Delivery Proxy** is run by default on port 58088.
+The **Eureka Registry Service** is the only service requiring a fixed IP address that the other microservices must know. That address, together with its port, must be specified as value of the key `EUREKA_IP_PORT` in the `application.properties` file of each microservice or set as an environmental variable (as before, with name `EUREKA_IP_PORT`).
 
+By default, the microservices expose one port, according to the following table:
+
+|      Microservice       |       Port      |
+|     :-------------:     | :-------------: |
+|      Web Service        |      58080      |
+|   API Gateway Service   |      58081      |
+| Eureka Registry Service |      58082      |
+|                         |                 |
+|    Restaurant Service   |      58085      |
+|     Ordering Service    |      58086      |
+|                         |                 |
+|     Payment Proxy 1     |      58090      |
+|     Payment Proxy 2     |      58091      |
+|     Payment Proxy 3     |      58092      |
+|                         |                 |
+|     Delivery Proxy 1    |      58095      |
+|     Delivery Proxy 2    |      58096      |
+|     Delivery Proxy 3    |      58097      |
+
+The simulated third-party services are available at the following URLs:
+
+|         Service         |         URL        |
+|     :-------------:     |  :--------------:  |
+|    Payment Service 1    | 52.208.38.53:48090 |
+|    Payment Service 2    | 52.208.38.53:48091 |
+|    Payment Service 3    | 52.208.38.53:48092 |
+|                         |                    |
+|    Delivery Service 1   | 52.208.38.53:48095 |
+|    Delivery Service 2   | 52.208.38.53:48096 |
+|    Delivery Service 3   | 52.208.38.53:48097 |
 
 ## REST API Documentation
-Once the project is up and running, the REST API documentation of each microservice is available under `/api.html` of the microservice URL .
+Once the project is up and running, the REST API documentation of each microservice is available under `/api.html` of the microservice URL.
