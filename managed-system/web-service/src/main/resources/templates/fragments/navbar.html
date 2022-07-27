@@ -1,0 +1,19 @@
+<th:block th:fragment="navbar(selection,cartId)">
+    <nav id="siteNav" class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Logo and responsive toggle -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">SAEFA</a>
+                <a class="navbar-brand" href="/customer/">Customer App</a>
+            </div>
+            <!-- Navbar links -->
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li th:class="${selection==1} ? 'active' : 'inactive'"><a href="/customer">Home</a></li>
+                    <li th:class="${selection==2} ? 'active' : 'inactive'"><a href="/customer/restaurants">Restaurants</a></li>
+                    <li th:if="${cartId!=null}" th:class="${selection==3} ? 'active' : 'inactive'"><a th:href="@{'/customer/cart/'+${cartId}}">Cart</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container -->
+    </nav>
+</th:block>
