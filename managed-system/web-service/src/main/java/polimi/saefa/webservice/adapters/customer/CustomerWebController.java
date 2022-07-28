@@ -14,7 +14,6 @@ import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
 import polimi.saefa.webservice.domain.customer.CustomerWebService;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
@@ -47,9 +46,9 @@ public class CustomerWebController {
 		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
-			// TODO! - replace AAAA with call to createCart()
+			// TODO! - replace 11 with call to createCart()
 			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
-			updateCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
+			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
 		GetRestaurantResponse restaurant = customerWebService.getRestaurant(restaurantId);
@@ -63,9 +62,9 @@ public class CustomerWebController {
 		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
-			// TODO! - replace AAAA with call to createCart()
+			// TODO! - replace 11 with call to createCart()
 			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
-			updateCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
+			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
 		GetRestaurantResponse restaurant = customerWebService.getRestaurant(restaurantId);
@@ -96,12 +95,13 @@ public class CustomerWebController {
 	}
 
 	@PostMapping("/cart/{cartId}/confirmOrder")
-	public String confirmOrder(Model model, @PathVariable Long cartId) {
+	public String confirmOrder(HttpServletResponse response, Model model, @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
 		//TODO - Uncomment to use real logic
 		/*CheckoutForm formData = (CheckoutForm) model.getAttribute("formData");
 		customerWebService.confirmOrder(cartId, formData.getCardNumber(), formData.getExpMonth(), formData.getExpYear(),
 				formData.getCvv(), formData.getAddress(), formData.getCity(), formData.getNumber(), formData.getZipcode(),
 				formData.getTelephoneNumber(), formData.getScheduledTime());*/
+		removeFromCookie(response, cartData, cartId.toString());
 		return "customer/order-confirmed";
 	}
 
@@ -126,9 +126,25 @@ public class CustomerWebController {
 		}
 		return null;
 	}
-	private void updateCookie(HttpServletResponse response, String initialCookie, String toAdd) {
+	private void appendToCookie(HttpServletResponse response, String initialCookie, String toAdd) {
 		String updatedCookieValue = initialCookie.equals("") ? toAdd : initialCookie+"_"+toAdd;
 		Cookie cookie = new Cookie("cartData", updatedCookieValue);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60 * 24 * 365);
+		response.addCookie(cookie);
+	}
+
+	private void removeFromCookie(HttpServletResponse response, String initialCookie, String cartToRemove) {
+		StringBuilder updatedCookieValue = new StringBuilder();
+		for (String element : initialCookie.split("_")) {
+			if (!element.contains(cartToRemove)) {
+				updatedCookieValue.append(element).append("_");
+			}
+		}
+		if (!updatedCookieValue.isEmpty() && updatedCookieValue.lastIndexOf("_") == updatedCookieValue.length()-1) {
+			updatedCookieValue.deleteCharAt(updatedCookieValue.length()-1);
+		}
+		Cookie cookie = new Cookie("cartData", updatedCookieValue.toString());
 		cookie.setPath("/");
 		cookie.setMaxAge(60 * 60 * 24 * 365);
 		response.addCookie(cookie);
