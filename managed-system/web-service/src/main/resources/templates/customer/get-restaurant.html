@@ -2,8 +2,7 @@
 <th:block th:include="fragments/head :: head"></th:block>
 <body>
 
-<!-- TODO! navbar(2,1) deve essere sostituito con navbar(2,cartId_dal_cookie) -->
-<th:block th:include="fragments/navbar :: navbar(2,1)"></th:block>
+<th:block th:include="fragments/navbar :: navbar(2,${cartId})"></th:block>
 
 <div class="content">
 	<h3><span th:text="${restaurant.name}">name goes here</span></h3>

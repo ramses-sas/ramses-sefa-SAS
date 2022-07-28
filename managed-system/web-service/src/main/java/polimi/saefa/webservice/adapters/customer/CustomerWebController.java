@@ -1,22 +1,24 @@
 package polimi.saefa.webservice.adapters.customer;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
 import polimi.saefa.orderingservice.restapi.CartItemElementExtended;
-import polimi.saefa.orderingservice.restapi.ConfirmOrderRequest;
-import polimi.saefa.orderingservice.restapi.ConfirmOrderResponse;
 import polimi.saefa.orderingservice.restapi.GetCartResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
 import polimi.saefa.webservice.domain.customer.CustomerWebService;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
+@Slf4j
 @Controller
 @RequestMapping(path="/customer")
 public class CustomerWebController {
@@ -41,7 +43,15 @@ public class CustomerWebController {
 
 	/* Trova il ristorante con restaurantId. */
 	@GetMapping("/restaurants/{restaurantId}")
-	public String getRestaurant(Model model, @PathVariable Long restaurantId) {
+	public String getRestaurant(HttpServletResponse response, Model model, @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long restaurantId) {
+		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
+		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
+		if (cartForRestaurant == null) {
+			// TODO! - replace AAAA with call to createCart()
+			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
+			updateCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
+		}
+		model.addAttribute("cartId", cartForRestaurant.getCartId());
 		GetRestaurantResponse restaurant = customerWebService.getRestaurant(restaurantId);
 		model.addAttribute("restaurant", restaurant);
 		return "customer/get-restaurant";
@@ -49,7 +59,15 @@ public class CustomerWebController {
 
 	/* Trova il menu del ristorante con restaurantId. */
 	@GetMapping("/restaurants/{restaurantId}/menu")
-	public String getRestaurantMenu(Model model, @PathVariable Long restaurantId) {
+	public String getRestaurantMenu(HttpServletResponse response, Model model, @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long restaurantId) {
+		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
+		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
+		if (cartForRestaurant == null) {
+			// TODO! - replace AAAA with call to createCart()
+			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
+			updateCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
+		}
+		model.addAttribute("cartId", cartForRestaurant.getCartId());
 		GetRestaurantResponse restaurant = customerWebService.getRestaurant(restaurantId);
 		GetRestaurantMenuResponse menu = customerWebService.getRestaurantMenu(restaurantId);
 		model.addAttribute("restaurant", restaurant);
@@ -59,13 +77,12 @@ public class CustomerWebController {
 
 	/* Trova il carrello del ristorante con restaurantId dell'utente userId */
 	@GetMapping("/cart/{cartId}")
-	public String getCart(Model model, @PathVariable Long cartId) {
+	public String getCart(Model model, @PathVariable String cartId) {
 		//GetCartResponse cart = customerWebService.getCart(cartId);
 		//TODO - Replace with real logic
 		ArrayList<CartItemElementExtended> aa = new ArrayList<>();
 		aa.add(new CartItemElementExtended("1", "pizza", 10, 1));
-		GetCartResponse cart = new GetCartResponse(1L, 1L, 10.0, aa);
-
+		GetCartResponse cart = new GetCartResponse(Long.parseLong(cartId), 1L, 10.0, aa);
 		model.addAttribute("cart", cart);
 		return "customer/cart";
 	}
@@ -86,6 +103,35 @@ public class CustomerWebController {
 				formData.getCvv(), formData.getAddress(), formData.getCity(), formData.getNumber(), formData.getZipcode(),
 				formData.getTelephoneNumber(), formData.getScheduledTime());*/
 		return "customer/order-confirmed";
+	}
+
+	@Data
+	@AllArgsConstructor
+	private class CookieCartElement {
+		public String restaurantId;
+		public String cartId;
+	}
+
+	private CookieCartElement getCookieCartElement(String cookieValue, Long restaurantId) {
+		String[] elements = cookieValue.split("_");
+		for (String element : elements) {
+			String[] components = element.split(":");
+			if (components.length == 2) {
+				String elemRestaurantId = components[0];
+				String elemCartId = components[1];
+				if (elemRestaurantId.equals(restaurantId.toString())) {
+					return new CookieCartElement(elemRestaurantId, elemCartId);
+				}
+			}
+		}
+		return null;
+	}
+	private void updateCookie(HttpServletResponse response, String initialCookie, String toAdd) {
+		String updatedCookieValue = initialCookie.equals("") ? toAdd : initialCookie+"_"+toAdd;
+		Cookie cookie = new Cookie("cartData", updatedCookieValue);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60 * 24 * 365);
+		response.addCookie(cookie);
 	}
 
 }

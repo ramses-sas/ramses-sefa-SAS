@@ -71,9 +71,9 @@ public class CustomerWebService {
 		return response.getBody();
 	}
 
-	public GetCartResponse getCart(Long cartId) {
+	public GetCartResponse getCart(String cartId) {
 		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
-		String url = osUrl+"getCart/"+cartId.toString();
+		String url = osUrl+"getCart/"+cartId;
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
 		ResponseEntity<GetCartResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetCartResponse.class);
