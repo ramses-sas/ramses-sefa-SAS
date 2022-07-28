@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
+import polimi.saefa.orderingservice.restapi.AddItemToCartResponse;
+import polimi.saefa.orderingservice.restapi.CartItemElement;
 import polimi.saefa.orderingservice.restapi.CartItemElementExtended;
 import polimi.saefa.orderingservice.restapi.GetCartResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
@@ -47,7 +49,7 @@ public class CustomerWebController {
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
 			// TODO! - replace 11 with call to createCart()
-			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
+			cartForRestaurant = new CookieCartElement(restaurantId, 11L);
 			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
@@ -63,7 +65,7 @@ public class CustomerWebController {
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
 			// TODO! - replace 11 with call to createCart()
-			cartForRestaurant = new CookieCartElement(restaurantId.toString(), "11");
+			cartForRestaurant = new CookieCartElement(restaurantId, 11L);
 			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
@@ -74,14 +76,26 @@ public class CustomerWebController {
 		return "customer/get-restaurant-menu";
 	}
 
-	/* Trova il carrello del ristorante con restaurantId dell'utente userId */
+	/* Trova il carrello con id=cartId */
 	@GetMapping("/cart/{cartId}")
-	public String getCart(Model model, @PathVariable String cartId) {
+	public String getCart(Model model, @PathVariable Long cartId) {
 		//GetCartResponse cart = customerWebService.getCart(cartId);
 		//TODO - Replace with real logic
 		ArrayList<CartItemElementExtended> aa = new ArrayList<>();
 		aa.add(new CartItemElementExtended("1", "pizza", 10, 1));
-		GetCartResponse cart = new GetCartResponse(Long.parseLong(cartId), 1L, 10.0, aa);
+		GetCartResponse cart = new GetCartResponse(cartId, 1L, 10.0, aa);
+		model.addAttribute("cart", cart);
+		return "customer/cart";
+	}
+
+	/* Trova il carrello con id=cartId */
+	@PostMapping("/cart/{cartId}/addItem")
+	public String addItemToCart(Model model, @PathVariable Long cartId, @RequestParam Long restaurantId, @RequestParam String itemId) {
+		//AddItemToCartResponse cart = customerWebService.addItemToCart(cartId, restaurantId, itemId, 1);
+		//TODO - Replace with real logic
+		ArrayList<CartItemElementExtended> aa = new ArrayList<>();
+		aa.add(new CartItemElementExtended(restaurantId.toString(), itemId, 10, 1));
+		GetCartResponse cart = new GetCartResponse(cartId, restaurantId, 10.0, aa);
 		model.addAttribute("cart", cart);
 		return "customer/cart";
 	}
@@ -105,11 +119,14 @@ public class CustomerWebController {
 		return "customer/order-confirmed";
 	}
 
+
+
+
 	@Data
 	@AllArgsConstructor
 	private class CookieCartElement {
-		public String restaurantId;
-		public String cartId;
+		public Long restaurantId;
+		public Long cartId;
 	}
 
 	private CookieCartElement getCookieCartElement(String cookieValue, Long restaurantId) {
@@ -117,9 +134,9 @@ public class CustomerWebController {
 		for (String element : elements) {
 			String[] components = element.split(":");
 			if (components.length == 2) {
-				String elemRestaurantId = components[0];
-				String elemCartId = components[1];
-				if (elemRestaurantId.equals(restaurantId.toString())) {
+				Long elemRestaurantId = Long.parseLong(components[0]);
+				Long elemCartId = Long.parseLong(components[1]);
+				if (elemRestaurantId.equals(restaurantId)) {
 					return new CookieCartElement(elemRestaurantId, elemCartId);
 				}
 			}
