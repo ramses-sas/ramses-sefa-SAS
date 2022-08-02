@@ -7,9 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
-import polimi.saefa.orderingservice.restapi.AddItemToCartResponse;
 import polimi.saefa.orderingservice.restapi.CartItemElement;
-import polimi.saefa.orderingservice.restapi.CartItemElementExtended;
+import polimi.saefa.orderingservice.restapi.CreateCartResponse;
 import polimi.saefa.orderingservice.restapi.GetCartResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
 import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
@@ -48,8 +47,8 @@ public class CustomerWebController {
 		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
-			// TODO! - replace 11 with call to createCart()
-			cartForRestaurant = new CookieCartElement(restaurantId, 11L);
+			CreateCartResponse cartResponse = customerWebService.createCart(restaurantId);
+			cartForRestaurant = new CookieCartElement(restaurantId, cartResponse.getId());
 			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
@@ -64,8 +63,8 @@ public class CustomerWebController {
 		// ["restaurantId:cartId"_"restaurantId:cartId"_ ...]
 		CookieCartElement cartForRestaurant = getCookieCartElement(cartData, restaurantId);
 		if (cartForRestaurant == null) {
-			// TODO! - replace 11 with call to createCart()
-			cartForRestaurant = new CookieCartElement(restaurantId, 11L);
+			CreateCartResponse cartResponse = customerWebService.createCart(restaurantId);
+			cartForRestaurant = new CookieCartElement(restaurantId, cartResponse.getId());
 			appendToCookie(response, cartData, cartForRestaurant.getRestaurantId()+":"+cartForRestaurant.getCartId());
 		}
 		model.addAttribute("cartId", cartForRestaurant.getCartId());
@@ -81,8 +80,8 @@ public class CustomerWebController {
 	public String getCart(Model model, @PathVariable Long cartId) {
 		//GetCartResponse cart = customerWebService.getCart(cartId);
 		//TODO - Replace with real logic
-		ArrayList<CartItemElementExtended> aa = new ArrayList<>();
-		aa.add(new CartItemElementExtended("1", "pizza", 10, 1));
+		ArrayList<CartItemElement> aa = new ArrayList<>();
+		aa.add(new CartItemElement("1", "pizza", 10, 1));
 		GetCartResponse cart = new GetCartResponse(cartId, 1L, 10.0, aa);
 		model.addAttribute("cart", cart);
 		return "customer/cart";
@@ -93,8 +92,8 @@ public class CustomerWebController {
 	public String addItemToCart(Model model, @PathVariable Long cartId, @RequestParam Long restaurantId, @RequestParam String itemId) {
 		//AddItemToCartResponse cart = customerWebService.addItemToCart(cartId, restaurantId, itemId, 1);
 		//TODO - Replace with real logic
-		ArrayList<CartItemElementExtended> aa = new ArrayList<>();
-		aa.add(new CartItemElementExtended(restaurantId.toString(), itemId, 10, 1));
+		ArrayList<CartItemElement> aa = new ArrayList<>();
+		aa.add(new CartItemElement(restaurantId.toString(), itemId, 10, 1));
 		GetCartResponse cart = new GetCartResponse(cartId, restaurantId, 10.0, aa);
 		model.addAttribute("cart", cart);
 		return "customer/cart";

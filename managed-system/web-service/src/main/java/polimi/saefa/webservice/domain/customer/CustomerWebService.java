@@ -25,8 +25,14 @@ public class CustomerWebService {
 		return instance.getHomePageUrl()+serviceName+"/";
 	}
 
+	//TODO NON è CORETENTE CON L'ARCHITETTURA, NON DOVREBBE CONTATTARE EUREKA MA SOLO IL GATEWAY
+	private String getApiGatewayUrl() {
+		InstanceInfo instance = discoveryClient.getNextServerFromEureka("API-GATEWAY-SERVICE", false);
+		return instance.getHomePageUrl();
+	}
+
 	public Collection<GetRestaurantResponse> getAllRestaurants() {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/customer/";
+		String rsUrl = getApiGatewayUrl()+"/customer/";
 		logger.warning("GET "+rsUrl);
 		String url = rsUrl+"restaurants";
 		RestTemplate restTemplate = new RestTemplate();
@@ -35,7 +41,7 @@ public class CustomerWebService {
 	}
 
 	public GetRestaurantResponse getRestaurant(Long id) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/customer/";
+		String rsUrl = getApiGatewayUrl()+"/customer/";
 		String url = rsUrl+"restaurants/"+id.toString();
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<GetRestaurantResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetRestaurantResponse.class);
@@ -43,7 +49,7 @@ public class CustomerWebService {
 	}
 
 	public GetRestaurantMenuResponse getRestaurantMenu(Long id) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/customer/";
+		String rsUrl = getApiGatewayUrl()+"/customer/";
 		String url = rsUrl+"restaurants/"+id.toString()+"/menu";
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<GetRestaurantMenuResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetRestaurantMenuResponse.class);
@@ -51,8 +57,17 @@ public class CustomerWebService {
 	}
 
 
+	public CreateCartResponse createCart(Long restaurantId) {
+		String rsUrl = getApiGatewayUrl()+"/cart/";
+		String url = rsUrl+"createCart";
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<CreateCartResponse> response = restTemplate.postForEntity(url, new CreateCartRequest(restaurantId), CreateCartResponse.class);
+		return response.getBody();
+	}
+
+
 	public AddItemToCartResponse addItemToCart(Long cartId, Long restaurantId, String itemId, int quantity) {
-		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
+		String osUrl = getApiGatewayUrl()+"cart/";
 		String url = osUrl+"addItem/";
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
@@ -62,7 +77,7 @@ public class CustomerWebService {
 	}
 
 	public RemoveItemFromCartResponse removeItemFromCart(Long cartId, Long restaurantId, String itemId, int quantity) {
-		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
+		String osUrl = getApiGatewayUrl()+"cart/";
 		String url = osUrl+"removeItem/";
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
@@ -72,7 +87,7 @@ public class CustomerWebService {
 	}
 
 	public GetCartResponse getCart(String cartId) {
-		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
+		String osUrl = getApiGatewayUrl()+"cart/";
 		String url = osUrl+"getCart/"+cartId;
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
@@ -93,7 +108,7 @@ public class CustomerWebService {
 		String telephoneNumber,
 		Date scheduledTime
 	) {
-		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
+		String osUrl = getApiGatewayUrl()+"cart/";
 		String url = osUrl+"confirmOrder/";
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO

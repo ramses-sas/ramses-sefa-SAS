@@ -11,4 +11,8 @@ public class CartItemElement {
     private String name;
     private double price;
     private int quantity;
+
+    public double getTotalPrice() {
+        return price * quantity;
+    }
 }

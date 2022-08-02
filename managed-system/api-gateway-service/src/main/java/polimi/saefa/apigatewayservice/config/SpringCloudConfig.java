@@ -16,7 +16,7 @@ public class SpringCloudConfig {
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
         String restaurantServiceUrl = "lb://RESTAURANT-SERVICE";
-        String webServiceUrl = "lb://WEB-SERVICE";
+        String orderingServiceUrl = "lb://ORDERING-SERVICE";
         return builder.routes()
                 .route(r -> r.path("/customer/**")
                         .filters(f -> f.prefixPath("/rest"))
@@ -27,6 +27,9 @@ public class SpringCloudConfig {
                 .route(r -> r.path("/test/**")
                         .filters(f -> f.prefixPath("/rest"))
                         .uri(restaurantServiceUrl))
+                .route(r -> r.path("/cart/**")
+                        .filters(f -> f.rewritePath("/cart", "/rest"))
+                        .uri(orderingServiceUrl))
                 .build();
     }
 
