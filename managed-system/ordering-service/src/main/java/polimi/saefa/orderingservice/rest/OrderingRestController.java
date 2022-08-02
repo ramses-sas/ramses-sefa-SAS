@@ -1,6 +1,5 @@
 package polimi.saefa.orderingservice.rest;
 
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import polimi.saefa.orderingservice.domain.*;
@@ -19,6 +18,11 @@ public class OrderingRestController {
 	
     private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
 
+	@PostMapping(path="createCart")
+	public CreateCartResponse createCart(@RequestBody CreateCartRequest request) {
+		Cart cart = orderingService.createCart(request.getRestaurantId());
+		return new CreateCartResponse(cart.getId(), cart.getRestaurantId());
+	}
 	@PostMapping(path = "addItem")
 	public AddItemToCartResponse addItemToCart(@RequestBody AddItemToCartRequest request){
 
@@ -26,55 +30,55 @@ public class OrderingRestController {
 
 		Cart cart = orderingService.addItemToCart(request.getCartId(), request.getRestaurantId(), request.getItemId(), request.getQuantity());
 
-		orderingService.updateCartPrice(cart);
 		List<CartItemElement> cartItemElements =
 				cart.getItemList()
 						.stream()
-						.map(this::cartItemToCartItemElement)
-						.collect(Collectors.toList());
+						.map(this::cartItemToCartItemElement).toList();
 		return new AddItemToCartResponse(cart.getId(), cart.getRestaurantId(), cart.getTotalPrice(), cartItemElements);
-
 	}
 
 	@PostMapping(path = "removeItem")
-	public RemoveItemFromCartResponse removeItemFromCart(@RequestBody RemoveItemFromCartRequest request){
+	public RemoveItemFromCartResponse removeItemFromCart(@RequestBody RemoveItemFromCartRequest request) {
 
 		logger.info("REST CALL: removeItem to cart " + request.getCartId() + " for restaurant " + request.getRestaurantId() + " item " + request.getItemId() + " * " + request.getItemId());
 
 		Cart cart = orderingService.removeItemFromCart(request.getCartId(), request.getRestaurantId(), request.getItemId(), request.getQuantity());
 
-		orderingService.updateCartPrice(cart);
-			List<CartItemElement> cartItemElements =
-					cart.getItemList()
-							.stream()
-							.map(this::cartItemToCartItemElement)
-							.collect(Collectors.toList());
+		List<CartItemElement> cartItemElements =
+				cart.getItemList()
+						.stream()
+						.map(this::cartItemToCartItemElement)
+						.collect(Collectors.toList());
 		return new RemoveItemFromCartResponse(cart.getId(), cart.getRestaurantId(), cart.getTotalPrice(), cartItemElements);
-
 	}
 
 	@PostMapping(path = "confirmOrder")
 	public ConfirmOrderResponse confirmOrder(@RequestBody ConfirmOrderRequest request){
 		logger.info("REST CALL: confirmOrder to cart " + request.getCartId());
 
-		PaymentInfo paymentInfo;
-		try {
-			paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
-		} catch (PaymentInfo.PaymentDetailsNotValidException e) {
-			return new ConfirmOrderResponse();
-		}
+		PaymentInfo paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
+
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
 
 		if (orderingService.processPayment(request.getCartId(), paymentInfo))
 			if (orderingService.processDelivery(request.getCartId(), deliveryInfo))
-				orderingService.notifyRestaurant(request.getCartId());
-
-		return new ConfirmOrderResponse();
+					return new ConfirmOrderResponse(orderingService.notifyRestaurant(request.getCartId()));
+		//TODO CAPIRE SE USARE ECCEZIONI QUI
+		return new ConfirmOrderResponse(false);
 	}
 
-	//TODO implement getCart
+	@GetMapping (path = "getCart")
+	public GetCartResponse getCart(@RequestBody GetCartRequest request){
+		logger.info("REST CALL: getCart for cart " + request.getCartId());
+		Cart cart = orderingService.getCart(request.getCartId());
+		List<CartItemElement> cartItemElements =
+				cart.getItemList()
+						.stream()
+						.map(this::cartItemToCartItemElement).toList();
+	return new GetCartResponse(cart.getId(), cart.getRestaurantId(), cart.getTotalPrice(), cartItemElements);
+	}
 
 	private CartItemElement cartItemToCartItemElement(CartItem item) {
-		return new CartItemElement(item.getId(), item.getQuantity());
+		return new CartItemElement(item.getId(), item.getName(), item.getPrice(), item.getQuantity());
 	}
 }

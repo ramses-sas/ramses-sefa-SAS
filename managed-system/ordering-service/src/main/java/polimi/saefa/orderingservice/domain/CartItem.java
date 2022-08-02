@@ -11,7 +11,10 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class CartItem {
     private String id;
+    private String name;
     private int quantity;
+    private double price;
+    
 
     public CartItem(String id, int quantity) {
         this.id = id;

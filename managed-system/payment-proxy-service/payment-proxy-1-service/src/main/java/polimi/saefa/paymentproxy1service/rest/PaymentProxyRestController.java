@@ -22,8 +22,7 @@ public class PaymentProxyRestController {
 	@PostMapping(path = "processPayment")
 	public ProcessPaymentResponse processPayment(@RequestBody ProcessPaymentRequest request) {
 		logger.info("REST CALL: processPayment from proxy 1 with card " + request.getCardNumber());
-		paymentProxyService.processPayment(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv(), request.getAmount());
-		return new ProcessPaymentResponse();
+		return new ProcessPaymentResponse(paymentProxyService.processPayment(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv(), request.getAmount()));
 	}
 
 

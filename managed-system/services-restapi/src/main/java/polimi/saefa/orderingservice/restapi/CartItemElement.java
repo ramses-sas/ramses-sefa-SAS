@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CartItemElement {
     private String id;
+    private String name;
+    private double price;
     private int quantity;
 }

@@ -2,6 +2,7 @@ package polimi.saefa.orderingservice.domain;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import polimi.saefa.orderingservice.exceptions.CartRestaurantMismatchException;
 
 import javax.persistence.*;
 
@@ -34,29 +35,32 @@ public class Cart {
     }
 
     public boolean addItem(String itemId, Long restaurantId, int quantity) {
-        if (!paid && Objects.equals(restaurantId, this.restaurantId)) {
-            CartItem item = items.get(itemId);
-            if (item != null)
-                item.addQuantity(quantity);
-            else
-                items.put(itemId, new CartItem(itemId, quantity));
-            return true;
-        }
+        if (!paid)
+            if(Objects.equals(restaurantId, this.restaurantId)) {
+                CartItem item = items.get(itemId);
+                if (item != null)
+                    item.addQuantity(quantity);
+                else
+                    items.put(itemId, new CartItem(itemId, quantity));
+                return true;
+            }
+        else throw new CartRestaurantMismatchException("The item specified belongs to a different restaurant");
         return false;
     }
 
     public boolean removeItem(String itemId, Long restaurantId, int quantity){
-        if(!paid && Objects.equals(restaurantId, this.restaurantId)){
-            CartItem item = items.get(itemId);
-            if(item != null)
-                if (item.getQuantity() == quantity)
-                    items.remove(itemId);
+        if(!paid)
+            if(Objects.equals(restaurantId, this.restaurantId)) {
+                CartItem item = items.get(itemId);
+                if (item != null)
+                    if (item.getQuantity() == quantity)
+                        items.remove(itemId);
+                    else
+                        item.removeQuantity(quantity);
                 else
-                    item.removeQuantity(quantity);
-            else
-                return false;
-            return true;
-        }
+                    return false;
+                return true;
+            } else throw new CartRestaurantMismatchException("The item specified belongs to a different restaurant");
         return false;
     }
 

@@ -23,8 +23,8 @@ public class DeliveryProxyRestController {
 	@PostMapping(path = "deliverOrder")
 	public DeliverOrderResponse deliverOrder(@RequestBody DeliverOrderRequest request) {
 		logger.info("REST CALL: deliverOrder from proxy 3 to " + request.getAddress());
-		deliveryProxyService.deliverOrder(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
-		return new DeliverOrderResponse();
+		return  new DeliverOrderResponse(deliveryProxyService.deliverOrder(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime()));
+
 	}
 
 }
