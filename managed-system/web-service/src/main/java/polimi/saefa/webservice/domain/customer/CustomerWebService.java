@@ -5,7 +5,6 @@ import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import polimi.saefa.restaurantservice.restapi.common.*;
 import polimi.saefa.orderingservice.restapi.*;
@@ -72,16 +71,14 @@ public class CustomerWebService {
 		return response.getBody();
 	}
 
-	public GetCartResponse getCart(Long cartId) {
+	public GetCartResponse getCart(String cartId) {
 		String osUrl = getServiceUrl("ORDERING-SERVICE")+"rest/";
-		String url = osUrl+"getCart/"+cartId.toString();
+		String url = osUrl+"getCart/"+cartId;
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
 		ResponseEntity<GetCartResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetCartResponse.class);
 		return response.getBody();
 	}
-
-	//TODO implement getCart
 
 	public ConfirmOrderResponse confirmOrder(
 		Long cartId,

@@ -1,0 +1,62 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+<th:block th:include="fragments/navbar :: navbar(3,${cartId})"></th:block>
+<!-- Start of content -->
+
+
+<div class="content">
+    <h3>Fill the form below with your payment and delivery details</h3>
+    <form th:action="@{'/customer/cart/'+${cartId}+'/confirmOrder'}" method="POST">
+        <div>
+            <label>Card Number</label>
+            <input type="text" th:field="${formData.cardNumber}" required>
+        </div>
+        <div>
+            <label>Exp Month</label>
+            <input type="text" th:field="${formData.expMonth}" required>
+        </div>
+        <div>
+            <label>Exp Year</label>
+            <input type="text" th:field="${formData.expYear}" required>
+        </div>
+        <div>
+            <label>CVV</label>
+            <input type="text" th:field="${formData.cvv}" required>
+        </div>
+        <div>
+            <label>Delivery Address</label>
+            <input type="text" th:field="${formData.address}" required>
+        </div>
+        <div>
+            <label>Delivery Street Number</label>
+            <input type="text" th:field="${formData.number}" required>
+        </div>
+        <div>
+            <label>Delivery Postal Code</label>
+            <input type="text" th:field="${formData.zipcode}" required>
+        </div>
+        <div>
+            <label>Delivery City</label>
+            <input type="text" th:field="${formData.city}" required>
+        </div>
+        <div>
+            <label>Telephone</label>
+            <input type="text" th:field="${formData.telephoneNumber}" required>
+        </div>
+        <div>
+            <label>Delivery Date</label>
+            <input type="datetime-local" th:field="${formData.scheduledTime}" required>
+        </div>
+        <button type="submit">Confirm order</button>
+    </form>
+</div>
+
+
+<!-- End of content -->
+<hr/>
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+</body> 
+</html>

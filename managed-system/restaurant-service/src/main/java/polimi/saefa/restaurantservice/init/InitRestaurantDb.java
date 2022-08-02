@@ -1,5 +1,5 @@
 package polimi.saefa.restaurantservice.init;
-
+/*
 import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,3 +59,4 @@ public class InitRestaurantDb implements CommandLineRunner {
 	}
 	
 }
+*/

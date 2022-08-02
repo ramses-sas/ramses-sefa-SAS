@@ -173,6 +173,7 @@ table * {
 }
 table td, table th {
     padding-left: 8px;
+    vertical-align: center;
 }
 table thead tr {
     height: 46px;
