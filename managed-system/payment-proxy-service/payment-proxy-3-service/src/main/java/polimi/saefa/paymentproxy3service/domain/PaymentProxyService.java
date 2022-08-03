@@ -20,9 +20,8 @@ public class PaymentProxyService {
 	) {
 		String url = paymentServiceUri+"/pay/";
 		RestTemplate restTemplate = new RestTemplate();
-		//TODO
 		ResponseEntity<String> response = restTemplate.postForEntity(url, new PaymentRequest(cardNumber, expMonth, expYear, cvv, amount), String.class);
-		return response.getStatusCode().is2xxSuccessful();	}
-	
+		return response.getStatusCode().is2xxSuccessful();
+	}
 }
 

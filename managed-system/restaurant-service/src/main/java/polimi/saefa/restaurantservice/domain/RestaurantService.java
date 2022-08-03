@@ -10,7 +10,6 @@ import java.util.*;
 @Service
 @Transactional
 public class RestaurantService {
-
 	@Autowired
 	private RestaurantRepository restaurantRepository;
 
@@ -29,7 +28,7 @@ public class RestaurantService {
 
  	public Restaurant createOrUpdateRestaurantMenu(Long id, List<MenuItem> menuItems) {
 		Restaurant restaurant = restaurantRepository.findById(id).orElse(null);
-		if(restaurant==null)
+		if (restaurant==null)
 			throw new RestaurantNotFoundException("Restaurant with id " + id + "not found");
 		RestaurantMenu menu = new RestaurantMenu(menuItems);
 		restaurant.setMenu(menu); 

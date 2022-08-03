@@ -13,13 +13,11 @@ import polimi.saefa.orderingservice.exceptions.PaymentDetailsNotValidException;
 @ControllerAdvice
 public class ApplicationExceptionHandler {
 
-    
     @ExceptionHandler(CartNotFoundException.class)
     @ResponseBody
     public ResponseEntity<String> processException(CartNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
-
 
     @ExceptionHandler(CartRestaurantMismatchException.class)
     @ResponseBody

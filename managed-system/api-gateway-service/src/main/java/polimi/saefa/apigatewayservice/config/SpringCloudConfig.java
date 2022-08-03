@@ -18,6 +18,9 @@ public class SpringCloudConfig {
         String restaurantServiceUrl = "lb://RESTAURANT-SERVICE";
         String orderingServiceUrl = "lb://ORDERING-SERVICE";
         return builder.routes()
+                .route(r -> r.path("/customer/cart/**")
+                        .filters(f -> f.rewritePath("/customer/cart", "/rest"))
+                        .uri(orderingServiceUrl))
                 .route(r -> r.path("/customer/**")
                         .filters(f -> f.prefixPath("/rest"))
                         .uri(restaurantServiceUrl))
@@ -27,9 +30,6 @@ public class SpringCloudConfig {
                 .route(r -> r.path("/test/**")
                         .filters(f -> f.prefixPath("/rest"))
                         .uri(restaurantServiceUrl))
-                .route(r -> r.path("/cart/**")
-                        .filters(f -> f.rewritePath("/cart", "/rest"))
-                        .uri(orderingServiceUrl))
                 .build();
     }
 
