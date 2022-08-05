@@ -3,6 +3,7 @@ package polimi.saefa.orderingservice.rest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import polimi.saefa.orderingservice.domain.*;
+import polimi.saefa.orderingservice.exceptions.ConfirmOrderException;
 import polimi.saefa.orderingservice.restapi.*;
 import java.util.List;
 import java.util.logging.Logger;
@@ -59,11 +60,10 @@ public class OrderingRestController {
 
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
 
-		if (orderingService.processPayment(cartId, paymentInfo))
-			if (orderingService.processDelivery(cartId, deliveryInfo))
-					return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId));
-		//TODO CAPIRE SE USARE ECCEZIONI QUI
-		return new ConfirmOrderResponse(false);
+		if (orderingService.processPayment(cartId, paymentInfo) && orderingService.processDelivery(cartId, deliveryInfo))
+			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId));
+		else
+			throw new ConfirmOrderException("Payment or delivery processing failed");
 	}
 
 	@GetMapping (path = "/{cartId}")

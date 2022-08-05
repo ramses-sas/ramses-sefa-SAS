@@ -58,17 +58,18 @@ public class OrderingService {
 		if(cart.isPresent() && cart.get().isPaid()) {
 			NotifyRestaurantResponse response = restaurantServiceClient.notifyRestaurant(cart.get().getRestaurantId(), cart.get().getId());
 			return response.isNotified();
-			//TODO WHAT TO DO WITH THE RESPONSE?
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
+			if (cart.get().isPaid()) {
+				return true;
+			}
 			ProcessPaymentResponse response = paymentProxyClient.processPayment(new ProcessPaymentRequest(paymentInfo.getCardNumber(), paymentInfo.getExpMonth(), paymentInfo.getExpYear(), paymentInfo.getCvv(), cart.get().getTotalPrice()));
 			cart.get().setPaid(response.isAccepted());
 			return cart.get().isPaid();
-			//TODO AGGIUNGERE CONTROLLO CARRELLO GIÀ PAGATO? SECONDO ME NO, TROPPO SBATTI CREARE NUOVA ECCEZIONE
 		}
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
