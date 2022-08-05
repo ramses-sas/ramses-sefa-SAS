@@ -17,25 +17,29 @@ Help()
    echo "Run without options to run every microservice locally in a dedicated container using an external Eureka Service."
    echo "Options:"
    echo "h     Display help."
-   echo "e     Run also the Eureka Service locally."
+   echo "l     Run everything locally."
 }
 
 SCRIPTS_PATH="$( cd "scripts" && pwd && cd .. )"
+HOST_IP=`ifconfig | grep '\<inet\>' | cut -d ' ' -f2 | grep -v '127.0.0.1'`
+EUREKA_IP_PORT="52.208.38.53:58082"
+MYSQL_SERVER="52.208.38.53"
 
 # EUREKA_IP_PORT=""
-while getopts "he" option; do
+while getopts "hl" option; do
    case $option in
       h) # display Help
         Help
         exit;;
-      e) # Run the Eureka Service locally
+      l) # Run everything locally
         cd "eureka-registry-service/" || return
-        EUREKA_IP_PORT="172.0.0.2:58082"
-        bash "$SCRIPTS_PATH/dockerBuild.sh" -e "$EUREKA_IP_PORT" -i "172.0.0.2"
+        EUREKA_IP_PORT="$HOST_IP:58082"
+        MYSQL_SERVER="$HOST_IP"
+        bash "$SCRIPTS_PATH/dockerBuild.sh" -e "$EUREKA_IP_PORT"
         bash "$SCRIPTS_PATH/dockerRun.sh"
         cd ..;;
      \?) # Wrong option
-        PrintError "UNKNOWN OPTION $option"
+        PrintError "UNKNOWN OPTION"
         exit;;
    esac
 done
@@ -43,15 +47,8 @@ done
 PrintSuccess "Starting all the services..."
 echo
 
-COUNT=3
-
 BuildNRun() {
-  if [ "$EUREKA_IP_PORT" = "" ] ; then # eureka-registry-service is not running locally
-    bash "$SCRIPTS_PATH/dockerBuild.sh" -e "52.208.38.53:58082"
-  else # eureka-registry-service is running locally
-    bash "$SCRIPTS_PATH/dockerBuild.sh" -e "$EUREKA_IP_PORT" -a "172.0.0.${COUNT}" -i "172.0.0.${COUNT}"
-    COUNT=$(($COUNT+1))
-  fi
+  bash "$SCRIPTS_PATH/dockerBuild.sh" -e "$EUREKA_IP_PORT" -s "$MYSQL_SERVER"
   bash "$SCRIPTS_PATH/dockerRun.sh"
 }
 

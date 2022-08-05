@@ -1,35 +1,8 @@
 <html lang="en">
-
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>SAEFA</title>
-	<!-- Bootstrap Core CSS -->
-	<link href="/css/bootstrap.min.css" rel="stylesheet">
-	<!-- Custom CSS: You can use this stylesheet to override any Bootstrap styles and/or apply your own styles -->
-	<link href="/css/custom.css" rel="stylesheet">
-	<!-- Custom Fonts from Google -->
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
-</head>
-
+<th:block th:include="fragments/head :: head"></th:block>
 <body>
 
-<nav id="siteNav" class="navbar navbar-default navbar-fixed-top" role="navigation">
-	<div class="container">
-		<!-- Logo and responsive toggle -->
-		<div class="navbar-header">
-			<a class="navbar-brand" href="/">SAEFA</a>
-			<a class="navbar-brand" href="/customer/">Customer App</a>
-		</div>
-		<!-- Navbar links -->
-		<div class="collapse navbar-collapse" id="navbar">
-			<ul class="nav navbar-nav navbar-right">
-				<li><a href="/customer">Home</a></li>
-				<li class="active"><a href="/customer/restaurants">Restaurants list</a></li>
-			</ul>
-		</div><!-- /.navbar-collapse -->
-	</div><!-- /.container -->
-</nav>
+<th:block th:include="fragments/navbar :: navbar(2,${cartId})"></th:block>
 
 <div class="content">
 	<h3><span th:text="${restaurant.name}">name goes here</span></h3>
@@ -43,17 +16,9 @@
 
 <hr/>
 
-<!-- Footer -->
-<footer class="page-footer">
-	<div class="small-print">
-		<div class="container">
-			<p>SAEFA - A Self-Adaptive eFood App</p>
-		</div>
-	</div>
-</footer>
 
+<th:block th:include="fragments/footer :: footer"></th:block>
 <!-- Bootstrap Core JavaScript -->
 <script src="/js/bootstrap.min.js"></script>
-
-</body> 
+</body>
 </html>

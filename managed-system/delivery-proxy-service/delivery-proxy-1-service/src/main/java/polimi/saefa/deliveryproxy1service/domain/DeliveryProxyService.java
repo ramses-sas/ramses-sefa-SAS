@@ -1,6 +1,7 @@
 package polimi.saefa.deliveryproxy1service.domain;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import polimi.saefa.deliveryproxy1service.externalinterface.DeliverRequest;
@@ -12,7 +13,7 @@ public class DeliveryProxyService {
 	@Value("${delivery.service1.uri}")
 	private String deliveryServiceUri;
 
- 	public void deliverOrder(
+ 	public boolean deliverOrder(
 		 String address,
 		 String city,
 		 int number,
@@ -20,10 +21,11 @@ public class DeliveryProxyService {
 		 String telephoneNumber,
 		 Date scheduledTime
 	) {
-		String url = deliveryServiceUri+"deliver/";
+		String url = deliveryServiceUri+"/deliver/";
 		RestTemplate restTemplate = new RestTemplate();
 		//TODO
-		restTemplate.postForEntity(url, new DeliverRequest(address, city, number, zipcode, telephoneNumber, scheduledTime), String.class);
+		ResponseEntity<String> response = restTemplate.postForEntity(url, new DeliverRequest(address, city, number, zipcode, telephoneNumber, scheduledTime), String.class);
+		return response.getStatusCode().is2xxSuccessful();
 	}
 	
 }

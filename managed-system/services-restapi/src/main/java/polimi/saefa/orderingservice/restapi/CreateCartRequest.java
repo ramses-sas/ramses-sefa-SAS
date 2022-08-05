@@ -5,11 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class CartItemElementExtended {
-    private String id;
-    private String name;
-    private double price;
-    private int quantity;
+@NoArgsConstructor
+public class CreateCartRequest {
+    public Long restaurantId;
 }

@@ -1,12 +1,8 @@
 package polimi.saefa.webservice.domain.admin;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-
 import java.util.*;
-import java.util.logging.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -14,60 +10,48 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantMenuRequest;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantRequest;
-import polimi.saefa.restaurantservice.restapi.admin.CreateRestaurantResponse;
-import polimi.saefa.restaurantservice.restapi.common.GetRestaurantMenuResponse;
-import polimi.saefa.restaurantservice.restapi.common.GetRestaurantResponse;
-import polimi.saefa.restaurantservice.restapi.common.GetRestaurantsResponse;
-import polimi.saefa.restaurantservice.restapi.common.MenuItemElement;
+import polimi.saefa.restaurantservice.restapi.admin.*;
+import polimi.saefa.restaurantservice.restapi.common.*;
 
 @Service
 public class AdminWebService {
-	private final Logger logger = Logger.getLogger(AdminWebService.class.toString());
-	@Autowired
-	private EurekaClient discoveryClient;
+	@Value("${API_GATEWAY_IP_PORT}")
+	private String apiGatewayUri;
 
-	private String getServiceUrl(String serviceName) {
-		InstanceInfo instance = discoveryClient.getNextServerFromEureka("API-GATEWAY-SERVICE", false);
-		return instance.getHomePageUrl()+serviceName+"/";
+	private String getApiGatewayUrl() {
+		return "http://"+apiGatewayUri;
 	}
 
 	public Collection<GetRestaurantResponse> getAllRestaurants() throws RestClientException {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/admin/";
-		String url = rsUrl+"restaurants";
+		String url = getApiGatewayUrl()+"/admin/restaurants";
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<GetRestaurantsResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetRestaurantsResponse.class);
 		return Objects.requireNonNull(response.getBody()).getRestaurants();
 	}
 
 	public GetRestaurantResponse getRestaurant(Long id) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/admin/";
-		String url = rsUrl+"restaurants/"+id.toString();
+		String url = getApiGatewayUrl()+"/admin/restaurants/"+id.toString();
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<GetRestaurantResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetRestaurantResponse.class);
 		return response.getBody();
 	}
 
 	public GetRestaurantMenuResponse getRestaurantMenu(Long id) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/admin/";
-		String url = rsUrl+"restaurants/"+id.toString()+"/menu";
+		String url = getApiGatewayUrl()+"/admin/restaurants/"+id.toString()+"/menu";
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<GetRestaurantMenuResponse> response = restTemplate.exchange(url, HttpMethod.GET, getHeaders(), GetRestaurantMenuResponse.class);
 		return response.getBody();
 	}
 
  	public CreateRestaurantResponse createRestaurant(String name, String location) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/admin/";
-		String url = rsUrl+"restaurants";
+		String url = getApiGatewayUrl()+"/admin/restaurants";
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<CreateRestaurantResponse> response = restTemplate.postForEntity(url, new CreateRestaurantRequest(name, location), CreateRestaurantResponse.class);
 		return response.getBody();
 	}
 
  	public void createOrUpdateRestaurantMenu(Long id, List<MenuItemElement> menuItems) {
-		String rsUrl = getServiceUrl("RESTAURANT-SERVICE")+"rest/admin/";
-		String url = rsUrl+"restaurants/"+id.toString()+"/menu";
+		String url = getApiGatewayUrl()+"/admin/restaurants/"+id.toString()+"/menu";
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.put(url, new CreateRestaurantMenuRequest(id, menuItems));
 	}

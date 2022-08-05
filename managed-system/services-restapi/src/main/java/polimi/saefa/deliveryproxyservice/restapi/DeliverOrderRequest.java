@@ -16,5 +16,7 @@ public class DeliverOrderRequest {
     String zipcode;
     String telephoneNumber;
     Date scheduledTime;
+    Long restaurantId;
+    Long orderId;
 }
 

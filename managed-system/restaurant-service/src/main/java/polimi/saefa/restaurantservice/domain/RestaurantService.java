@@ -3,13 +3,13 @@ package polimi.saefa.restaurantservice.domain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import polimi.saefa.restaurantservice.exceptions.RestaurantNotFoundException;
 
 import java.util.*; 
 
 @Service
 @Transactional
 public class RestaurantService {
-
 	@Autowired
 	private RestaurantRepository restaurantRepository;
 
@@ -28,6 +28,8 @@ public class RestaurantService {
 
  	public Restaurant createOrUpdateRestaurantMenu(Long id, List<MenuItem> menuItems) {
 		Restaurant restaurant = restaurantRepository.findById(id).orElse(null);
+		if (restaurant==null)
+			throw new RestaurantNotFoundException("Restaurant with id " + id + "not found");
 		RestaurantMenu menu = new RestaurantMenu(menuItems);
 		restaurant.setMenu(menu); 
 		restaurant = restaurantRepository.save(restaurant);
@@ -35,16 +37,24 @@ public class RestaurantService {
 	}
 	
  	public Restaurant getRestaurant(Long id) {
-		return restaurantRepository.findById(id).orElse(null);
+		 Restaurant restaurant = restaurantRepository.findById(id).orElse(null);
+		 if (restaurant == null)
+			 throw new RestaurantNotFoundException("Restaurant with id " + id + "not found");
+		 else return restaurant;
 	}
 
  	public RestaurantMenu getRestaurantMenu(Long id) {
 		Restaurant restaurant = restaurantRepository.findByIdWithMenu(id);
-		return restaurant.getMenu();
+		if (restaurant == null)
+			throw new RestaurantNotFoundException("Restaurant with id " + id + "not found");
+		else return restaurant.getMenu();
 	}
 
  	public Restaurant getRestaurantByName(String name) {
-		return restaurantRepository.findByName(name);
+		Restaurant restaurant = restaurantRepository.findByName(name);
+		if (restaurant == null)
+			throw new RestaurantNotFoundException("Restaurant with name " + name + "not found");
+		else return restaurant;
 	}
 	
 	public Collection<Restaurant> getAllRestaurants() {

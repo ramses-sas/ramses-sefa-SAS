@@ -6,5 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class ConfirmOrderResponse {
+    boolean confirmed;
 }
