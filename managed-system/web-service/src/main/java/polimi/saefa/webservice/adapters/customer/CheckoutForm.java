@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CheckoutForm {
 	private String cardNumber;
-	private int expMonth;
-	private int expYear;
+	private String expMonth;
+	private String expYear;
 	private String cvv;
 	private String address;
 	private String city;
-	private int number;
+	private String number;
 	private String zipcode;
 	private String telephoneNumber;
 	private String scheduledTime;

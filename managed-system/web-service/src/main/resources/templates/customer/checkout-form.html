@@ -7,6 +7,7 @@
 
 <div class="content">
     <h3>Fill the form below with your payment and delivery details</h3>
+    <h5 style="color:red;" th:if="${error!=null}" th:text="${error}">Error here</h5>
     <form th:action="@{'/customer/cart/'+${cartId}+'/confirmOrder'}" method="POST">
         <div>
             <label>Card Number</label>
