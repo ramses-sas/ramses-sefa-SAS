@@ -38,7 +38,6 @@ class CustomServiceInstanceListSupplier implements ServiceInstanceListSupplier {
     @Override
     public Flux<List<ServiceInstance>> get(Request request) {
         logger.warn("GOING INTO GET");
-        logger.warn(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
         return Flux.just(Arrays
                 .asList(new DefaultServiceInstance(serviceId + "1", serviceId, "localhost", 8090, false),
                         new DefaultServiceInstance(serviceId + "2", serviceId, "localhost", 9092, false),
