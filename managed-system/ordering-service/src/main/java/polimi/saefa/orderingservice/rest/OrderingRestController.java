@@ -23,6 +23,7 @@ public class OrderingRestController {
 		Cart cart = orderingService.createCart(request.getRestaurantId());
 		return new CreateCartResponse(cart.getId(), cart.getRestaurantId());
 	}
+
 	@PostMapping(path = "/{cartId}/addItem")
 	public AddItemToCartResponse addItemToCart(@PathVariable Long cartId, @RequestBody AddItemToCartRequest request){
 
