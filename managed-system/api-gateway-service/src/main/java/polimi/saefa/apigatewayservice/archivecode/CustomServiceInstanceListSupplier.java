@@ -1,5 +1,24 @@
-package polimi.saefa.apigatewayservice.config;
+package polimi.saefa.apigatewayservice.archivecode;
 
+/*ObjectProvider<ServiceInstanceListSupplier> provider = factory2.getLazyProvider("AAAA", ServiceInstanceListSupplier.class);
+        ObjectProvider<ServiceInstanceListSupplier> provider2 = context.getBeanProvider(ServiceInstanceListSupplier.class);
+        ServiceInstanceListSupplier supplier = provider.getIfAvailable();
+        ServiceInstanceListSupplier supplier2 = provider2.getIfAvailable();*/
+
+/*
+    @Bean
+    @ConditionalOnMissingBean
+    public LoadBalancerClientFactory loadBalancerClientFactory(LoadBalancerClientsProperties properties) {
+        LoadBalancerClientFactory factory = new LoadBalancerClientFactory(properties);
+        return factory;
+    }
+     */
+
+/*
+//instanceSupplier = new DiscoveryClientServiceInstanceListSupplier(context.getBean(DiscoveryClient.class), context.getEnvironment());
+ */
+
+/*
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.DefaultServiceInstance;
@@ -50,3 +69,4 @@ class CustomServiceInstanceListSupplier implements ServiceInstanceListSupplier {
         return null;
     }
 }
+ */

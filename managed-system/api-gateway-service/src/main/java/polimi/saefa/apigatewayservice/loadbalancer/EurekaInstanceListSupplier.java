@@ -1,15 +1,11 @@
-package polimi.saefa.apigatewayservice.config;
+package polimi.saefa.apigatewayservice.loadbalancer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.convert.DurationStyle;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.Request;
-import org.springframework.cloud.loadbalancer.core.DiscoveryClientServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.core.env.Environment;
 import reactor.core.publisher.Flux;
@@ -21,16 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class CustomDiscSupplier implements ServiceInstanceListSupplier {
+public class EurekaInstanceListSupplier implements ServiceInstanceListSupplier {
     public static final String SERVICE_DISCOVERY_TIMEOUT = "spring.cloud.loadbalancer.service-discovery.timeout";
-    private static final Log LOG = LogFactory.getLog(DiscoveryClientServiceInstanceListSupplier.class);
-    private Duration timeout = Duration.ofSeconds(30);
+    private static final Log LOG = LogFactory.getLog(EurekaInstanceListSupplier.class);
+    private Duration timeout = Duration.ofSeconds(10);
     private final String serviceId;
     private final Flux<List<ServiceInstance>> serviceInstances;
 
-    public CustomDiscSupplier(DiscoveryClient delegate, Environment environment, String serviceId) {
+    public EurekaInstanceListSupplier(DiscoveryClient delegate, Environment environment, String serviceId) {
         LOG.warn("CustomDiscSupplier with serviceId: " + serviceId);
-        this.serviceId = serviceId;// environment.getProperty(PROPERTY_NAME);
+        this.serviceId = serviceId;
         resolveTimeout(environment);
         this.serviceInstances = Flux.defer(() -> Mono.fromCallable(() -> delegate.getInstances(serviceId)))
                 .timeout(timeout, Flux.defer(() -> {
@@ -49,13 +45,11 @@ public class CustomDiscSupplier implements ServiceInstanceListSupplier {
 
     @Override
     public Flux<List<ServiceInstance>> get(Request request) {
-        LOG.warn("GET WITH REQUEST. ServiceId: " + serviceId);
         return serviceInstances;
     }
 
     @Override
     public Flux<List<ServiceInstance>> get() {
-        LOG.warn("GET WITHOUT REQUEST. ServiceId: " + serviceId);
         return serviceInstances;
     }
 
