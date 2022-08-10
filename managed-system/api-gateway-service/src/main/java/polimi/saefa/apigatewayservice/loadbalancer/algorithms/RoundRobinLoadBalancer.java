@@ -13,26 +13,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobinLoadBalancer extends BaseLoadBalancer {
 
-    private final AtomicInteger position;
+    protected final AtomicInteger position;
 
-    /**
-     * @param serviceInstanceListSupplierProvider a provider of
-     * {@link ServiceInstanceListSupplier} that will be used to get available instances
-     */
+
     public RoundRobinLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider) {
         this(serviceInstanceListSupplierProvider, new Random().nextInt(500));
     }
 
-    /**
-     * @param serviceInstanceListSupplierProvider a provider of
-     * {@link ServiceInstanceListSupplier} that will be used to get available instances
-     * @param seedPosition Round Robin element position marker
-     */
     public RoundRobinLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider, int seedPosition) {
-        this.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;
+        super(serviceInstanceListSupplierProvider);
         this.position = new AtomicInteger(seedPosition);
     }
-
 
     protected Response<ServiceInstance> processInstanceResponse(List<ServiceInstance> serviceInstances) {
         Response<ServiceInstance> serviceInstanceResponse;

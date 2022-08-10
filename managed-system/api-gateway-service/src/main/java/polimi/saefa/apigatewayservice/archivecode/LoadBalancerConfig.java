@@ -1,5 +1,6 @@
-package polimi.saefa.apigatewayservice.config;
+package polimi.saefa.apigatewayservice.archivecode;
 
+/*
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class LoadBalancerConfig {
         DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
         return new CustomServiceInstanceListSupplier(context);
         //return new CustomDiscSupplier(discoveryClient, context.getEnvironment(), "RESTAURANT-SERVICE");
-    }*/
+    }
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -40,6 +41,7 @@ public class LoadBalancerConfig {
     @Bean
     public RoundRobinLoadBalancer loadBalancer2(Environment environment, LoadBalancerClientFactory loadBalancerClientFactory) {
         return new RoundRobinLoadBalancer(loadBalancerClientFactory.getLazyProvider("ORDERING-SERVICE", ServiceInstanceListSupplier.class), "ORDERING-SERVICE");
-    }*/
+    }
 }
 
+*/

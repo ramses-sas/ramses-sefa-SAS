@@ -29,15 +29,6 @@ public class GatewayConfig {
     @Autowired
     ConfigurableApplicationContext context;
 
-    enum ServedServices {
-        RESTAURANT_SERVICE,
-        ORDERING_SERVICE;
-
-        public String getServiceId() { return this.name().replace("_", "-"); }
-        public String toLoadBalancerUri() {
-            return "lb://" + this.getServiceId();
-        }
-    }
 
     @Bean
     public GlobalFilter loadBalancerFilter() {
@@ -66,6 +57,18 @@ public class GatewayConfig {
                         .filters(f -> f.prefixPath("/rest"))
                         .uri(restaurantServiceUrl))
                 .build();
+    }
+
+    enum ServedServices {
+        // Un enum case per servizio che necessita di load balancing da parte del gateway
+        // Il nome dell'enum deve essere uguale al nome del servizio, con un _ invece di un -
+        RESTAURANT_SERVICE,
+        ORDERING_SERVICE;
+
+        public String getServiceId() { return this.name().replace("_", "-"); }
+        public String toLoadBalancerUri() {
+            return "lb://" + this.getServiceId();
+        }
     }
 
 }

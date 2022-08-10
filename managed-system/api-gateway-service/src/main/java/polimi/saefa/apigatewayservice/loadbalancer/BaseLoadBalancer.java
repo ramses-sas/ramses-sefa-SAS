@@ -15,6 +15,10 @@ public abstract class BaseLoadBalancer implements ReactorServiceInstanceLoadBala
     protected final Log log = LogFactory.getLog(this.getClass().getName());
     protected ServiceInstanceListSupplier serviceInstanceListSupplierProvider;
 
+    public BaseLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider) {
+        this.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;
+    }
+
     @Override
     public Mono<Response<ServiceInstance>> choose(Request request) {
         return serviceInstanceListSupplierProvider.get(request).next().map(this::processInstanceResponse);
