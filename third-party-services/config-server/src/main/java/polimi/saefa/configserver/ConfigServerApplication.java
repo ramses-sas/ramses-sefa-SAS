@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.config.server.EnableConfigServer;
@@ -63,17 +64,16 @@ public class ConfigServerApplication {
 
     @GetMapping(value = "/")
     public String hello() {
-        return "Hello from Config Server";
+        notifyInstance(new DefaultServiceInstance(appName, appName,"localhost", 44444, false));
+        return "OK";
     }
 
     private void notifyInstance(ServiceInstance instance) {
         String scheme = instance.getScheme() == null ? "http" : instance.getScheme();
         URI url = URI.create(scheme + "://" + instance.getHost() + ":" + instance.getPort() + "/actuator/refresh");
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
-                .header("Content-Type", "text/plain")
-                .POST(HttpRequest.BodyPublishers.ofString(""))
+                .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
         HttpClient client = HttpClient.newBuilder().build();
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
