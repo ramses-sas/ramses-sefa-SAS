@@ -13,15 +13,15 @@ import java.util.Map;
 
 public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
 
-    protected Map<String,Integer> instancesWeight;
+    protected Map<String,Integer> instancesWeights;
 
     public WeightedRoundRobinLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider) {
         super(serviceInstanceListSupplierProvider);
-        instancesWeight = new HashMap<>();
+        instancesWeights = new HashMap<>();
     }
 
     public void updateWeight(String serviceId, int weight) {
-        instancesWeight.put(serviceId, weight);
+        instancesWeights.put(serviceId, weight);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
         } else {
             List<ServiceInstance> weightedServiceInstances = new ArrayList<>();
             for (ServiceInstance instance : serviceInstances) {
-                Integer instanceWeight = instancesWeight.getOrDefault(instance.getServiceId(), 2);
+                Integer instanceWeight = instancesWeights.getOrDefault(instance.getServiceId(), 2);
                 for (int i = 0; i < instanceWeight; i++) {
                     weightedServiceInstances.add(instance);
                 }

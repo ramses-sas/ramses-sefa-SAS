@@ -1,7 +1,6 @@
 package polimi.saefa.apigatewayservice.loadbalancer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
@@ -13,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<ServiceInstance> {
-    private final Log logger = LogFactory.getLog(LoadBalancerFactory.class);
     private final LoadBalancerClientsProperties properties;
     private final Map<String, BaseLoadBalancer> loadBalancers;
 

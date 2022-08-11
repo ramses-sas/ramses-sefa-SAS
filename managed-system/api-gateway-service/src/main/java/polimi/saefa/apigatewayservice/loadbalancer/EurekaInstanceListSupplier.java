@@ -25,7 +25,6 @@ public class EurekaInstanceListSupplier implements ServiceInstanceListSupplier {
     private final Flux<List<ServiceInstance>> serviceInstances;
 
     public EurekaInstanceListSupplier(DiscoveryClient delegate, Environment environment, String serviceId) {
-        LOG.warn("CustomDiscSupplier with serviceId: " + serviceId);
         this.serviceId = serviceId;
         resolveTimeout(environment);
         this.serviceInstances = Flux.defer(() -> Mono.fromCallable(() -> delegate.getInstances(serviceId)))

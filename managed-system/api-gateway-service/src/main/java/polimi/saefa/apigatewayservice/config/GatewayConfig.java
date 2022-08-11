@@ -3,13 +3,19 @@ package polimi.saefa.apigatewayservice.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
 import polimi.saefa.apigatewayservice.loadbalancer.EurekaInstanceListSupplier;
 import polimi.saefa.apigatewayservice.loadbalancer.LoadBalancerFactory;
 import polimi.saefa.apigatewayservice.loadbalancer.LoadBalancerFilter;
@@ -29,12 +35,25 @@ public class GatewayConfig {
     @Autowired
     ConfigurableApplicationContext context;
 
+    @Value("${test.property}")
+    private String common;
 
     @Bean
+    @RefreshScope
+    @ConfigurationProperties(prefix = "test")
+    public LoadBalancerConfiguration loadBalancerConfiguration() {
+        logger.warn("UPDATE");
+        return new LoadBalancerConfiguration();
+    }
+
+    @Bean
+    @RefreshScope
     public GlobalFilter loadBalancerFilter() {
+        logger.warn("New val: {}", common);
         for (ServedServices service : ServedServices.values()) {
             logger.info("LoadBalancing: creating load balancer for {}", service.getServiceId());
-            factory.register(new RoundRobinLoadBalancer(new EurekaInstanceListSupplier(discoveryClient, context.getEnvironment(), service.getServiceId())));
+            EurekaInstanceListSupplier supplier = new EurekaInstanceListSupplier(discoveryClient, context.getEnvironment(), service.getServiceId());
+            factory.register(new RoundRobinLoadBalancer(supplier));
         }
         return new LoadBalancerFilter(factory);
     }
