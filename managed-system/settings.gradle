@@ -15,3 +15,5 @@ include 'payment-proxy-service:payment-proxy-3-service'
 include 'delivery-proxy-service:delivery-proxy-1-service'
 include 'delivery-proxy-service:delivery-proxy-2-service'
 include 'delivery-proxy-service:delivery-proxy-3-service'
+include 'circuit-breaker-config-server'
+

@@ -1,7 +1,10 @@
 package polimi.saefa.orderingservice.domain;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import polimi.saefa.orderingservice.exceptions.CartNotFoundException;
@@ -12,6 +15,9 @@ import polimi.saefa.orderingservice.rest.OrderingRestController;
 import polimi.saefa.paymentproxyservice.restapi.*;
 import polimi.saefa.deliveryproxyservice.restapi.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -27,8 +33,25 @@ public class OrderingService {
 	@Autowired
 	private PaymentProxyClient paymentProxyClient;
 
+	private final CircuitBreakerRegistry circuitBreakerRegistry;
+	public io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker;
+
 	private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
 
+	public OrderingService(CircuitBreakerRegistry circuitBreakerRegistry) {
+		this.circuitBreakerRegistry = circuitBreakerRegistry;
+		circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderingService");
+	}
+
+
+	public Map<String, Number> check() {
+		Map<String, Number> result = new HashMap<>();
+		result.put("CircuitBreaker registry failureRateThreshold", circuitBreakerRegistry.getDefaultConfig().getFailureRateThreshold());
+		result.put("CircuitBreaker failureRateThreshold", circuitBreaker.getCircuitBreakerConfig().getFailureRateThreshold());
+
+		result.put(circuitBreaker.getState().toString(), 0);
+		return result;
+	}
 
 	public Cart getCart(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
@@ -67,7 +90,7 @@ public class OrderingService {
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	@CircuitBreaker(name = "backend", fallbackMethod = "fallback")
+	@CircuitBreaker(name = "orderingService", fallbackMethod = "fallback")
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -110,6 +133,19 @@ public class OrderingService {
 		 return cart;
 	}
 
-	
+
+//	@EventListener(RefreshScopeRefreshedEvent.class)
+	@EventListener(RefreshScopeRefreshedEvent.class)
+	public void refreshCircuitBreaker() {
+		logger.info("RefreshListner: resetting cricuitbreaker");
+		io.github.resilience4j.circuitbreaker.CircuitBreaker.State state = circuitBreaker.getState();
+		circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderingService");
+		switch (state) {
+			case OPEN -> circuitBreaker.transitionToOpenState();
+			case HALF_OPEN -> circuitBreaker.transitionToHalfOpenState();
+			default -> {
+			}
+		}
+	}
 }
 
