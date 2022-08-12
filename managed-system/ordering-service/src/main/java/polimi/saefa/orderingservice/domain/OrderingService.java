@@ -15,7 +15,7 @@ import polimi.saefa.orderingservice.rest.OrderingRestController;
 import polimi.saefa.paymentproxyservice.restapi.*;
 import polimi.saefa.deliveryproxyservice.restapi.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
-
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,22 +34,26 @@ public class OrderingService {
 	private PaymentProxyClient paymentProxyClient;
 
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
-	public io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker;
+	public io.github.resilience4j.circuitbreaker.CircuitBreaker paymentCircuitBreaker;
+
+	public io.github.resilience4j.circuitbreaker.CircuitBreaker deliveryCircuitBreaker;
+
 
 	private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
 
 	public OrderingService(CircuitBreakerRegistry circuitBreakerRegistry) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderingService");
+		paymentCircuitBreaker = circuitBreakerRegistry.circuitBreaker("payment", "payment");
+		deliveryCircuitBreaker = circuitBreakerRegistry.circuitBreaker("delivery", "delivery");
 	}
 
 
 	public Map<String, Number> check() {
 		Map<String, Number> result = new HashMap<>();
 		result.put("CircuitBreaker registry failureRateThreshold", circuitBreakerRegistry.getDefaultConfig().getFailureRateThreshold());
-		result.put("CircuitBreaker failureRateThreshold", circuitBreaker.getCircuitBreakerConfig().getFailureRateThreshold());
+		result.put("CircuitBreaker failureRateThreshold", paymentCircuitBreaker.getCircuitBreakerConfig().getFailureRateThreshold());
 
-		result.put(circuitBreaker.getState().toString(), 0);
+		result.put(paymentCircuitBreaker.getState().toString(), 0);
 		return result;
 	}
 
@@ -90,7 +94,7 @@ public class OrderingService {
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	@CircuitBreaker(name = "orderingService", fallbackMethod = "fallback")
+	@CircuitBreaker(name = "payment", fallbackMethod = "paymentFallback")
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -101,14 +105,16 @@ public class OrderingService {
 			cart.get().setPaid(response.isAccepted());
 			return cart.get().isPaid();
 		}
+		//else return true; TODO REMOVE THIS ELSE AND RESTORE THE NEXT. RESTORE AND COMMENT THE ONE BELOW TO QUICKLY TEST DELIVERY CB
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	public boolean fallback(Long cartId, PaymentInfo paymentInfo, Exception e) {
+	public boolean paymentFallback(Long cartId, PaymentInfo paymentInfo, Exception e) {
 		logger.warning("Fallback method called from gateway");
 		throw new CartNotFoundException("Payment service is not available: " + e.getMessage());
+		// TODO implement fallback method with cash payment option
 	}
-
+	@CircuitBreaker(name = "delivery", fallbackMethod = "deliveryFallback")
 		public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if(cart.isPresent()) {
@@ -117,7 +123,11 @@ public class OrderingService {
 			else return false;
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
-
+	public boolean deliveryFallback(Long cartId, DeliveryInfo paymentInfo, Exception e) {
+		logger.warning("Fallback method called from gateway");
+		throw new CartNotFoundException("Delivery service is not available: " + e.getMessage());
+		// TODO implement fallback method with cash payment option
+	}
 	public Cart updateCartDetails(Cart cart) {
 		 double totalPrice = 0;
 		 for (CartItem item : cart.getItemList()) {
@@ -134,15 +144,22 @@ public class OrderingService {
 	}
 
 
-//	@EventListener(RefreshScopeRefreshedEvent.class)
 	@EventListener(RefreshScopeRefreshedEvent.class)
 	public void refreshCircuitBreaker() {
-		logger.info("RefreshListner: resetting cricuitbreaker");
-		io.github.resilience4j.circuitbreaker.CircuitBreaker.State state = circuitBreaker.getState();
-		circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderingService");
-		switch (state) {
-			case OPEN -> circuitBreaker.transitionToOpenState();
-			case HALF_OPEN -> circuitBreaker.transitionToHalfOpenState();
+		logger.info("Configuration changed, resetting cricuitbreakers");
+		State paymenyState = paymentCircuitBreaker.getState();
+		State deliveryState = deliveryCircuitBreaker.getState();
+		paymentCircuitBreaker = circuitBreakerRegistry.circuitBreaker("payment");
+		deliveryCircuitBreaker = circuitBreakerRegistry.circuitBreaker("delivery");
+		switch (paymenyState) {
+			case OPEN -> paymentCircuitBreaker.transitionToOpenState();
+			case HALF_OPEN -> paymentCircuitBreaker.transitionToHalfOpenState();
+			default -> {
+			}
+		}
+		switch (deliveryState) {
+			case OPEN -> deliveryCircuitBreaker.transitionToOpenState();
+			case HALF_OPEN -> deliveryCircuitBreaker.transitionToHalfOpenState();
 			default -> {
 			}
 		}
