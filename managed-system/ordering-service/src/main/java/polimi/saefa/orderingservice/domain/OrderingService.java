@@ -1,5 +1,6 @@
 package polimi.saefa.orderingservice.domain;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,10 +8,12 @@ import polimi.saefa.orderingservice.exceptions.CartNotFoundException;
 import polimi.saefa.orderingservice.exceptions.ItemRemovalException;
 import polimi.saefa.orderingservice.exceptions.MenuItemNotFoundException;
 import polimi.saefa.orderingservice.externalInterfaces.*;
+import polimi.saefa.orderingservice.rest.OrderingRestController;
 import polimi.saefa.paymentproxyservice.restapi.*;
 import polimi.saefa.deliveryproxyservice.restapi.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
@@ -23,6 +26,9 @@ public class OrderingService {
 	private DeliveryProxyClient deliveryProxyClient;
 	@Autowired
 	private PaymentProxyClient paymentProxyClient;
+
+	private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
+
 
 	public Cart getCart(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
@@ -61,6 +67,7 @@ public class OrderingService {
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
+	@CircuitBreaker(name = "backend", fallbackMethod = "fallback")
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -74,7 +81,12 @@ public class OrderingService {
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo) {
+	public boolean fallback(Long cartId, PaymentInfo paymentInfo, Exception e) {
+		logger.warning("Fallback method called from gateway");
+		throw new CartNotFoundException("Payment service is not available: " + e.getMessage());
+	}
+
+		public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if(cart.isPresent()) {
 			if(cart.get().isPaid())
