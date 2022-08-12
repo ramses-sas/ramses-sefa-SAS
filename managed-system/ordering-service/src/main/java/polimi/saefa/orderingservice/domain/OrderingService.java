@@ -47,16 +47,6 @@ public class OrderingService {
 		deliveryCircuitBreaker = circuitBreakerRegistry.circuitBreaker("delivery", "delivery");
 	}
 
-
-	public Map<String, Number> check() {
-		Map<String, Number> result = new HashMap<>();
-		result.put("CircuitBreaker registry failureRateThreshold", circuitBreakerRegistry.getDefaultConfig().getFailureRateThreshold());
-		result.put("CircuitBreaker failureRateThreshold", paymentCircuitBreaker.getCircuitBreakerConfig().getFailureRateThreshold());
-
-		result.put(paymentCircuitBreaker.getState().toString(), 0);
-		return result;
-	}
-
 	public Cart getCart(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) return cart.get();
