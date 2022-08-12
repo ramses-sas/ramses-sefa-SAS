@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -69,6 +68,7 @@ public class ConfigServerApplication {
     }
 
     private void notifyInstance(ServiceInstance instance) {
+        log.info("Notifying " + instance.getServiceId() + "@" + instance.getHost() + ":" + instance.getPort());
         String scheme = instance.getScheme() == null ? "http" : instance.getScheme();
         URI url = URI.create(scheme + "://" + instance.getHost() + ":" + instance.getPort() + "/actuator/refresh");
         HttpRequest request = HttpRequest.newBuilder()
