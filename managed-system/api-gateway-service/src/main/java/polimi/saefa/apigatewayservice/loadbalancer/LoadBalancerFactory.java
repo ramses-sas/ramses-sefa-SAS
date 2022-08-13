@@ -9,6 +9,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
@@ -26,6 +27,9 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
 
     @Autowired
     Environment environment;
+
+    @Autowired
+    ConfigurableApplicationContext context;
 
     private final LoadBalancerClientsProperties properties;
     private final Map<String, BaseLoadBalancer> loadBalancers;
@@ -79,11 +83,12 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
         // EXAMPLE: Received an environment changed event for keys [config.client.version, test.property]
         log.info("Received an environment changed event for keys {}", environmentChangeEvent.getKeys());
         List<String> lbKeys = environmentChangeEvent.getKeys().stream()
-                .map(key -> key.startsWith("loadbalancing.") ? key.replace("loadbalancing.","") : null)
+                .map(key -> key.startsWith("loadbalancing.") ? key : null)
                 .filter(Objects::nonNull).distinct().toList();
         lbKeys.forEach(key -> {
-            String value = Objects.requireNonNull(environment.getProperty(key));
-            String[] keyParts = key.split("\\.");
+            log.info("Parsing key: " + key);
+            String value = Objects.requireNonNull(context.getEnvironment().getProperty(key));
+            String[] keyParts = key.replace("loadbalancing.","").split("\\.");
             String serviceName = keyParts[0];
             String identifier = keyParts[1]; // localhost_PORT oppure UNDERSCORE-SEPARATED-IP_PORT oppure global
             String[] propertyElements = Arrays.copyOfRange(keyParts, 2, keyParts.length);
