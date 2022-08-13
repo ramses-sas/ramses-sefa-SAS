@@ -25,6 +25,7 @@ public class RoundRobinLoadBalancer extends BaseLoadBalancer {
         this.position = new AtomicInteger(seedPosition);
     }
 
+    @Override
     protected Response<ServiceInstance> processInstanceResponse(List<ServiceInstance> serviceInstances) {
         Response<ServiceInstance> serviceInstanceResponse;
         if (serviceInstances.isEmpty()) {

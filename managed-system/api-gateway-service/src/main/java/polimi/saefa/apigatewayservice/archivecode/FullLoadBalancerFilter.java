@@ -1,5 +1,5 @@
 package polimi.saefa.apigatewayservice.archivecode;
-
+/*
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
@@ -115,3 +115,4 @@ public class FullLoadBalancerFilter implements GlobalFilter, Ordered {
                 exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_LOADBALANCER_RESPONSE_ATTR), res);
     }
 }
+*/

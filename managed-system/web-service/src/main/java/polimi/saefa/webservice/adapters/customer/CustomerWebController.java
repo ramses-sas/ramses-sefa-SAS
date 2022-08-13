@@ -12,7 +12,6 @@ import polimi.saefa.restaurantservice.restapi.common.*;
 import polimi.saefa.webservice.domain.customer.CustomerWebService;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
@@ -105,7 +104,7 @@ public class CustomerWebController {
 	public String confirmOrder(HttpServletResponse response, Model model, @ModelAttribute("formData") CheckoutForm formData,
 							   @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
 		Date d;
-		Integer expMonth, expYear, streetNumber;
+		int expMonth, expYear, streetNumber;
 		Consumer<String> handleError = (errString) -> {
 			model.addAttribute("cartId", cartId);
 			model.addAttribute("formData", formData);

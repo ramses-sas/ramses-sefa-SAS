@@ -26,7 +26,6 @@ public class LoadBalancerFilter implements GlobalFilter, Ordered {
 
     public LoadBalancerFilter(ReactiveLoadBalancer.Factory<ServiceInstance> factory) {
         clientFactory = factory;
-        //this.clientFactory = context.getBean(LoadBalancerClientFactory.class);
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.List;
 
 public abstract class BaseLoadBalancer implements ReactorServiceInstanceLoadBalancer {
     protected final Log log = LogFactory.getLog(this.getClass().getName());
-    protected ServiceInstanceListSupplier serviceInstanceListSupplierProvider;
+    private final ServiceInstanceListSupplier serviceInstanceListSupplierProvider;
 
     public BaseLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider) {
         this.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;
