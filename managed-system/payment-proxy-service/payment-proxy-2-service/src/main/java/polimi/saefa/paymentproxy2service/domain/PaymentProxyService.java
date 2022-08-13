@@ -8,7 +8,7 @@ import polimi.saefa.paymentproxy2service.externalinterface.PaymentRequest;
 
 @Service
 public class PaymentProxyService {
-	@Value("${payment.service2.uri}")
+	@Value("${payment.service.uri}")
 	private String paymentServiceUri;
 
 	public boolean processPayment(

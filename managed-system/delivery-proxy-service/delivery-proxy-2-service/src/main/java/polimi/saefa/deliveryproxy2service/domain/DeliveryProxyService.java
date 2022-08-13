@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Service
 public class DeliveryProxyService {
-	@Value("${delivery.service2.uri}")
+	@Value("${delivery.service.uri}")
 	private String deliveryServiceUri;
 
  	public boolean deliverOrder(

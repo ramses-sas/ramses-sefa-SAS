@@ -4,9 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import polimi.saefa.orderingservice.exceptions.PaymentDetailsNotValidException;
 
-import java.sql.Date;
 import java.util.Calendar;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
