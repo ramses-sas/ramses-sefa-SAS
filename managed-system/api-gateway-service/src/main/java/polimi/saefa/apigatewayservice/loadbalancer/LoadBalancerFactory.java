@@ -16,6 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import polimi.saefa.apigatewayservice.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Slf4j
@@ -97,14 +98,7 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
                 if (lastIndex == -1) { throw new RuntimeException("Invalid identifier: " + identifier); }
                 String host = identifier.substring(0, lastIndex).replace("_", ".");
                 String port = identifier.substring(lastIndex + 1);
-                if (propertyElements.length == 1 && propertyElements[0].equals("type")) {
-                    log.info("Changing load balancer type for service {} to {}", serviceName, value);
-                    switch (value) {
-                        case "ROUND_ROBIN" -> this.createIfNeeded(LoadBalancerType.ROUND_ROBIN, serviceName);
-                        case "WEIGHTED_ROUND_ROBIN" -> this.createIfNeeded(LoadBalancerType.WEIGHTED_ROUND_ROBIN, serviceName);
-                        default -> throw new RuntimeException("Unknown load balancer type: " + value);
-                    }
-                } else if (propertyElements.length == 1 && propertyElements[0].equals("weight")) {
+                if (propertyElements.length == 1 && propertyElements[0].equals("weight")) {
                     log.info("Changing load balancer weight for service {} to {}", serviceName, value);
                     int weight = Integer.parseInt(value);
                     BaseLoadBalancer lb = loadBalancers.get(serviceName);
