@@ -27,7 +27,6 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
 
     @Override
     protected Response<ServiceInstance> processInstanceResponse(List<ServiceInstance> serviceInstances) {
-        log.info("processInstanceResponse");
         Response<ServiceInstance> serviceInstanceResponse;
         if (serviceInstances.isEmpty()) {
             if (log.isWarnEnabled())
@@ -36,7 +35,8 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
         } else {
             List<ServiceInstance> weightedServiceInstances = new ArrayList<>();
             for (ServiceInstance instance : serviceInstances) {
-                Integer instanceWeight = instancesWeights.getOrDefault(instance.getServiceId(), 2);
+                log.warn("Instance: " + instance.getInstanceId() + " weight: " + instancesWeights.get(instance.getServiceId()));
+                Integer instanceWeight = instancesWeights.getOrDefault(instance.getInstanceId(), 1);
                 for (int i = 0; i < instanceWeight; i++) {
                     weightedServiceInstances.add(instance);
                 }

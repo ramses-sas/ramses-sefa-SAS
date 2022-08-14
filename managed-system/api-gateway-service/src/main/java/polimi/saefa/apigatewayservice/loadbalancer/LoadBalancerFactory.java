@@ -1,5 +1,6 @@
 package polimi.saefa.apigatewayservice.loadbalancer;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -8,6 +9,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperti
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
+import org.springframework.cloud.loadbalancer.core.ReactorLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
@@ -21,7 +23,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<ServiceInstance> {
+public class LoadBalancerFactory implements ReactorLoadBalancer.Factory<ServiceInstance> {
 
     @Autowired
     DiscoveryClient discoveryClient;
@@ -45,6 +47,9 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
         loadBalancers = new HashMap<>();
     }
 
+    public Map<String, BaseLoadBalancer> getLoadBalancers() {
+        return loadBalancers;
+    }
 
     // Use to register a load balancer
     public void register(BaseLoadBalancer loadBalancer) {
@@ -53,12 +58,11 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
 
     public void create(LoadBalancerType loadBalancerType, String serviceId) {
         EurekaInstanceListSupplier supplier = new EurekaInstanceListSupplier(discoveryClient, environment, serviceId);
-        try {
-            this.register(loadBalancerType.getLoadBalancerClass().getDeclaredConstructor(ServiceInstanceListSupplier.class).newInstance(supplier));
-        } catch (Exception e) { throw new RuntimeException(e); }
+        this.create(loadBalancerType, supplier);
     }
 
     public void create(LoadBalancerType loadBalancerType, ServiceInstanceListSupplier supplier) {
+        log.info("Creating load balancer of type " + loadBalancerType + " for service " + supplier.getServiceId());
         try {
             this.register(loadBalancerType.getLoadBalancerClass().getDeclaredConstructor(ServiceInstanceListSupplier.class).newInstance(supplier));
         } catch (Exception e) { throw new RuntimeException(e); }
@@ -66,19 +70,20 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
 
     public void createIfNeeded(LoadBalancerType loadBalancerType, String serviceId) {
         if (!loadBalancers.containsKey(serviceId) || loadBalancers.get(serviceId) == null ||
-                loadBalancers.get(serviceId).getClass() == loadBalancerType.getLoadBalancerClass()) {
+                loadBalancers.get(serviceId).getClass() != loadBalancerType.getLoadBalancerClass()) {
             this.create(loadBalancerType, serviceId);
         }
     }
 
     public void createIfNeeded(LoadBalancerType loadBalancerType, ServiceInstanceListSupplier supplier) {
         if (!loadBalancers.containsKey(supplier.getServiceId()) || loadBalancers.get(supplier.getServiceId()) == null ||
-                loadBalancers.get(supplier.getServiceId()).getClass() == loadBalancerType.getLoadBalancerClass()) {
+                loadBalancers.get(supplier.getServiceId()).getClass() != loadBalancerType.getLoadBalancerClass()) {
             this.create(loadBalancerType, supplier);
         }
     }
 
 
+    // TODO - non è questo il posto giusto per questo metodo
     @EventListener(value = EnvironmentChangeEvent.class)
     public void register(EnvironmentChangeEvent environmentChangeEvent) {
         // EXAMPLE: Received an environment changed event for keys [config.client.version, test.property]
@@ -90,7 +95,7 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
             log.info("Parsing key: " + key);
             String value = Objects.requireNonNull(context.getEnvironment().getProperty(key));
             String[] keyParts = key.replace("loadbalancing.","").split("\\.");
-            String serviceName = keyParts[0];
+            String serviceName = keyParts[0].toUpperCase();
             String identifier = keyParts[1]; // localhost_PORT oppure UNDERSCORE-SEPARATED-IP_PORT oppure global
             String[] propertyElements = Arrays.copyOfRange(keyParts, 2, keyParts.length);
             if (!identifier.equals("global")) {
@@ -99,15 +104,14 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
                 String host = identifier.substring(0, lastIndex).replace("_", ".");
                 String port = identifier.substring(lastIndex + 1);
                 if (propertyElements.length == 1 && propertyElements[0].equals("weight")) {
-                    log.info("Changing load balancer weight for service {} to {}", serviceName, value);
                     int weight = Integer.parseInt(value);
                     BaseLoadBalancer lb = loadBalancers.get(serviceName);
                     if (lb instanceof WeightedRoundRobinLoadBalancer) {
+                        log.info("Changing load balancer weight for service {} to {}", serviceName, value);
                         ((WeightedRoundRobinLoadBalancer) lb).setWeight(host+":"+port, weight);
                     }
                 }
             } else {
-                log.info("Global property found: {}", key);
                 if (propertyElements.length == 1 && propertyElements[0].equals("type")) {
                     switch (value) {
                         case "ROUND_ROBIN" -> this.createIfNeeded(LoadBalancerType.ROUND_ROBIN, serviceName);
@@ -115,7 +119,6 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
                         default -> throw new RuntimeException("Unknown load balancer type: " + value);
                     }
                 }
-                log.warn("Must still be implemented");
             }
         });
     }
@@ -131,8 +134,8 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
     // Implementation of ReactorLoadBalancer interface
 
     @Override
-    public ReactiveLoadBalancer<ServiceInstance> getInstance(String serviceId) {
-        return getInstance(serviceId, BaseLoadBalancer.class);
+    public ReactorLoadBalancer<ServiceInstance> getInstance(String serviceId) {
+        return this.getInstance(serviceId, BaseLoadBalancer.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -140,7 +143,7 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
     public <T> T getInstance(String name, Class<?> clazz, Class<?>... generics) {
         ResolvableType type = ResolvableType.forClassWithGenerics(clazz, generics);
         BaseLoadBalancer loadBalancer = loadBalancers.get(name);
-        if (loadBalancer.getClass().isAssignableFrom(Objects.requireNonNull(type.resolve()))) {
+        if (Objects.requireNonNull(type.resolve()).isAssignableFrom(loadBalancer.getClass())) {
             return (T) loadBalancer;
         }
         return null;
@@ -154,11 +157,8 @@ public class LoadBalancerFactory implements ReactiveLoadBalancer.Factory<Service
     @Override
     public LoadBalancerProperties getProperties(String serviceId) {
         if (serviceId == null || !properties.getClients().containsKey(serviceId)) {
-            // no specific client properties, return default
             return properties;
         }
-        // because specifics are overlayed on top of defaults, everything in `properties`,
-        // unless overridden, is in `clientsProperties`
         return properties.getClients().get(serviceId);
     }
 }

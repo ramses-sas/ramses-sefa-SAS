@@ -14,6 +14,13 @@ package polimi.saefa.apigatewayservice.archivecode;
     }
      */
 
+/*@Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    public void fireRefreshEvent() {
+        eventPublisher.publishEvent(new RefreshEvent(this, "RefreshEvent", "Refreshing scope"));
+    }*/
+
 /*
 //instanceSupplier = new DiscoveryClientServiceInstanceListSupplier(context.getBean(DiscoveryClient.class), context.getEnvironment());
  */

@@ -22,9 +22,9 @@ import static org.springframework.cloud.gateway.filter.ReactiveLoadBalancerClien
 
 public class LoadBalancerFilter implements GlobalFilter, Ordered {
     private final Logger log = LoggerFactory.getLogger(LoadBalancerFilter.class);
-    ReactiveLoadBalancer.Factory<ServiceInstance> clientFactory;
+    LoadBalancerFactory clientFactory;
 
-    public LoadBalancerFilter(ReactiveLoadBalancer.Factory<ServiceInstance> factory) {
+    public LoadBalancerFilter(LoadBalancerFactory factory) {
         clientFactory = factory;
     }
 
@@ -57,6 +57,9 @@ public class LoadBalancerFilter implements GlobalFilter, Ordered {
                 exchange.getAttributes().put(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR, finalUrl);
                 exchange.getAttributes().put(ServerWebExchangeUtils.GATEWAY_LOADBALANCER_RESPONSE_ATTR, response);
             })
+            .doOnError(t -> {
+                log.error("LoadBalancing: unable to find load balancer for " + serviceId);
+            })
             .then(chain.filter(exchange));
     }
 
@@ -64,13 +67,12 @@ public class LoadBalancerFilter implements GlobalFilter, Ordered {
 
 
     private Mono<Response<ServiceInstance>> choose(Request<RequestDataContext> lbRequest, String serviceId) {
-        log.info("LoadBalancing: retrieving instance for " + serviceId);
         // TODO - punto in cui intervenire per il load balancing
-        ReactorLoadBalancer<ServiceInstance> loadBalancer = this.clientFactory.getInstance(serviceId, RoundRobinLoadBalancer.class);
+        ReactorLoadBalancer<ServiceInstance> loadBalancer = this.clientFactory.getInstance(serviceId);
         if (loadBalancer == null) {
             throw new NotFoundException("No loadbalancer available for " + serviceId);
         }
-        log.info("LoadBalancing: using load balancer " + loadBalancer.getClass().getName() + " " + System.identityHashCode(loadBalancer));
+        log.info("LoadBalancing: using load balancer " + loadBalancer.getClass().getSimpleName() + "#" + System.identityHashCode(loadBalancer) + " for " + serviceId);
         return loadBalancer.choose(lbRequest);
     }
 
