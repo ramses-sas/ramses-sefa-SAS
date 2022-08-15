@@ -1,42 +1,77 @@
 package polimi.saefa.apigatewayservice.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.netflix.discovery.DiscoveryClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import polimi.saefa.apigatewayservice.loadbalancer.LoadBalancerFactory;
-import polimi.saefa.apigatewayservice.loadbalancer.LoadBalancerFilter;
-import polimi.saefa.apigatewayservice.loadbalancer.LoadBalancerType;
+import polimi.saefa.apigatewayservice.ServedServices;
+import polimi.saefa.apigatewayservice.filters.LoadBalancerFilter;
+import polimi.saefa.configparser.ConfigParser;
+import polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
+import polimi.saefa.loadbalancer.core.BaseLoadBalancer;
+import polimi.saefa.loadbalancer.core.LoadBalancerFactory;
+import polimi.saefa.loadbalancer.core.LoadBalancerType;
+import polimi.saefa.loadbalancer.suppliers.InstanceListSupplierFactory;
 
+import java.util.List;
 
+@Slf4j
 @Configuration
+@AutoConfigureAfter(DiscoveryClient.class)
 public class GatewayConfig {
-    final Logger logger = LoggerFactory.getLogger(GatewayConfig.class);
 
     @Autowired
-    LoadBalancerFactory factory;
+    LoadBalancerFactory lbFactory;
 
-    // cosi posso scrivere custom logic per il refresh.
-    /*@EventListener(EnvironmentChangeEvent.class)
-    public void onApplicationEvent(EnvironmentChangeEvent environmentChangeEvent) {
-        // Received an environment changed event for keys [config.client.version, test.property]
-        logger.info("AAAAAAA Received an environment changed event for keys {}", environmentChangeEvent.getKeys());
-    }*/
+    @Autowired
+    InstanceListSupplierFactory supplierFactory;
+
+    @Autowired
+    ConfigParser configParser;
+
 
     @Bean
+    @ConditionalOnMissingBean
     public GlobalFilter loadBalancerFilter() {
+        // Per ogni servizio di cui fare load balancing
         for (ServedServices service : ServedServices.values()) {
-            logger.info("LoadBalancing: creating load balancer for {}", service.getServiceId());
-            factory.create(LoadBalancerType.ROUND_ROBIN, service.getServiceId());
+            String serviceId = service.getServiceId();
+            // Crea un load balancer del tipo specificato nel config (RoundRobin di default)
+            LoadBalancerType loadBalancerType = LoadBalancerType.valueOf(configParser.getLBType(serviceId));
+            log.info("LoadBalancerFilter: configuring a "+loadBalancerType+" load balancer for service "+serviceId);
+            ServiceInstanceListSupplier supplier = supplierFactory.createEurekaSupplier(serviceId);
+            BaseLoadBalancer lb = lbFactory.create(loadBalancerType, supplier);
+
+            // Se il load balancer è di tipo weighted leggi i pesi dal config
+            if (loadBalancerType == LoadBalancerType.WEIGHTED_ROUND_ROBIN) {
+                int defaultWeight = configParser.getLBWeight(serviceId);
+                WeightedRoundRobinLoadBalancer wlb = (WeightedRoundRobinLoadBalancer) lb;
+                wlb.setDefaultWeight(defaultWeight);
+                List<ServiceInstance> instances = supplier.get().blockFirst();
+                if (instances != null) {
+                    int instanceWeight;
+                    for (ServiceInstance instance : instances) {
+                        instanceWeight = configParser.getLBWeight(serviceId, instance.getInstanceId());
+                        wlb.setWeight(instance.getInstanceId(), instanceWeight);
+                        log.info("LoadBalancerFilter: setting weight for "+instance.getInstanceId()+" to "+instanceWeight);
+                    }
+                }
+            }
+            log.info("LoadBalancerFilter: "+lb.getClass().getSimpleName()+" correctly configured for "+serviceId);
         }
-        return new LoadBalancerFilter(factory);
+        return new LoadBalancerFilter(lbFactory);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
         String restaurantServiceUrl = ServedServices.RESTAURANT_SERVICE.toLoadBalancerUri();
         String orderingServiceUrl = ServedServices.ORDERING_SERVICE.toLoadBalancerUri();
@@ -56,16 +91,5 @@ public class GatewayConfig {
                 .build();
     }
 
-    enum ServedServices {
-        // Un enum case per servizio che necessita di load balancing da parte del gateway
-        // Il nome dell'enum deve essere uguale al nome del servizio, con un _ invece di un -
-        RESTAURANT_SERVICE,
-        ORDERING_SERVICE;
-
-        public String getServiceId() { return this.name().replace("_", "-"); }
-        public String toLoadBalancerUri() {
-            return "lb://" + this.getServiceId();
-        }
-    }
 
 }

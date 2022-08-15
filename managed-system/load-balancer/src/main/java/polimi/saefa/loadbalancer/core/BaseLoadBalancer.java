@@ -1,4 +1,4 @@
-package polimi.saefa.apigatewayservice.loadbalancer;
+package polimi.saefa.loadbalancer.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

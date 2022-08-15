@@ -1,10 +1,9 @@
-package polimi.saefa.apigatewayservice.loadbalancer;
+package polimi.saefa.apigatewayservice.filters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.*;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.support.DelegatingServiceInstance;
@@ -13,7 +12,7 @@ import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.cloud.loadbalancer.core.ReactorLoadBalancer;
 import org.springframework.core.Ordered;
 import org.springframework.web.server.ServerWebExchange;
-import polimi.saefa.apigatewayservice.loadbalancer.algorithms.RoundRobinLoadBalancer;
+import polimi.saefa.loadbalancer.core.LoadBalancerFactory;
 import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.Map;
@@ -67,7 +66,6 @@ public class LoadBalancerFilter implements GlobalFilter, Ordered {
 
 
     private Mono<Response<ServiceInstance>> choose(Request<RequestDataContext> lbRequest, String serviceId) {
-        // TODO - punto in cui intervenire per il load balancing
         ReactorLoadBalancer<ServiceInstance> loadBalancer = this.clientFactory.getInstance(serviceId);
         if (loadBalancer == null) {
             throw new NotFoundException("No loadbalancer available for " + serviceId);

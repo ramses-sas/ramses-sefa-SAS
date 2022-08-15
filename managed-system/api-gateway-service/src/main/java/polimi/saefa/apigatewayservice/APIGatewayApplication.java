@@ -15,11 +15,4 @@ public class APIGatewayApplication {
         SpringApplication.run(APIGatewayApplication.class, args);
     }
 
-
-    // cosi posso scrivere custom logic per il refresh.
-    /*@EventListener(EnvironmentChangeEvent.class)
-    public void onApplicationEvent(EnvironmentChangeEvent environmentChangeEvent) {
-        // Received an environment changed event for keys [config.client.version, test.property]
-        log.info("Received an environment changed event for keys {}", environmentChangeEvent.getKeys());
-    }*/
 }

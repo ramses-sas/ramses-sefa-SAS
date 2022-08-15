@@ -1,7 +1,7 @@
-package polimi.saefa.apigatewayservice.loadbalancer;
+package polimi.saefa.loadbalancer.core;
 
-import polimi.saefa.apigatewayservice.loadbalancer.algorithms.RoundRobinLoadBalancer;
-import polimi.saefa.apigatewayservice.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
+import polimi.saefa.loadbalancer.algorithms.RoundRobinLoadBalancer;
+import polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 
 public enum LoadBalancerType {
     ROUND_ROBIN,

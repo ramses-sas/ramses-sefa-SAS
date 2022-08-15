@@ -1,6 +1,8 @@
 rootProject.name = 'saefa'
 
 include 'services-restapi'
+include 'load-balancer'
+include 'config-parser'
 
 include 'web-service'
 include 'api-gateway-service'

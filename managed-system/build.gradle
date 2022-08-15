@@ -49,7 +49,7 @@ subprojects {
 			compileOnly "org.projectlombok:lombok:${lombokVersion}"
 			annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-			if (project.name != "services-restapi" && project.name != "eureka-registry-service") {
+			if (project.name != "services-restapi" && project.name != "eureka-registry-service" && project.name != "load-balancer" && project.name != "config-parser") {
 				implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
 				implementation 'io.micrometer:micrometer-registry-prometheus'
 				implementation 'org.springframework.boot:spring-boot-starter-aop'

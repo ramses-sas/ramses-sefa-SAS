@@ -1,11 +1,12 @@
-package polimi.saefa.apigatewayservice.loadbalancer.algorithms;
+package polimi.saefa.loadbalancer.algorithms;
 
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.DefaultResponse;
 import org.springframework.cloud.client.loadbalancer.EmptyResponse;
 import org.springframework.cloud.client.loadbalancer.Response;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
-import polimi.saefa.apigatewayservice.loadbalancer.BaseLoadBalancer;
+import polimi.saefa.loadbalancer.core.BaseLoadBalancer;
+
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
