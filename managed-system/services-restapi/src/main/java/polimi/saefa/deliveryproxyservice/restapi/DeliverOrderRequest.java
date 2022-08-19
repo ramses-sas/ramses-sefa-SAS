@@ -18,5 +18,6 @@ public class DeliverOrderRequest {
     Date scheduledTime;
     Long restaurantId;
     Long orderId;
+    double requiresCashPayment;
 }
 
