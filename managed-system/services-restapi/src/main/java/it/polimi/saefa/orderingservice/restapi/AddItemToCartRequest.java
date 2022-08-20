@@ -1,0 +1,16 @@
+package it.polimi.saefa.orderingservice.restapi;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AddItemToCartRequest {
+
+    private long cartId=0;
+    private Long restaurantId;
+    private String itemId;
+    private int quantity;
+}
