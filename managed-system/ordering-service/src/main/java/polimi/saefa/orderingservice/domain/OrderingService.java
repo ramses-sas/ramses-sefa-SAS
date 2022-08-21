@@ -3,9 +3,6 @@ package polimi.saefa.orderingservice.domain;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import polimi.saefa.orderingservice.exceptions.*;
@@ -14,10 +11,8 @@ import polimi.saefa.orderingservice.rest.OrderingRestController;
 import polimi.saefa.paymentproxyservice.restapi.*;
 import polimi.saefa.deliveryproxyservice.restapi.*;
 import polimi.saefa.restaurantservice.restapi.common.*;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import java.util.Optional;
 import java.util.logging.Logger;
-import io.github.resilience4j.common.circuitbreaker.configuration.CircuitBreakerConfigurationProperties;
 
 @Service
 @Transactional
@@ -31,17 +26,12 @@ public class OrderingService {
 	@Autowired
 	private PaymentProxyClient paymentProxyClient;
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
-	//public io.github.resilience4j.circuitbreaker.CircuitBreaker paymentCircuitBreaker;
-
-	//public io.github.resilience4j.circuitbreaker.CircuitBreaker deliveryCircuitBreaker;
 
 
 	private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
 
 	public OrderingService(CircuitBreakerRegistry circuitBreakerRegistry) {
 		this.circuitBreakerRegistry = circuitBreakerRegistry;
-		//paymentCircuitBreaker = circuitBreakerRegistry.circuitBreaker("payment", "payment");
-		//deliveryCircuitBreaker = circuitBreakerRegistry.circuitBreaker("delivery", "delivery");
 	}
 
 	public Cart getCart(Long cartId) {
@@ -93,7 +83,6 @@ public class OrderingService {
 			cart.get().setPaid(response.isAccepted());
 			return cart.get().isPaid();
 		}
-		//else return true; TODO REMOVE THIS ELSE AND RESTORE THE NEXT. RESTORE AND COMMENT THE ONE BELOW TO QUICKLY TEST DELIVERY CB
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
@@ -102,8 +91,6 @@ public class OrderingService {
 
 		if(circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
-		//if(paymentCircuitBreaker.getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e) && e instanceof RuntimeException)
-		//	throw (RuntimeException)e;
 		throw new PaymentNotAvailableException("Payment service is not available: " + e.getMessage(), cartId);
 	}
 
@@ -130,8 +117,6 @@ public class OrderingService {
 		logger.warning("Delivery fallback method called from gateway");
 		if(circuitBreakerRegistry.circuitBreaker("delivery").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
-		//if(deliveryCircuitBreaker.getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e) && e instanceof RuntimeException)
-		//	throw (RuntimeException)e;
 		throw new DeliveryNotAvailableException("Delivery service is not available: " + e.getMessage(), cartId);
 	}
 	public Cart updateCartDetails(Cart cart) {
@@ -162,30 +147,5 @@ public class OrderingService {
 			return cart.get().isRequiresTakeaway();
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
-
-	/*
-	@EventListener(RefreshScopeRefreshedEvent.class)
-	public void refreshCircuitBreaker() {
-		logger.info("Configuration changed, resetting cricuitbreakers");
-		State paymentState = paymentCircuitBreaker.getState();
-		State deliveryState = deliveryCircuitBreaker.getState();
-		//logger.warning(System.identityHashCode(paymentCircuitBreaker) + " " + System.identityHashCode(deliveryCircuitBreaker));
-		paymentCircuitBreaker = circuitBreakerRegistry.circuitBreaker("payment", "payment");
-		deliveryCircuitBreaker = circuitBreakerRegistry.circuitBreaker("delivery", "delivery");
-		//logger.warning("Dopo:" + System.identityHashCode(paymentCircuitBreaker) + " " + System.identityHashCode(deliveryCircuitBreaker));
-		switch (paymentState) {
-			case OPEN -> paymentCircuitBreaker.transitionToOpenState();
-			case HALF_OPEN -> paymentCircuitBreaker.transitionToHalfOpenState();
-			default -> {
-			}
-		}
-		switch (deliveryState) {
-			case OPEN -> deliveryCircuitBreaker.transitionToOpenState();
-			case HALF_OPEN -> deliveryCircuitBreaker.transitionToHalfOpenState();
-			default -> {
-			}
-		}
-	}
-	*/
 }
 
