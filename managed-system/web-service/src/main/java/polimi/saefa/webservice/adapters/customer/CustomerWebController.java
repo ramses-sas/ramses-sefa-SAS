@@ -12,7 +12,6 @@ import polimi.saefa.restaurantservice.restapi.common.*;
 import polimi.saefa.webservice.domain.customer.CustomerWebService;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
@@ -105,7 +104,7 @@ public class CustomerWebController {
 	public String confirmOrder(HttpServletResponse response, Model model, @ModelAttribute("formData") CheckoutForm formData,
 							   @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
 		Date d;
-		Integer expMonth, expYear, streetNumber;
+		int expMonth, expYear, streetNumber;
 		Consumer<String> handleError = (errString) -> {
 			model.addAttribute("cartId", cartId);
 			model.addAttribute("formData", formData);
@@ -127,11 +126,89 @@ public class CustomerWebController {
 			handleError.accept("Invalid values for ExpMonth, ExpYear or Street Number. They must be integers.");
 			return "customer/checkout-form";
 		}
-		customerWebService.confirmOrder(cartId, formData.getCardNumber(), expMonth,
+		ConfirmOrderResponse confirmOrderResponse = customerWebService.confirmOrder(cartId, formData.getCardNumber(), expMonth,
 				expYear, formData.getCvv(), formData.getAddress(), formData.getCity(),
 				streetNumber, formData.getZipcode(), formData.getTelephoneNumber(), d);
+		model.addAttribute("confirmOrderResponse", confirmOrderResponse);
+		if(!confirmOrderResponse.isConfirmed()){
+			if(confirmOrderResponse.getIsTakeAway() != null && confirmOrderResponse.getIsTakeAway()){
+				return "customer/takeaway-confirmation";
+			}
+			else if (confirmOrderResponse.getRequiresCashPayment() != null && confirmOrderResponse.getRequiresCashPayment()){
+				model.addAttribute("formData", formData);
+				return "customer/cash-payment";
+
+			}
+			else{
+				handleError.accept("Order not confirmed");
+			}
+
+		}
 		removeFromCookie(response, cartData, cartId.toString());
 		return "customer/order-confirmed";
+	}
+
+
+	@PostMapping("/cart/{cartId}/confirmCashPayment")
+	public String confirmCashPayment(HttpServletResponse response, Model model, @ModelAttribute("formData") CheckoutForm formData,
+							   @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
+		Date d;
+		int streetNumber;
+		Consumer<String> handleError = (errString) -> {
+			model.addAttribute("cartId", cartId);
+			model.addAttribute("formData", formData);
+			model.addAttribute("error", errString);
+		};
+
+		try {
+			LocalDateTime ld = LocalDateTime.parse(formData.getScheduledTime());
+			d = Date.from(ld.toInstant(ZoneOffset.UTC));
+			streetNumber = Integer.parseInt(formData.getNumber());
+		} catch (DateTimeParseException e) {
+			log.error("Invalid scheduled time. " + e.getMessage());
+			handleError.accept("Invalid scheduled time");
+			return "customer/cash-payment";
+		} catch (NumberFormatException e) {
+			log.error("Invalid integers. " + e.getMessage());
+			handleError.accept("Invalid values for ExpMonth, ExpYear or Street Number. They must be integers.");
+			return "customer/cash-payment";
+		}
+		ConfirmOrderResponse confirmOrderResponse = customerWebService.confirmCashPayment(cartId, formData.getAddress(), formData.getCity(),
+				streetNumber, formData.getZipcode(), formData.getTelephoneNumber(), d);
+		model.addAttribute("confirmOrderResponse", confirmOrderResponse);
+		if(!confirmOrderResponse.isConfirmed() && confirmOrderResponse.getIsTakeAway() != null && confirmOrderResponse.getIsTakeAway()){
+				return "customer/takeaway-confirmation";
+			}
+		else{
+			handleError.accept("Order not confirmed");
+		}
+		removeFromCookie(response, cartData, cartId.toString());
+		model.addAttribute("cash", "You will be asked to pay cash upon delivery.");
+
+		return "customer/order-confirmed";
+	}
+
+	@PostMapping("/cart/{cartId}/confirmTakeAway")
+	public String confirmTakeAway(HttpServletResponse response, Model model, @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
+		ConfirmOrderResponse confirmOrderResponse = customerWebService.handleTakeAway(cartId, true);
+		if(!confirmOrderResponse.isConfirmed()){
+			model.addAttribute("cartId", cartId);
+			model.addAttribute("error", "Order not confirmed");
+		}
+		else{
+			model.addAttribute("takeaway", "You can pick up the order at the restaurant at the specified time.");
+			if (confirmOrderResponse.getRequiresCashPayment()!= null && confirmOrderResponse.getRequiresCashPayment())
+				model.addAttribute("cash", "You will be asked to pay cash at the restaurant.");
+		}
+		removeFromCookie(response, cartData, cartId.toString());
+		return "customer/order-confirmed";
+	}
+
+	@PostMapping("/cart/{cartId}/rejectTakeAway")
+	public String rejectTakeAway(HttpServletResponse response, Model model, @CookieValue(value = "cartData", defaultValue = "") String cartData, @PathVariable Long cartId) {
+		customerWebService.handleTakeAway(cartId, false);
+		removeFromCookie(response, cartData, cartId.toString());
+		return "customer/order-canceled";
 	}
 
 

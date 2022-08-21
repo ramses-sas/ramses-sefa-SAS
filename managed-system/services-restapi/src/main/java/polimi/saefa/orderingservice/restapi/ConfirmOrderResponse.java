@@ -8,5 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfirmOrderResponse {
-    boolean confirmed;
+    boolean confirmed = false;
+    Boolean requiresCashPayment = false;
+    Boolean isTakeAway = false;
+
+    public ConfirmOrderResponse(boolean confirmed) {
+        this.confirmed = confirmed;
+    }
 }

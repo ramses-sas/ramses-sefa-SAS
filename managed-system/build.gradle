@@ -50,11 +50,13 @@ subprojects {
 			annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
 			if (project.name != "services-restapi" && project.name != "eureka-registry-service") {
-				implementation "org.springframework.boot:spring-boot-starter-aop"
-				implementation "org.springframework.boot:spring-boot-starter-web"
-				implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
-				implementation "org.springframework.boot:spring-boot-starter-actuator"
-				implementation "io.micrometer:micrometer-registry-prometheus"
+				implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
+				implementation 'io.micrometer:micrometer-registry-prometheus'
+				implementation 'org.springframework.boot:spring-boot-starter-aop'
+				implementation 'org.springframework.boot:spring-boot-starter-web'
+				implementation 'org.springframework.boot:spring-boot-starter-actuator'
+				implementation 'org.springframework.cloud:spring-cloud-starter-config'
+				implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 			}
 		}
 

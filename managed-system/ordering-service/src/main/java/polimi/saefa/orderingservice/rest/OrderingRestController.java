@@ -23,6 +23,7 @@ public class OrderingRestController {
 		Cart cart = orderingService.createCart(request.getRestaurantId());
 		return new CreateCartResponse(cart.getId(), cart.getRestaurantId());
 	}
+
 	@PostMapping(path = "/{cartId}/addItem")
 	public AddItemToCartResponse addItemToCart(@PathVariable Long cartId, @RequestBody AddItemToCartRequest request){
 
@@ -57,14 +58,39 @@ public class OrderingRestController {
 		logger.info("REST CALL: confirmOrder to cart " + cartId);
 
 		PaymentInfo paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
-
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
 
 		if (orderingService.processPayment(cartId, paymentInfo) && orderingService.processDelivery(cartId, deliveryInfo))
-			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId));
+			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, false));
 		else
 			throw new ConfirmOrderException("Payment or delivery processing failed");
 	}
+
+	@PostMapping(path = "/{cartId}/confirmCashPayment")
+	public ConfirmOrderResponse confirmCashPayment(@PathVariable Long cartId, @RequestBody ConfirmCashPaymentRequest request) {
+		logger.info("REST CALL: confirmCashPayment to cart " + cartId);
+
+		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
+
+		if (orderingService.confirmCashPayment(cartId) && orderingService.processDelivery(cartId, deliveryInfo))
+			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, false), true, false);
+		else
+			throw new ConfirmOrderException("Payment or delivery processing failed");
+	}
+
+	@PostMapping(path = "/{cartId}/confirmTakeAway")
+	public ConfirmOrderResponse confirmTakeAway(@PathVariable Long cartId) {
+		logger.info("REST CALL: confirmTakeAway to cart " + cartId);
+		return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, true), orderingService.orderRequiresCashPayment(cartId), orderingService.orderRequiresTakeaway(cartId));
+
+	}
+	@PostMapping(path = "/{cartId}/rejectTakeAway")
+	public ConfirmOrderResponse rejectTakeAway(@PathVariable Long cartId) {
+		logger.info("REST CALL: rejectTakeAway to cart " + cartId);
+		return new ConfirmOrderResponse(false);
+		// TODO dummy just for doing it
+	}
+
 
 	@GetMapping (path = "/{cartId}")
 	public GetCartResponse getCart(@PathVariable Long cartId) {
