@@ -20,6 +20,7 @@ import it.polimi.saefa.loadbalancer.core.BaseLoadBalancer;
 import it.polimi.saefa.loadbalancer.core.LoadBalancerFactory;
 import it.polimi.saefa.loadbalancer.core.LoadBalancerType;
 import it.polimi.saefa.loadbalancer.suppliers.InstanceListSupplierFactory;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class GatewayConfig {
     InstanceListSupplierFactory supplierFactory;
 
     @Autowired
-    ConfigParser configParser;
+    ConfigParser<Environment> configParser;
 
 
     @Bean
