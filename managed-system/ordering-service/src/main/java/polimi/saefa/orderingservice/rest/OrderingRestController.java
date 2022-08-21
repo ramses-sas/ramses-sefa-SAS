@@ -66,7 +66,7 @@ public class OrderingRestController {
 			throw new ConfirmOrderException("Payment or delivery processing failed");
 	}
 
-	@PatchMapping(path = "/{cartId}/confirmCashPayement")
+	@PostMapping(path = "/{cartId}/confirmCashPayment")
 	public ConfirmOrderResponse confirmCashPayment(@PathVariable Long cartId, @RequestBody ConfirmCashPaymentRequest request) {
 		logger.info("REST CALL: confirmCashPayment to cart " + cartId);
 
@@ -78,13 +78,13 @@ public class OrderingRestController {
 			throw new ConfirmOrderException("Payment or delivery processing failed");
 	}
 
-	@PatchMapping(path = "/{cartId}/confirmTakeAway")
+	@PostMapping(path = "/{cartId}/confirmTakeAway")
 	public ConfirmOrderResponse confirmTakeAway(@PathVariable Long cartId) {
 		logger.info("REST CALL: confirmTakeAway to cart " + cartId);
 		return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, true), orderingService.orderRequiresCashPayment(cartId), orderingService.orderRequiresTakeaway(cartId));
 
 	}
-	@PatchMapping(path = "/{cartId}/rejectTakeAway")
+	@PostMapping(path = "/{cartId}/rejectTakeAway")
 	public ConfirmOrderResponse rejectTakeAway(@PathVariable Long cartId) {
 		logger.info("REST CALL: rejectTakeAway to cart " + cartId);
 		return new ConfirmOrderResponse(false);

@@ -9,11 +9,14 @@ import polimi.saefa.orderingservice.restapi.*;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 @Service
 public class CustomerWebService {
 	@Value("${API_GATEWAY_IP_PORT}")
 	private String apiGatewayUri;
+
+	Logger logger = Logger.getLogger(CustomerWebService.class.toString());
 
 	private String getApiGatewayUrl() {
 		return "http://"+apiGatewayUri;
@@ -92,6 +95,35 @@ public class CustomerWebService {
 			restTemplate.postForEntity(url,
 				new ConfirmOrderRequest(cartId,cardNumber,expMonth,expYear,cvv,address,city,number,zipcode,telephoneNumber,scheduledTime),
 				ConfirmOrderResponse.class);
+		return response.getBody();
+	}
+
+	public ConfirmOrderResponse confirmCashPayment(
+			Long cartId,
+			String address,
+			String city,
+			int number,
+			String zipcode,
+			String telephoneNumber,
+			Date scheduledTime
+	) {
+		String url = getApiGatewayUrl()+"/customer/cart/"+cartId+"/confirmCashPayment";
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<ConfirmOrderResponse> response =
+				restTemplate.postForEntity(url,
+						new ConfirmCashPaymentRequest(address,city,number,zipcode,telephoneNumber,scheduledTime),
+						ConfirmOrderResponse.class);
+		return response.getBody();
+	}
+
+	public ConfirmOrderResponse handleTakeAway(
+			Long cartId,
+			boolean confirmed
+	) {
+		String url = getApiGatewayUrl()+"/customer/cart/" + cartId + (confirmed ? "/confirmTakeAway": "/rejectTakeAway");
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<ConfirmOrderResponse> response =
+				restTemplate.postForEntity(url, null, ConfirmOrderResponse.class);
 		return response.getBody();
 	}
 
