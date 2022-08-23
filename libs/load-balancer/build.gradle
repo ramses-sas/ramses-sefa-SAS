@@ -1,0 +1,38 @@
+buildscript { ext {
+    set('SPRING_CLOUD_VERSION', '2021.0.3')
+    set('SPRING_DEPENDENCY_MANAGEMENT_VERSION', '1.0.13.RELEASE')
+}}
+
+plugins {
+    id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VERSION}"
+}
+
+apply plugin: "java"
+apply plugin: "io.spring.dependency-management"
+
+group = "it.polimi.saefa"
+version = "latest"
+sourceCompatibility = "16"
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${SPRING_CLOUD_VERSION}"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.projectlombok:lombok:1.18.24"
+    annotationProcessor "org.projectlombok:lombok:1.18.24"
+    compileOnly 'org.springframework.cloud:spring-cloud-starter'
+    compileOnly 'org.springframework.cloud:spring-cloud-loadbalancer'
+}
+
+tasks.named("jar") {
+    manifest {
+        attributes("Implementation-Title": project.name, "Implementation-Version": project.version)
+    }
+}

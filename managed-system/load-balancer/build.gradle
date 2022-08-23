@@ -1,4 +1,0 @@
-dependencies {
-    compileOnly 'org.springframework.cloud:spring-cloud-starter'
-    compileOnly 'org.springframework.cloud:spring-cloud-loadbalancer'
-}
