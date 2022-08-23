@@ -1,4 +1,4 @@
-package polimi.saefa.orderingservice.exceptions;
+package it.polimi.saefa.orderingservice.exceptions;
 
 public class PaymentNotAvailableException extends RuntimeException{
     private Long cartId;

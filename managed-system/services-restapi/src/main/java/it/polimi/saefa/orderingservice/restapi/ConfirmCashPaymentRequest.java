@@ -1,4 +1,4 @@
-package polimi.saefa.orderingservice.restapi;
+package it.polimi.saefa.orderingservice.restapi;
 
 import java.util.Date;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package polimi.saefa.restaurantservice.restapi.common;
+package it.polimi.saefa.restaurantservice.restapi.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
