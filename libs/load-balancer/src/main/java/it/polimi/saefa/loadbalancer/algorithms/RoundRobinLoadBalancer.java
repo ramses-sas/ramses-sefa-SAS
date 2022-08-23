@@ -5,7 +5,7 @@ import org.springframework.cloud.client.loadbalancer.DefaultResponse;
 import org.springframework.cloud.client.loadbalancer.EmptyResponse;
 import org.springframework.cloud.client.loadbalancer.Response;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
-import it.polimi.saefa.loadbalancer.core.BaseLoadBalancer;
+import it.polimi.saefa.loadbalancer.BaseLoadBalancer;
 
 import java.util.List;
 import java.util.Random;
@@ -37,6 +37,9 @@ public class RoundRobinLoadBalancer extends BaseLoadBalancer {
             int pos = this.position.incrementAndGet() & Integer.MAX_VALUE;
             ServiceInstance instance = serviceInstances.get(pos % serviceInstances.size());
             serviceInstanceResponse = new DefaultResponse(instance);
+            if (log.isDebugEnabled()) {
+                log.debug("RoundRobinLoadBalancer: selected instance "+instance.getInstanceId()+" for service: " + getServiceId());
+            }
         }
         return serviceInstanceResponse;
     }

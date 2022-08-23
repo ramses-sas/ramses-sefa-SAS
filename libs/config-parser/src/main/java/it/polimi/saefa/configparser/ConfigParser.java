@@ -4,25 +4,32 @@ package it.polimi.saefa.configparser;
 import java.lang.reflect.InvocationTargetException;
 
 public class ConfigParser<T> {
-
+    private final String LBPREFIX = "loadbalancing.";
     private final T env;
 
     public ConfigParser(T env) {
         this.env = env;
     }
 
-    public int getLBWeight(String serviceId, String instanceId) {
-        String prop = "loadbalancing."+serviceId.toLowerCase()+"."+instanceId.replace(".","_").replace(":","_")+".weight";
+    public int getLoadBalancerWeight(String serviceId, String instanceId) {
+        String prop = LBPREFIX+serviceId.toLowerCase()+"."+instanceId.replace(".","_").replace(":","_")+".weight";
+        try {
+            return Integer.parseInt(getProperty(prop));
+        } catch (RuntimeException e) {
+            // If the weight for that instance is not (correctly) set, return the default weight for that service
+            return getLoadBalancerWeight(serviceId);
+        }
+
+    }
+
+    // return the default weight to use for the service or 1 if not set
+    public int getLoadBalancerWeight(String serviceId) {
+        String prop = LBPREFIX+serviceId.toLowerCase()+".global.weight";
         return Integer.parseInt(getProperty(prop, "1"));
     }
 
-    public int getLBWeight(String serviceId) {
-        String prop = "loadbalancing."+serviceId.toLowerCase()+".global.weight";
-        return Integer.parseInt(getProperty(prop, "1"));
-    }
-
-    public String getLBType(String serviceId) {
-        String prop = "loadbalancing."+serviceId.toLowerCase()+".global.type";
+    public String getLoadBalancerType(String serviceId) {
+        String prop = LBPREFIX+serviceId.toLowerCase()+".global.type";
         return getProperty(prop, "ROUND_ROBIN");
     }
 

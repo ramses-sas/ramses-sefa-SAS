@@ -45,6 +45,9 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
             int pos = this.position.incrementAndGet() & Integer.MAX_VALUE;
             ServiceInstance instance = weightedServiceInstances.get(pos % weightedServiceInstances.size());
             serviceInstanceResponse = new DefaultResponse(instance);
+            if (log.isDebugEnabled()) {
+                log.debug("WeightedRoundRobinLoadBalancer: selected instance "+instance.getInstanceId()+" for service: " + getServiceId());
+            }
         }
         return serviceInstanceResponse;
     }

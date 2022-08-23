@@ -1,4 +1,4 @@
-package it.polimi.saefa.loadbalancer.core;
+package it.polimi.saefa.loadbalancer;
 
 import it.polimi.saefa.loadbalancer.algorithms.RoundRobinLoadBalancer;
 import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;

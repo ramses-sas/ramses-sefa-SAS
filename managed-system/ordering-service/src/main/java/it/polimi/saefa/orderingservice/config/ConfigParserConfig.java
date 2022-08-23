@@ -1,5 +1,8 @@
-package it.polimi.saefa.apigatewayservice.config;
+package it.polimi.saefa.orderingservice.config;
 
+import it.polimi.saefa.configparser.ConfigParser;
+import it.polimi.saefa.configparser.ConfigProperty;
+import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -11,9 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
-import it.polimi.saefa.configparser.ConfigParser;
-import it.polimi.saefa.configparser.ConfigProperty;
-import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 
 import java.util.List;
 import java.util.Objects;

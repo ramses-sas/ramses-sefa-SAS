@@ -12,6 +12,7 @@ import it.polimi.saefa.deliveryproxyservice.restapi.*;
 import it.polimi.saefa.restaurantservice.restapi.common.*;
 import java.util.Optional;
 
+
 @Service
 @Transactional
 public class OrderingService {
@@ -23,6 +24,7 @@ public class OrderingService {
 	private DeliveryProxyClient deliveryProxyClient;
 	@Autowired
 	private PaymentProxyClient paymentProxyClient;
+
 
 	public Cart getCart(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
@@ -96,6 +98,12 @@ public class OrderingService {
 		 cart.setTotalPrice(totalPrice);
 		 orderingRepository.save(cart);
 		 return cart;
+	}
+
+
+	// TODO remove after testing
+	public void testPaymentLB() {
+		paymentProxyClient.processPayment(new ProcessPaymentRequest("1111222233334444", 12, 12, "001", 12.5));
 	}
 
 	

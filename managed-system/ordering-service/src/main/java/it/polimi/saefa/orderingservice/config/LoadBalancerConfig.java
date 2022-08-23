@@ -1,4 +1,4 @@
-package it.polimi.saefa.apigatewayservice.config;
+package it.polimi.saefa.orderingservice.config;
 
 import it.polimi.saefa.configparser.ConfigParser;
 import it.polimi.saefa.loadbalancer.LoadBalancerType;
@@ -18,7 +18,7 @@ public class LoadBalancerConfig {
 
     @Bean
     public ReactorLoadBalancer<ServiceInstance> customLoadBalancer(
-        ServiceInstanceListSupplier supplier, ConfigParser<Environment> configParser
+            ServiceInstanceListSupplier supplier, ConfigParser<Environment> configParser
     ) {
         String serviceId = supplier.getServiceId();
         LoadBalancerType type = LoadBalancerType.valueOf(configParser.getLoadBalancerType(serviceId));
