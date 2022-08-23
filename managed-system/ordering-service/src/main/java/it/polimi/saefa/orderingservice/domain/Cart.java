@@ -24,6 +24,9 @@ public class Cart {
 
     private boolean paid = false;
 
+    private boolean requiresCashPayment = false;
+    private boolean requiresTakeaway = false;
+
     public Cart(Long restaurantId) {
         this.restaurantId = restaurantId;
         items = new HashMap<>();

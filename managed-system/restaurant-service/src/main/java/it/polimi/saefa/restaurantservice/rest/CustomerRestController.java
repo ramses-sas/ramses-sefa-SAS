@@ -1,12 +1,11 @@
 package it.polimi.saefa.restaurantservice.rest;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import it.polimi.saefa.restaurantservice.domain.*;
 import it.polimi.saefa.restaurantservice.restapi.common.*;
+
 import java.util.*; 
 import java.util.stream.*;
 import java.util.logging.Logger;
@@ -67,9 +66,10 @@ public class CustomerRestController {
 		return new GetMenuItemDetailsResponse();
 	}
 
-	@GetMapping("/restaurants/{restaurantId}/notify/{orderNumber}")
-	public NotifyRestaurantResponse notifyRestaurant(@PathVariable Long restaurantId, @PathVariable Long orderNumber) {
-		logger.info("REST CALL: notifyRestaurant " + restaurantId + " order " + orderNumber);
+	@PostMapping("/restaurants/{restaurantId}/notify")
+	public NotifyRestaurantResponse notifyRestaurant(@PathVariable Long restaurantId, @RequestBody NotifyRestaurantRequest request) {
+		logger.info("REST CALL: notifyRestaurant " + restaurantId + " order " + request.getOrderNumber());
+		//Dumb method to simulate restaurant functionality
 		return new NotifyRestaurantResponse(true);
 	}
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {

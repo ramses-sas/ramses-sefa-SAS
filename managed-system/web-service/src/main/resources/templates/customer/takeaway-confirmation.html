@@ -1,0 +1,26 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(2,${cartId})"></th:block>
+
+<div class="content">
+    <h2>Delivery service is not available</h2>
+    <h3>You can pick up the order at the restaurant. Do you still want to place the order?</h3>
+    <form th:action="|/customer/cart/${cartId}/confirmTakeAway|" method="POST">
+        <input type="submit" value="Confirm Order">
+    </form>
+    <form th:action="|/customer/cart/${cartId}/rejectTakeAway|" method="POST">
+        <input type="submit" value="Cancel order">
+    </form>
+
+</div>
+
+<hr/>
+
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
