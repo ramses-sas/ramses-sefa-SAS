@@ -1,61 +1,53 @@
-buildscript {
-	ext {
-		springBootVersion = "2.6.5"
-		springDependencyManagementVersion = "1.0.11.RELEASE"
-		lombokVersion = "1.18.22"
-		springdocVersion = "1.6.6"
-		springCloudVersion = "2021.0.3"
-	}
-	repositories {
-		mavenCentral()
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
-	}
-	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-		classpath "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-		classpath "io.spring.gradle:dependency-management-plugin:${springDependencyManagementVersion}"
-	}
+buildscript { ext {
+	set('SPRING_BOOT_VERSION', '2.7.3')
+	set('SPRING_CLOUD_VERSION', '2021.0.3')
+	set('SPRING_DEPENDENCY_MANAGEMENT_VERSION', '1.0.13.RELEASE')
+}}
+
+plugins {
+	id "org.springframework.boot" version "${SPRING_BOOT_VERSION}"
+	id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VERSION}"
 }
 
-
 subprojects {
-	group = "polimi.saefa"
-	version "latest"
+	group = "it.polimi.saefa"
+	version = "latest"
 
-	if (project.name != "delivery-proxy-service" && project.name != "payment-proxy-service") {
-		apply plugin: "java"
-		sourceCompatibility = "16"
+	apply plugin: "java"
+	sourceCompatibility = "16"
+
+	if (project.name.endsWith("-service")) {
+		apply plugin: "org.springframework.boot"
+		apply plugin: "io.spring.dependency-management"
 
 		repositories {
 			mavenCentral()
-			maven {
-				url "https://plugins.gradle.org/m2/"
-			}
 		}
 
-		if (project.name != "services-restapi") {
-			apply plugin: "org.springframework.boot"
-			apply plugin: "io.spring.dependency-management"
-			dependencyManagement {
-				imports {
-					mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-				}
+		dependencyManagement {
+			imports {
+				mavenBom "org.springframework.cloud:spring-cloud-dependencies:${SPRING_CLOUD_VERSION}"
 			}
 		}
 
 		dependencies {
-			compileOnly "org.projectlombok:lombok:${lombokVersion}"
-			annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+			// Spring Boot dependencies, using the specified Spring Boot version
+			implementation 'org.springframework.boot:spring-boot-starter-aop'
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-			if (project.name != "services-restapi" && project.name != "eureka-registry-service") {
-				implementation "org.springframework.boot:spring-boot-starter-aop"
-				implementation "org.springframework.boot:spring-boot-starter-web"
-				implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
-				implementation "org.springframework.boot:spring-boot-starter-actuator"
-				implementation "io.micrometer:micrometer-registry-prometheus"
-			}
+			// Spring Cloud dependencies, using the specified Spring Cloud version
+			implementation 'org.springframework.cloud:spring-cloud-starter-config'
+			implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+			// add all the custom libraries (in Jar format) from the libs folder
+			compileOnly fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
+
+			// Additional dependencies
+			compileOnly 'org.projectlombok:lombok:1.18.24'
+			annotationProcessor 'org.projectlombok:lombok:1.18.24'
+			implementation 'io.micrometer:micrometer-registry-prometheus:1.9.3'
+			implementation 'org.springdoc:springdoc-openapi-ui:1.6.6'
 		}
 
 		tasks.named("jar") {
@@ -67,6 +59,7 @@ subprojects {
 		tasks.named("test") {
 			useJUnitPlatform()
 		}
+
 	}
 
 }
