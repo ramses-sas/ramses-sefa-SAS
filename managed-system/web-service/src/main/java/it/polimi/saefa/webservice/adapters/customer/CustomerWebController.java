@@ -176,11 +176,12 @@ public class CustomerWebController {
 		ConfirmOrderResponse confirmOrderResponse = customerWebService.confirmCashPayment(cartId, formData.getAddress(), formData.getCity(),
 				streetNumber, formData.getZipcode(), formData.getTelephoneNumber(), d);
 		model.addAttribute("confirmOrderResponse", confirmOrderResponse);
-		if(!confirmOrderResponse.isConfirmed() && confirmOrderResponse.getIsTakeAway() != null && confirmOrderResponse.getIsTakeAway()){
+		if(!confirmOrderResponse.isConfirmed()) {
+			if (confirmOrderResponse.getIsTakeAway() != null && confirmOrderResponse.getIsTakeAway()) {
 				return "customer/takeaway-confirmation";
+			} else {
+				handleError.accept("Order not confirmed");
 			}
-		else{
-			handleError.accept("Order not confirmed");
 		}
 		removeFromCookie(response, cartData, cartId.toString());
 		model.addAttribute("cash", "You will be asked to pay cash upon delivery.");
