@@ -16,13 +16,13 @@ subprojects {
 	apply plugin: "java"
 	sourceCompatibility = "16"
 
+	repositories {
+		mavenCentral()
+	}
+
 	if (project.name.endsWith("-service")) {
 		apply plugin: "org.springframework.boot"
 		apply plugin: "io.spring.dependency-management"
-
-		repositories {
-			mavenCentral()
-		}
 
 		dependencyManagement {
 			imports {
@@ -41,7 +41,7 @@ subprojects {
 			implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
 			// add all the custom libraries (in Jar format) from the libs folder
-			compileOnly fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
+			implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
 
 			// Additional dependencies
 			compileOnly 'org.projectlombok:lombok:1.18.24'

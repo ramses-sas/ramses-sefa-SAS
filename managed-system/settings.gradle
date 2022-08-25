@@ -1,12 +1,9 @@
 rootProject.name = 'saefa'
 
 include 'services-restapi'
-//include 'load-balancer'
-//include 'config-parser'
 
 include 'web-service'
 include 'api-gateway-service'
-//include 'eureka-registry-server'
 
 include 'restaurant-service'
 include 'ordering-service'
@@ -17,3 +14,6 @@ include 'payment-proxies:payment-proxy-3-service'
 include 'delivery-proxies:delivery-proxy-1-service'
 include 'delivery-proxies:delivery-proxy-2-service'
 include 'delivery-proxies:delivery-proxy-3-service'
+
+include 'servers:eureka-registry-server'
+include 'servers:config-server'
