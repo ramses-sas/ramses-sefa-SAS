@@ -9,22 +9,6 @@
     <h3>The order can be placed by paying cash upon delivery. Do you still want to confirm your order? </h3>
     <form th:action="|/customer/cart/${cartId}/confirmCashPayment|" method="POST">
         <div>
-            <label>Card Number</label>
-            <input type="text" th:field="${formData.cardNumber}" required>
-        </div>
-        <div>
-            <label>Exp Month</label>
-            <input type="text" th:field="${formData.expMonth}" required>
-        </div>
-        <div>
-            <label>Exp Year</label>
-            <input type="text" th:field="${formData.expYear}" required>
-        </div>
-        <div>
-            <label>CVV</label>
-            <input type="text" th:field="${formData.cvv}" required>
-        </div>
-        <div>
             <label>Delivery Address</label>
             <input type="text" th:field="${formData.address}" required>
         </div>
