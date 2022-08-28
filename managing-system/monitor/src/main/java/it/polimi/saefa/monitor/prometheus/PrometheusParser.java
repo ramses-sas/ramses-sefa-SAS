@@ -48,7 +48,7 @@ public class PrometheusParser {
                     case PrometheusMetrics.CB_CALLS_SECONDS_MAX ->  instanceMetrics.addCircuitBreakerCallMaxDuration(labels.get("name"),
                             labels.get("kind"), ((Gauge)metric).getValue());
                     case PrometheusMetrics.CB_NOT_PERMITTED_CALLS_TOTAL -> instanceMetrics.addCircuitBreakerNotPermittedCallsCount(labels.get("name"),
-                            (int) ((Gauge) metric).getValue());
+                            (int) ((Counter) metric).getValue());
                     case PrometheusMetrics.CB_SLOW_CALL_RATE -> instanceMetrics.addCircuitBreakerSlowCallRate(labels.get("name"),
                             ((Gauge) metric).getValue());
                     case PrometheusMetrics.CB_SLOW_CALLS -> instanceMetrics.addCircuitBreakerSlowCallCount(labels.get("name"),
