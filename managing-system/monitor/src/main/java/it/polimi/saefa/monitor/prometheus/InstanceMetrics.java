@@ -1,5 +1,7 @@
 package it.polimi.saefa.monitor.prometheus;
 
+import it.polimi.saefa.monitor.CircuitBreakerMetrics;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,9 +11,11 @@ public class InstanceMetrics {
     public String instanceId;
     // Map<Endpoint, List<HttpRequestMetrics>>
     public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
+    public Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     public Double cpuUsage;
     public Double diskTotalSpace;
     public Double diskFreeSpace;
+
 
     public InstanceMetrics(String instanceId) {
         this.instanceId = instanceId;
@@ -22,6 +26,64 @@ public class InstanceMetrics {
             httpMetrics.put(metrics.endpoint, new LinkedList<>());
         }
         httpMetrics.get(metrics.endpoint).add(metrics);
+    }
+
+    public void addCircuitBreakerBufferedCalls(String circuitBreakerName, String outcomeStatus, int count) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.getBufferedCallsCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+    }
+
+    public void addCircuitBreakerState(String circuitBreakerName, String state, int value){
+        if(value == 1){
+            CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+            circuitBreakerMetrics.setState(CircuitBreakerMetrics.State.valueOf(state.toUpperCase()));
+        }
+    }
+
+    public void addCircuitBreakerCallCountAndDurationSum(String circuitBreakerName, String outcomeStatus, int count, double durationSum) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.getCallCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+        circuitBreakerMetrics.getCallDuration().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), durationSum);
+    }
+
+    public void addCircuitBreakerCallMaxDuration(String circuitBreakerName, String outcomeStatus, double duration) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.getCallMaxDuration().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), duration);
+    }
+
+    public void addCircuitBreakerNotPermittedCallsCount(String circuitBreakerName, int count) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.setNotPermittedCallsCount(count);
+    }
+
+    public void addCircuitBreakerFailureRate(String circuitBreakerName, double failureRate) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.setFailureRate(failureRate);
+    }
+
+    public void addCircuitBreakerSlowCallCount(String circuitBreakerName, String outcomeStatus, int count) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.getSlowCallCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+    }
+
+    public void addCircuitBreakerSlowCallRate(String circuitBreakerName, double rate) {
+        CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
+        circuitBreakerMetrics.setSlowCallRate(rate);
+    }
+
+    private CircuitBreakerMetrics getOrInitCircuitBreakerMetrics(String circuitBreakerName) {
+        if (!circuitBreakerMetrics.containsKey(circuitBreakerName)) {
+            circuitBreakerMetrics.put(circuitBreakerName, new CircuitBreakerMetrics(circuitBreakerName));
+        }
+        return circuitBreakerMetrics.get(circuitBreakerName);
+    }
+
+    public CircuitBreakerMetrics getCircuitBreakerMetrics(String circuitBreakerName) {
+        try {
+            return circuitBreakerMetrics.get(circuitBreakerName);
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     public Map<String, List<HttpRequestMetrics>> getHttpMetrics() {
@@ -64,6 +126,7 @@ public class InstanceMetrics {
                 "  cpuUsage = " + cpuUsage + "\n" +
                 "  diskTotalSpace = " + diskTotalSpace + "\n" +
                 "  diskFreeSpace = " + diskFreeSpace + "\n" +
+                "  circuitBreakerMetrics = " + circuitBreakerMetrics + "\n" +
                 '}';
     }
 

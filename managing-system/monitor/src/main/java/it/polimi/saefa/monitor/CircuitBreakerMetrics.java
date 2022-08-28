@@ -38,4 +38,24 @@ public class CircuitBreakerMetrics {
         return callDuration.get(status)/callCount.get(status);
     }
 
+    public int getTotalCallsCount() {
+        return callCount.values().stream().mapToInt(Integer::intValue).sum() + notPermittedCallsCount;
+    }
+
+    @Override
+    public String toString() {
+        return "CircuitBreakerMetrics{" +
+                "name='" + name + "'" +
+                ",\n\t\tstate=" + state +
+                ",\n\t\tbufferedCallsCount=" + bufferedCallsCount +
+                ",\n\t\tcallDuration=" + callDuration +
+                ",\n\t\tcallMaxDuration=" + callMaxDuration +
+                ",\n\t\tcallCount=" + callCount +
+                ",\n\t\tslowCallCount=" + slowCallCount +
+                ",\n\t\tnotPermittedCallsCount=" + notPermittedCallsCount +
+                ",\n\t\tfailureRate=" + failureRate +
+                ",\n\t\tslowCallRate=" + slowCallRate +
+                ",\n\t\ttotalCallCount=" + getTotalCallsCount() +
+                "}\n";
+    }
 }
