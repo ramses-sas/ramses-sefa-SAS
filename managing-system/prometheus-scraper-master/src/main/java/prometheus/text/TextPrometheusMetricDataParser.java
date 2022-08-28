@@ -204,7 +204,7 @@ public class TextPrometheusMetricDataParser extends PrometheusMetricDataParser<M
                     if (parts.length < 2) {
                         // ignore line - probably a comment
                     } else if (parts[1].equals("HELP")) {
-                        if (!parts[2].equals(context.name)) {
+                        if (!(parts[2] + (context.type.equals(MetricType.COUNTER) ? "_total":"")).equals(context.name)) {
                             // we are hitting a new metric family
                             if (!context.name.isEmpty()) {
                                 // break and we'll finish the metric family we previously were building up
@@ -238,6 +238,8 @@ public class TextPrometheusMetricDataParser extends PrometheusMetricDataParser<M
                         context.allowedNames.clear();
                         switch (context.type) {
                             case COUNTER:
+                                if(!context.name.endsWith("_total"))
+                                    context.name += "_total";
                                 context.allowedNames.add(context.name);
                                 break;
                             case GAUGE:
