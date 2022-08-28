@@ -1,22 +1,23 @@
 package it.polimi.saefa.monitor;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Data
 public class CircuitBreakerMetrics {
-    public String name;
-    public State state;
-    public Map<CallOutcomeStatus, Integer> bufferedCallsCount;
-    public Map<CallOutcomeStatus, Double> callDuration;
-    public Map<CallOutcomeStatus, Double> callMaxDuration;
-    public Map<CallOutcomeStatus, Integer> callCount;
-    public Map<CallOutcomeStatus, Integer> slowCallCount;
-    public int notPermittedCallsCount;
-    public double failureRate;
-    public double slowCallRate;
+    private String name;
+    private State state;
+    private Map<CallOutcomeStatus, Integer> bufferedCallsCount;
+    private Map<CallOutcomeStatus, Double> callDuration;
+    private Map<CallOutcomeStatus, Double> callMaxDuration;
+    private Map<CallOutcomeStatus, Integer> callCount;
+    private Map<CallOutcomeStatus, Integer> slowCallCount;
+    private int notPermittedCallsCount;
+    private double failureRate;
+    private double slowCallRate;
 
     public CircuitBreakerMetrics(String name) {
         this.name = name;

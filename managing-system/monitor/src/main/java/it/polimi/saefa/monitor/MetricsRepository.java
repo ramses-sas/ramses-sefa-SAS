@@ -36,45 +36,45 @@ public class MetricsRepository {
 
     public void addCircuitBreakerBufferedCalls(String instanceId, String circuitBreakerName, String outcomeStatus, int count) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.bufferedCallsCount.put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+        circuitBreakerMetrics.getBufferedCallsCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
     }
 
     public void addCircuitBreakerState(String instanceId, String circuitBreakerName, String state, int value){
         if(value == 1){
             CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-            circuitBreakerMetrics.state = CircuitBreakerMetrics.State.valueOf(state.toUpperCase());
+            circuitBreakerMetrics.setState(CircuitBreakerMetrics.State.valueOf(state.toUpperCase()));
         }
     }
 
     public void addCircuitBreakerCallCountAndDurationSum(String instanceId, String circuitBreakerName, String outcomeStatus, int count, double durationSum) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.callCount.put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
-        circuitBreakerMetrics.callDuration.put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), durationSum);
+        circuitBreakerMetrics.getCallCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+        circuitBreakerMetrics.getCallDuration().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), durationSum);
     }
 
     public void addCircuitBreakerCallMaxDuration(String instanceId, String circuitBreakerName, String outcomeStatus, double duration) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.callMaxDuration.put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), duration);
+        circuitBreakerMetrics.getCallMaxDuration().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), duration);
     }
 
     public void addCircuitBreakerNotPermittedCallsCount(String instanceId, String circuitBreakerName, int count) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.notPermittedCallsCount = count;
+        circuitBreakerMetrics.setNotPermittedCallsCount(count);
     }
 
     public void addCircuitBreakerFailureRate(String instanceId, String circuitBreakerName, double failureRate) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.failureRate = failureRate;
+        circuitBreakerMetrics.setFailureRate(failureRate);
     }
 
     public void addCircuitBreakerSlowCallCount(String instanceId, String circuitBreakerName, String outcomeStatus, int count) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.slowCallCount.put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
+        circuitBreakerMetrics.getSlowCallCount().put(CircuitBreakerMetrics.CallOutcomeStatus.valueOf(outcomeStatus.toUpperCase()), count);
     }
 
     public void addCircuitBreakerSlowCallRate(String instanceId, String circuitBreakerName, double rate) {
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(instanceId, circuitBreakerName);
-        circuitBreakerMetrics.slowCallRate = rate;
+        circuitBreakerMetrics.setSlowCallRate(rate);
     }
 
     private CircuitBreakerMetrics getOrInitCircuitBreakerMetrics(String instanceId, String circuitBreakerName) {
