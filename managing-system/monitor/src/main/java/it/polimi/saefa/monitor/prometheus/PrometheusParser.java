@@ -1,4 +1,4 @@
-package it.polimi.saefa.monitor;
+package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +14,8 @@ import java.util.Map;
 @Slf4j
 @Controller
 public class PrometheusParser {
-
-    public MetricsRepository parse(InstanceInfo instanceInfo) {
-        MetricsRepository metricsRepository = new MetricsRepository();
+    public InstanceMetrics parse(InstanceInfo instanceInfo) {
+        InstanceMetrics instanceMetrics = new InstanceMetrics(instanceInfo.getInstanceId());
         String url = instanceInfo.getHomePageUrl()+"actuator/prometheus";
         List<MetricFamily> list;
         try {
@@ -28,17 +27,22 @@ public class PrometheusParser {
         list.forEach(elem -> {
             String propertyName = elem.getName(); //e.g. http_server_requests_seconds
             //MetricType metricType = elem.getType(); //e.g. GAUGE
-
             elem.getMetrics().forEach(metric -> { //e.g., one metric is the http_server_requests_seconds for the endpoint X
+                log.debug("Metric {}: {}", metric.getName(), metric.getLabels());
                 switch (propertyName) {
-                    case "http_server_requests_seconds":
-                        metricsRepository.addHttpMetrics(instanceInfo.getInstanceId(), handleHttpServerRequestsSeconds((Histogram) metric));
-                    default:
-                        break;
+                    case PrometheusMetrics.HTTP_REQUESTS_TIME ->
+                            instanceMetrics.addHttpMetrics(handleHttpServerRequestsSeconds((Histogram) metric));
+                    case PrometheusMetrics.DISK_FREE_SPACE ->
+                            instanceMetrics.diskFreeSpace = ((Gauge) metric).getValue();
+                    case PrometheusMetrics.DISK_TOTAL_SPACE ->
+                            instanceMetrics.diskTotalSpace = ((Gauge) metric).getValue();
+                    case PrometheusMetrics.CPU_USAGE ->
+                            instanceMetrics.cpuUsage = ((Gauge) metric).getValue();
+                    default -> {}
                 }
             });
         } );
-        return metricsRepository;
+        return instanceMetrics;
     }
 
     private HttpRequestMetrics handleHttpServerRequestsSeconds(Histogram metric) {

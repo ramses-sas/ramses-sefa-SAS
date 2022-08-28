@@ -1,11 +1,11 @@
-package it.polimi.saefa.monitor;
+package it.polimi.saefa.monitor.prometheus;
 
 import lombok.AllArgsConstructor;
 
 
 @AllArgsConstructor
 public class HttpRequestMetrics {
-    public String path;
+    public String endpoint;
     public String httpMethod;
     public String outcome;
     public int status;
@@ -18,9 +18,9 @@ public class HttpRequestMetrics {
 
     @Override
     public String toString() {
-        return "HttpRequestMetrics{" +
-                httpMethod + " " + path + '\'' +
-                ", outcome='" + outcome + '\'' +
+        return "HttpRequestMetrics{ " +
+                httpMethod + " " + endpoint +
+                ", outcome=" + outcome +
                 ", status=" + status +
                 ", requestsCount=" + count +
                 ", totalDuration=" + totalDuration +
