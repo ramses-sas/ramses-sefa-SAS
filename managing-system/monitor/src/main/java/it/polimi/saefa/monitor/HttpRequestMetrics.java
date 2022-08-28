@@ -15,6 +15,17 @@ public class HttpRequestMetrics {
     public double getAverageDuration() {
         return totalDuration / count;
     }
+
+    @Override
+    public String toString() {
+        return "HttpRequestMetrics{" +
+                httpMethod + " " + path + '\'' +
+                ", outcome='" + outcome + '\'' +
+                ", status=" + status +
+                ", requestsCount=" + count +
+                ", totalDuration=" + totalDuration +
+                '}';
+    }
 }
 
 
