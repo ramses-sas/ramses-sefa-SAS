@@ -39,8 +39,7 @@ public class PrometheusParser {
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
                             instanceMetrics.diskTotalSpace = ((Gauge) metric).getValue();
                     case PrometheusMetrics.CPU_USAGE -> instanceMetrics.cpuUsage = ((Gauge) metric).getValue();
-                    case PrometheusMetrics.CB_BUFFERED_CALLS ->
-                            instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"),
+                    case PrometheusMetrics.CB_BUFFERED_CALLS -> instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"),
                                     labels.get("kind"), (int) ((Gauge) metric).getValue());
                     case PrometheusMetrics.CB_STATE -> instanceMetrics.addCircuitBreakerState(labels.get("name"),
                             labels.get("state"), (int) ((Gauge) metric).getValue());
