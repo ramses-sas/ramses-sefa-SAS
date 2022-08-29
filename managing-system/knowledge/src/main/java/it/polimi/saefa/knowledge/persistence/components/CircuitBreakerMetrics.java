@@ -1,13 +1,15 @@
-package it.polimi.saefa.knowledge.persistence;
+package it.polimi.saefa.knowledge.persistence.components;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 public class CircuitBreakerMetrics {

@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-/*
+
 @Component
 @Slf4j
 @Transactional
@@ -24,21 +24,23 @@ public class CLIRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        /*
         InstanceMetrics i = new InstanceMetrics("RESTAURANT-SERVICE", "localhost:58085");
         i.applyTimestamp();
         repo.save(i);
         i = new InstanceMetrics("RESTAURANT-SERVICE", "localhost:58086");
         i.applyTimestamp();
-        //repo.save(i);
+        repo.save(i);
 
         Instant now = Instant.now();
         Instant yesterday = now.minus(1, ChronoUnit.DAYS);
         Instant tomorrow = now.plus(1, ChronoUnit.DAYS);
 
-        Collection<InstanceMetrics> all = repo.findAllByTimestampBetween(Date.from(yesterday), Date.from(tomorrow));
-        all.forEach(elem -> log.info(elem.toString()));
+        Collection<InstanceMetrics> all = repo.findAllByTimestampBetween(new Date(), Date.from(tomorrow));
+        //all.forEach(elem -> log.info(elem.toString()));
+         */
     }
 
 }
 
- */
+

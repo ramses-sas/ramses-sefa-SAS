@@ -1,12 +1,17 @@
 package it.polimi.saefa.knowledge.persistence;
 
-import lombok.Data;
+import it.polimi.saefa.knowledge.persistence.components.CircuitBreakerMetrics;
+import it.polimi.saefa.knowledge.persistence.components.HttpRequestMetrics;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class InstanceMetrics {
     @Id
@@ -17,10 +22,10 @@ public class InstanceMetrics {
     //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
     //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     List<HttpRequestMetrics> httpMetrics = new LinkedList<>();
     private Double cpuUsage;
     private Double diskTotalSpace;
@@ -31,15 +36,6 @@ public class InstanceMetrics {
         this.instanceId = instanceId;
         this.serviceId = serviceId;
     }
-
-
-    /*public void addHttpMetrics(HttpRequestMetrics metrics) {
-        if (!httpMetrics.containsKey(metrics.endpoint)) {
-            httpMetrics.put(metrics.endpoint, new LinkedList<>());
-        }
-        httpMetrics.get(metrics.endpoint).add(metrics);
-    }*/
-
 
 
     public void addHttpMetrics(HttpRequestMetrics metrics) {
@@ -108,6 +104,14 @@ public class InstanceMetrics {
     }
 
     /*
+
+    public void addHttpMetrics(HttpRequestMetrics metrics) {
+        if (!httpMetrics.containsKey(metrics.endpoint)) {
+            httpMetrics.put(metrics.endpoint, new LinkedList<>());
+        }
+        httpMetrics.get(metrics.endpoint).add(metrics);
+    }
+
     public Map<String, List<HttpRequestMetrics>> getHttpMetrics() {
         return this.httpMetrics;
     }

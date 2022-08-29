@@ -1,7 +1,7 @@
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.persistence.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.components.HttpRequestMetrics;
 import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

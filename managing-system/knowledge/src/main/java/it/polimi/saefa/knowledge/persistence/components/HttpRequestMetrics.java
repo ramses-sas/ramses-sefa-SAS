@@ -1,8 +1,7 @@
-package it.polimi.saefa.knowledge.persistence;
+package it.polimi.saefa.knowledge.persistence.components;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,7 +9,8 @@ import javax.persistence.Id;
 
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class HttpRequestMetrics {
 

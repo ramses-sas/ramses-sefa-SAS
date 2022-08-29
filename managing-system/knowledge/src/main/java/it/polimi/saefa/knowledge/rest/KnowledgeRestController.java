@@ -3,11 +3,14 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.PersistenceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+import java.util.List;
+
+@Slf4j
 @RestController
 @RequestMapping(path="/rest/")
 public class KnowledgeRestController {
@@ -15,8 +18,18 @@ public class KnowledgeRestController {
     private PersistenceService persistenceService;
 
     @PostMapping("/")
-    public String addMetric(InstanceMetrics metrics) {
+    public void addMetric(@RequestBody InstanceMetrics metrics) {
+        log.debug("Adding metric for {}@{} at {}", metrics.getServiceId(), metrics.getInstanceId(), metrics.getTimestamp());
         persistenceService.addMetrics(metrics);
-        return "OK";
+    }
+
+    @GetMapping("/")
+    public InstanceMetrics getMetrics(Date timestamp, String instanceId) {
+        return persistenceService.getMetrics(instanceId, timestamp);
+    }
+
+    @GetMapping("/getAll")
+    public List<InstanceMetrics> getMetrics() {
+        return persistenceService.getMetrics();
     }
 }

@@ -31,13 +31,15 @@ subprojects {
 
 	dependencies {
 		// Spring Boot dependencies, using the specified Spring Boot version
-		implementation 'org.springframework.boot:spring-boot-starter-aop'
+		// implementation 'org.springframework.boot:spring-boot-starter-aop'
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		// implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 		// Spring Cloud dependencies, using the specified Spring Cloud version
 		// implementation 'org.springframework.cloud:spring-cloud-starter-config'
 		implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+		implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
+
 
 		// Additional dependencies
 		compileOnly 'org.projectlombok:lombok:1.18.24'
