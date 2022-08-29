@@ -1,24 +1,33 @@
-package it.polimi.saefa.monitor.prometheus;
+package it.polimi.saefa.knowledge.persistence;
 
-import it.polimi.saefa.monitor.CircuitBreakerMetrics;
+import javax.persistence.*;
+import java.util.*;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
+//@Entity
 public class InstanceMetrics {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    public String serviceId;
     public String instanceId;
     // Map<Endpoint, List<HttpRequestMetrics>>
     public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
+    // Map<CircuitBreakerName, CircuitBreakerMetrics>
     public Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     public Double cpuUsage;
     public Double diskTotalSpace;
     public Double diskFreeSpace;
+    public Date timestamp;
 
 
-    public InstanceMetrics(String instanceId) {
+    public InstanceMetrics(String serviceId, String instanceId) {
         this.instanceId = instanceId;
+        this.serviceId = serviceId;
+    }
+
+    public InstanceMetrics() {
     }
 
     public void addHttpMetrics(HttpRequestMetrics metrics) {
@@ -26,6 +35,10 @@ public class InstanceMetrics {
             httpMetrics.put(metrics.endpoint, new LinkedList<>());
         }
         httpMetrics.get(metrics.endpoint).add(metrics);
+    }
+
+    public void applyTimestamp() {
+        timestamp = new Date();
     }
 
     public void addCircuitBreakerBufferedCalls(String circuitBreakerName, String outcomeStatus, int count) {
@@ -121,13 +134,21 @@ public class InstanceMetrics {
 
     @Override
     public String toString() {
-        return "\nMetrics for instance " + instanceId + "{\n" +
+        return "\nMetrics for instance " + instanceId + " {\n" +
                 "  httpMetrics = " + httpMetrics + "\n" +
                 "  cpuUsage = " + cpuUsage + "\n" +
                 "  diskTotalSpace = " + diskTotalSpace + "\n" +
                 "  diskFreeSpace = " + diskFreeSpace + "\n" +
-                "  circuitBreakerMetrics = " + circuitBreakerMetrics + "\n" +
-                '}';
+                "  circuitBreakerMetrics = " + circuitBreakerMetrics +
+                "\n}";
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
 }

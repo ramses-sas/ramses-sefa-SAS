@@ -1,4 +1,4 @@
-package it.polimi.saefa.monitor.prometheus;
+package it.polimi.saefa.knowledge.persistence;
 
 import lombok.AllArgsConstructor;
 

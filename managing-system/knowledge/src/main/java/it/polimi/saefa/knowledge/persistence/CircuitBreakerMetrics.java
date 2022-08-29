@@ -1,6 +1,5 @@
-package it.polimi.saefa.monitor;
+package it.polimi.saefa.knowledge.persistence;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -44,8 +43,8 @@ public class CircuitBreakerMetrics {
 
     @Override
     public String toString() {
-        return "CircuitBreakerMetrics{" +
-                "name='" + name + "'" +
+        return "CircuitBreakerMetrics { " +
+                "\n\t\tname='" + name + "'" +
                 ",\n\t\tstate=" + state +
                 ",\n\t\tbufferedCallsCount=" + bufferedCallsCount +
                 ",\n\t\tcallDuration=" + callDuration +

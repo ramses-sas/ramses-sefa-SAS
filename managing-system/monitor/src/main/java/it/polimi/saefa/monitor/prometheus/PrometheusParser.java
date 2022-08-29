@@ -1,6 +1,8 @@
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
+import it.polimi.saefa.knowledge.persistence.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import prometheus.PrometheusScraper;
@@ -8,7 +10,6 @@ import prometheus.types.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 @Controller
 public class PrometheusParser {
     public InstanceMetrics parse(InstanceInfo instanceInfo) {
-        InstanceMetrics instanceMetrics = new InstanceMetrics(instanceInfo.getInstanceId());
+        InstanceMetrics instanceMetrics = new InstanceMetrics(instanceInfo.getAppName(), instanceInfo.getInstanceId());
         String url = instanceInfo.getHomePageUrl()+"actuator/prometheus";
         List<MetricFamily> metricFamilies;
         try {
@@ -29,7 +30,7 @@ public class PrometheusParser {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
             //MetricType metricType = elem.getType(); //e.g. GAUGE
             metricFamily.getMetrics().forEach(metric -> { //e.g., one metric is the http_server_requests_seconds for the endpoint X
-                log.debug("Metric {}: {}", metric.getName(), metric.getLabels());
+                //log.debug("Metric {}: {}", metric.getName(), metric.getLabels());
                 Map<String, String> labels = metric.getLabels();
                 switch (propertyName) {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->

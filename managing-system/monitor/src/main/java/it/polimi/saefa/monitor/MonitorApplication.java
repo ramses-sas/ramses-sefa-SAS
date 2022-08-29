@@ -3,7 +3,7 @@ package it.polimi.saefa.monitor;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import it.polimi.saefa.monitor.prometheus.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +36,10 @@ public class MonitorApplication {
         List<Application> applications = discoveryClient.getApplications().getRegisteredApplications();
         Map<String, List<InstanceInfo>> servicesInstances = new HashMap<>();
         applications.forEach(application -> {
-            List<InstanceInfo> applicationsInstances = application.getInstances();
-            servicesInstances.put(application.getName(), applicationsInstances);
+            if (application.getName().endsWith("-SERVICE")) {
+                List<InstanceInfo> applicationsInstances = application.getInstances();
+                servicesInstances.put(application.getName(), applicationsInstances);
+            }
         });
         return servicesInstances;
     }
