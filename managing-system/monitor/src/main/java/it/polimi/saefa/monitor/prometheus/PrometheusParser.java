@@ -36,10 +36,10 @@ public class PrometheusParser {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->
                             instanceMetrics.addHttpMetrics(handleHttpServerRequestsSeconds((Histogram) metric));
                     case PrometheusMetrics.DISK_FREE_SPACE ->
-                            instanceMetrics.diskFreeSpace = ((Gauge) metric).getValue();
+                            instanceMetrics.setDiskFreeSpace(((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
-                            instanceMetrics.diskTotalSpace = ((Gauge) metric).getValue();
-                    case PrometheusMetrics.CPU_USAGE -> instanceMetrics.cpuUsage = ((Gauge) metric).getValue();
+                            instanceMetrics.setDiskTotalSpace(((Gauge) metric).getValue());
+                    case PrometheusMetrics.CPU_USAGE -> instanceMetrics.setCpuUsage(((Gauge) metric).getValue());
                     case PrometheusMetrics.CB_BUFFERED_CALLS -> instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"),
                                     labels.get("kind"), (int) ((Gauge) metric).getValue());
                     case PrometheusMetrics.CB_STATE -> instanceMetrics.addCircuitBreakerState(labels.get("name"),

@@ -1,42 +1,50 @@
 package it.polimi.saefa.knowledge.persistence;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.*;
 
-//@Entity
+@Entity
+@Data
+@NoArgsConstructor
 public class InstanceMetrics {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue
     private Long id;
-
-    public String serviceId;
-    public String instanceId;
+    private String serviceId;
+    private String instanceId;
+    //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
-    public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
+    //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
+    @OneToMany
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
-    public Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
-    public Double cpuUsage;
-    public Double diskTotalSpace;
-    public Double diskFreeSpace;
-    public Date timestamp;
-
+    private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
+    @OneToMany
+    List<HttpRequestMetrics> httpMetrics = new LinkedList<>();
+    private Double cpuUsage;
+    private Double diskTotalSpace;
+    private Double diskFreeSpace;
+    private Date timestamp;
 
     public InstanceMetrics(String serviceId, String instanceId) {
         this.instanceId = instanceId;
         this.serviceId = serviceId;
     }
 
-    public InstanceMetrics() {
-    }
 
-    public void addHttpMetrics(HttpRequestMetrics metrics) {
+    /*public void addHttpMetrics(HttpRequestMetrics metrics) {
         if (!httpMetrics.containsKey(metrics.endpoint)) {
             httpMetrics.put(metrics.endpoint, new LinkedList<>());
         }
         httpMetrics.get(metrics.endpoint).add(metrics);
-    }
+    }*/
 
+
+
+    public void addHttpMetrics(HttpRequestMetrics metrics) {
+        httpMetrics.add(metrics);
+    }
     public void applyTimestamp() {
         timestamp = new Date();
     }
@@ -99,6 +107,7 @@ public class InstanceMetrics {
         }
     }
 
+    /*
     public Map<String, List<HttpRequestMetrics>> getHttpMetrics() {
         return this.httpMetrics;
     }
@@ -130,11 +139,12 @@ public class InstanceMetrics {
         } catch (NullPointerException e) {
             return null;
         }
-    }
+    }*/
 
     @Override
     public String toString() {
         return "\nMetrics for instance " + instanceId + " {\n" +
+                "  date = " + timestamp + "\n" +
                 "  httpMetrics = " + httpMetrics + "\n" +
                 "  cpuUsage = " + cpuUsage + "\n" +
                 "  diskTotalSpace = " + diskTotalSpace + "\n" +
@@ -143,12 +153,5 @@ public class InstanceMetrics {
                 "\n}";
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
 }

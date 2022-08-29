@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,6 +17,7 @@ import java.util.List;
 /*
 @Component
 @Slf4j
+@Transactional
 public class CLIRunner implements CommandLineRunner {
     @Autowired
     private MetricsRepository repo;
