@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+/*
 @Component
 @Slf4j
 public class CLIRunner implements CommandLineRunner {
@@ -26,7 +27,7 @@ public class CLIRunner implements CommandLineRunner {
         repo.save(i);
         i = new InstanceMetrics("RESTAURANT-SERVICE", "localhost:58086");
         i.applyTimestamp();
-        repo.save(i);
+        //repo.save(i);
 
         Instant now = Instant.now();
         Instant yesterday = now.minus(1, ChronoUnit.DAYS);
@@ -35,4 +36,7 @@ public class CLIRunner implements CommandLineRunner {
         Collection<InstanceMetrics> all = repo.findAllByTimestampBetween(Date.from(yesterday), Date.from(tomorrow));
         all.forEach(elem -> log.info(elem.toString()));
     }
+
 }
+
+ */
