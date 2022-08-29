@@ -1,19 +1,41 @@
 package it.polimi.saefa.knowledge.persistence;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 
-@AllArgsConstructor
+
+@Entity
+@Data
+@NoArgsConstructor
 public class HttpRequestMetrics {
-    public String endpoint;
-    public String httpMethod;
-    public String outcome;
-    public int status;
-    public long count;
-    public double totalDuration;
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String endpoint;
+    private String httpMethod;
+    private String outcome;
+    private int status;
+    private long count;
+    private double totalDuration;
 
     public double getAverageDuration() {
         return totalDuration / count;
+    }
+
+    public HttpRequestMetrics(String endpoint, String httpMethod, String outcome, int status, long count, double totalDuration) {
+        this.endpoint = endpoint;
+        this.httpMethod = httpMethod;
+        this.outcome = outcome;
+        this.status = status;
+        this.count = count;
+        this.totalDuration = totalDuration;
     }
 
     @Override
