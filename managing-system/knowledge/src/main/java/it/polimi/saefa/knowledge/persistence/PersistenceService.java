@@ -3,6 +3,7 @@ package it.polimi.saefa.knowledge.persistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,16 @@ public class PersistenceService {
 
     public InstanceMetrics getMetrics(String instanceId, Date timestamp) {
         return metricsRepository.findByInstanceIdAndTimestamp(instanceId, timestamp);
+    }
+
+    public InstanceMetrics findLatestByInstanceId(String instanceId) {
+        return metricsRepository.findLatestByInstanceId(instanceId);
+    }
+
+    public List<InstanceMetrics> findLatestByServiceId(String serviceId) {
+        List<InstanceMetrics> metrics = new LinkedList<>();
+        metricsRepository.findLatestByServiceId(serviceId).iterator().forEachRemaining(metrics::add);
+        return metrics;
     }
 
 
