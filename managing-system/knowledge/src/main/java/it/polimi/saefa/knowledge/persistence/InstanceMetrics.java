@@ -30,6 +30,7 @@ public class InstanceMetrics {
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
     public InstanceMetrics(String serviceId, String instanceId) {

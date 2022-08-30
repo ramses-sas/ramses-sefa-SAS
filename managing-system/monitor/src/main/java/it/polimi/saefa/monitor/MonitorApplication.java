@@ -57,11 +57,14 @@ public class MonitorApplication {
         services.forEach((serviceName, serviceInstances) -> {
             log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
-                InstanceMetrics instanceMetrics = prometheusParser.parse(instance);
-                if (instanceMetrics != null) {
-                    log.debug(instanceMetrics.toString());
+                try {
+                    InstanceMetrics instanceMetrics = prometheusParser.parse(instance);
                     instanceMetrics.applyTimestamp();
+                    log.debug(instanceMetrics.toString());
                     knowledgeClient.addMetrics(instanceMetrics);
+                } catch (Exception e) {
+                    log.error("Error adding metrics for {}", instance.getInstanceId());
+                    log.error(e.getMessage());
                 }
             });
         });

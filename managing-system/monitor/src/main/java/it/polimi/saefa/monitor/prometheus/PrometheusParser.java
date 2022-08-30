@@ -56,8 +56,7 @@ public class PrometheusParser {
                             labels.get("kind"), (int) ((Gauge) metric).getValue());
                     case PrometheusMetrics.CB_FAILURE_RATE -> instanceMetrics.addCircuitBreakerFailureRate(labels.get("name"),
                             ((Gauge) metric).getValue());
-                    default -> {
-                    }
+                    default -> { }
                 }
             });
         } );
