@@ -3,6 +3,8 @@ package it.polimi.saefa.knowledge.persistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -23,14 +25,20 @@ public class PersistenceService {
         return metrics;
     }
 
+    public InstanceMetrics getMetrics(long id) {
+        return metricsRepository.findById(id).orElse(null);
+    }
+
     public List<InstanceMetrics> getMetrics(String instanceId) {
         List<InstanceMetrics> metrics = new LinkedList<>();
         metricsRepository.findAllByInstanceId(instanceId).iterator().forEachRemaining(metrics::add);
         return metrics;
     }
 
-    public InstanceMetrics getMetrics(String instanceId, Date timestamp) {
-        return metricsRepository.findByInstanceIdAndTimestamp(instanceId, timestamp);
+    public InstanceMetrics getMetrics(String instanceId, String timestamp) {
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
+        Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
+        return metricsRepository.findByInstanceIdAndTimestamp(instanceId, date);
     }
 
     public InstanceMetrics findLatestByInstanceId(String instanceId) {
