@@ -23,8 +23,14 @@ public class KnowledgeRestController {
         persistenceService.addMetrics(metrics);
     }
 
-    @GetMapping("/")
-    public InstanceMetrics getMetrics(Date timestamp, String instanceId) {
+    @GetMapping("/{metricsId}")
+    public InstanceMetrics getMetrics(@PathVariable long metricsId) {
+        return persistenceService.getMetrics(metricsId);
+    }
+
+    // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+    @GetMapping("/get")
+    public InstanceMetrics getMetrics(@RequestParam String instanceId, @RequestParam(name = "at") String timestamp) {
         return persistenceService.getMetrics(instanceId, timestamp);
     }
 
