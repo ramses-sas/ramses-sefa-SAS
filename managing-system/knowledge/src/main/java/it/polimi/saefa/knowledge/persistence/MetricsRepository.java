@@ -18,6 +18,8 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     InstanceMetrics findLatestByInstanceId(@Param("instanceId") String instanceId);
     @Query("SELECT m FROM InstanceMetrics m WHERE m.serviceId = :serviceId AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.serviceId = :serviceId and m2.instanceId = m.instanceId)")
     Collection<InstanceMetrics> findLatestByServiceId(String serviceId);
+    @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND m.isUp = TRUE AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.instanceId = :instanceId) AND m.timestamp < (SELECT MAX(m3.timestamp) FROM InstanceMetrics m3 WHERE m3.instanceId = :instanceId AND m3.isUp = FALSE)")
+    InstanceMetrics findLatestOnlineMeasurementIfDownByInstanceId(String instanceId);
 
 }
 
