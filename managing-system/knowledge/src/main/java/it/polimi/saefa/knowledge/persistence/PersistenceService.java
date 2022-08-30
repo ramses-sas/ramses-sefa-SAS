@@ -16,7 +16,9 @@ public class PersistenceService {
     private MetricsRepository metricsRepository;
 
     public void addMetrics(InstanceMetrics metrics) {
-        metricsRepository.save(metrics);
+        if(metrics.isUp() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isUp())
+            //if the instance is down, only save it if it's the first detection
+            metricsRepository.save(metrics);
     }
 
     public InstanceMetrics getMetrics(long id) {

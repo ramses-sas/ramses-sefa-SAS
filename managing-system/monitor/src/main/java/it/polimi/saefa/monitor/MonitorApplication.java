@@ -79,10 +79,7 @@ public class MonitorApplication {
         Map<String, List<InstanceInfo>> services = getServicesInstances();
         services.forEach((serviceName, serviceInstances) -> {
             serviceInstances.forEach(instance -> {
-                if(getServicesInstances().get(serviceName).contains(instance)) {
-                    //this check is done to avoid the case in which the instance is gracefully
-                    // disconnected from eureka since the original services list is not updated.
-                    // Still, it can happen between the check and the actual call to the service, so how to solve?
+
                     String url = instance.getHomePageUrl() + "actuator/health";
                     try {
                         ResponseEntity<Object> response = new RestTemplate().getForEntity(url, Object.class);
@@ -93,12 +90,18 @@ public class MonitorApplication {
                             log.debug("Instance {} of service {} is up", instance.getHostName() + ":" + instance.getPort(), instance.getAppName());
                     } catch (Exception e) {
                         log.warn("Instance {} is down", url);
-                        InstanceMetrics instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
-                        instanceMetrics.setUp(false);
-                        instanceMetrics.applyTimestamp();
-                        knowledgeClient.addMetrics(instanceMetrics);
+                        if(getServicesInstances().get(serviceName).contains(instance)) {
+                            //this check is done to avoid the case in which the instance is gracefully
+                            // disconnected from eureka since the original services list is not updated.
+                            // Still, it can happen between the check and the actual call to the service, so how to solve?
+                            InstanceMetrics instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
+                            instanceMetrics.setUp(false);
+                            instanceMetrics.applyTimestamp();
+                            knowledgeClient.addMetrics(instanceMetrics);
+
+                        }
                     }
-                }
+
             });
         });
     }
