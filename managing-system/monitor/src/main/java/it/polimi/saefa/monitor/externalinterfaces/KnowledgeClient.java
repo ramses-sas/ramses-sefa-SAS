@@ -9,16 +9,25 @@ import java.util.List;
 
 @FeignClient(name = "KNOWLEDGE", url = "http://localhost:58005")
 public interface KnowledgeClient {
-    @GetMapping("/rest/getAll")
-    List<InstanceMetrics> getMetrics();
+    @PostMapping("/rest/")
+    void addMetrics(@RequestBody InstanceMetrics metrics);
 
-    @GetMapping("/{metricsId}")
+    @GetMapping("/rest/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);
 
-    // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
-    @GetMapping("/get")
-    public InstanceMetrics getMetrics(@RequestParam String instanceId, @RequestParam(name = "at") String timestamp);
+    @GetMapping("/rest/get")
+    List<InstanceMetrics> getMetrics(
+            @RequestParam(required = false) String serviceId,
+            @RequestParam(required = false) String instanceId,
+            @RequestParam(required = false, name = "at") String timestamp, // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam(required = false) String before,
+            @RequestParam(required = false) String after
+    );
 
-    @PostMapping("/rest/get")
-    void addMetrics(@RequestBody InstanceMetrics metrics);
+    @GetMapping("/rest/getLatest")
+    List<InstanceMetrics> getLatestMetrics(
+            @RequestParam String serviceId,
+            @RequestParam(required = false) String instanceId
+    );
+
 }
