@@ -23,30 +23,20 @@ public class PersistenceService {
         return metricsRepository.findById(id).orElse(null);
     }
 
-    public InstanceMetrics getMetrics(String serviceId, String instanceId, String timestamp) {
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
-        Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceId, date);
-    }
-
     public List<InstanceMetrics> getAllInstanceMetrics(String serviceId, String instanceId) {
         return metricsRepository.findAllByServiceIdAndInstanceId(serviceId, instanceId).stream().toList();
     }
 
-    public List<InstanceMetrics> getAllMetricsBetween(String before, String after) {
-        LocalDateTime beforeLdt = LocalDateTime.parse(before);
-        Date beforeDate = Date.from(beforeLdt.atZone(ZoneOffset.UTC).toInstant());
-        LocalDateTime afterLdt = LocalDateTime.parse(after);
-        Date afterDate = Date.from(afterLdt.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findAllByTimestampBetween(beforeDate, afterDate).stream().toList();
+    public List<InstanceMetrics> getAllMetricsBetween(String startDateStr, String endDateStr) {
+        Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
+        Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByTimestampBetween(startDate, endDate).stream().toList();
     }
 
-    public List<InstanceMetrics> getAllInstanceMetricsBetween(String serviceId, String instanceId, String before, String after) {
-        LocalDateTime beforeLdt = LocalDateTime.parse(before);
-        Date beforeDate = Date.from(beforeLdt.atZone(ZoneOffset.UTC).toInstant());
-        LocalDateTime afterLdt = LocalDateTime.parse(after);
-        Date afterDate = Date.from(afterLdt.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findAllByServiceIdAndInstanceIdAndTimestampBetween(serviceId, instanceId, beforeDate, afterDate).stream().toList();
+    public List<InstanceMetrics> getAllInstanceMetricsBetween(String serviceId, String instanceId, String startDateStr, String endDateStr) {
+        Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
+        Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByServiceIdAndInstanceIdAndTimestampBetween(serviceId, instanceId, startDate, endDate).stream().toList();
     }
 
     public InstanceMetrics getLatestByInstanceId(String serviceId, String instanceId) {
@@ -62,6 +52,12 @@ public class PersistenceService {
 
 
 /*
+    public InstanceMetrics getMetrics(String serviceId, String instanceId, String timestamp) {
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
+        Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
+        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceId, date);
+    }
+
     public List<InstanceMetrics> getServiceMetrics(String serviceId) {
         return metricsRepository.findAllByServiceId(serviceId).stream().toList();
     }

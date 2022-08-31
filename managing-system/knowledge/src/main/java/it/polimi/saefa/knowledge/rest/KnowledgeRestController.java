@@ -32,27 +32,30 @@ public class KnowledgeRestController {
     public List<InstanceMetrics> getMetrics(
             @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
-            @RequestParam(required = false, name = "at") String timestamp, // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
-            @RequestParam(required = false) String before,
-            @RequestParam(required = false) String after
+            //@RequestParam(required = false, name = "at") String timestamp,
+            @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
     ) {
         // before + after
-        if (instanceId == null && before != null && after != null && serviceId == null && timestamp == null)
-            return persistenceService.getAllMetricsBetween(before, after);
+        if (instanceId == null && startDate != null && endDate != null && serviceId == null)
+            return persistenceService.getAllMetricsBetween(startDate, endDate);
 
         // serviceId + instanceId
         if (serviceId != null && instanceId != null) {
-            // + before + after
-            if (before != null && after != null && timestamp == null)
-                return persistenceService.getAllInstanceMetricsBetween(serviceId, instanceId, before, after);
-
-            // + timestamp
-            if (timestamp != null && before == null && after == null)
-                return List.of(persistenceService.getMetrics(serviceId, instanceId, timestamp));
+            // + startDate + endDate
+            if (startDate != null && endDate != null)
+                return persistenceService.getAllInstanceMetricsBetween(serviceId, instanceId, startDate, endDate);
 
             // all
-            if (timestamp == null && before == null && after == null)
+            if (startDate == null && endDate == null)
                 return persistenceService.getAllInstanceMetrics(serviceId, instanceId);
+
+            /* + timestamp
+            if (timestamp != null && startDate == null && endDate == null)
+                try {
+                    return List.of(persistenceService.getMetrics(serviceId, instanceId, timestamp));
+                } catch (NullPointerException e) { return List.of(); }
+             */
         }
         throw new IllegalArgumentException("Invalid query arguments");
     }
@@ -62,10 +65,11 @@ public class KnowledgeRestController {
     public List<InstanceMetrics> getLatestMetrics(
             @RequestParam String serviceId,
             @RequestParam(required = false) String instanceId
-            // ultimo down, ultimo up prima dell'ultimo down
     ) {
         if (instanceId != null)
-            return List.of(persistenceService.getLatestByInstanceId(serviceId, instanceId));
+            try {
+                return List.of(persistenceService.getLatestByInstanceId(serviceId, instanceId));
+            } catch (NullPointerException e) { return List.of(); }
         else
             return persistenceService.getAllLatestByServiceId(serviceId);
     }
@@ -76,6 +80,16 @@ public class KnowledgeRestController {
         return "Hello from Knowledge Service";
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

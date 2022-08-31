@@ -3,7 +3,6 @@ package it.polimi.saefa.monitor;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.swagger.v3.core.util.Json;
 import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
@@ -19,7 +18,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

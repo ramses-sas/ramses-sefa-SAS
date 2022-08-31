@@ -1,4 +1,4 @@
 dependencies {
-    implementation project(':prometheus-scraper-master')
     implementation project(':knowledge')
+    implementation fileTree(dir: '../libs', include: ['**/build/libs/*.jar'])
 }
