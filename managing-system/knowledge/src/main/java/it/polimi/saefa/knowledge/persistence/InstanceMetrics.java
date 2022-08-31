@@ -19,7 +19,7 @@ public class InstanceMetrics {
     private Long id;
     private String serviceId;
     private String instanceId;
-    private boolean isUp;
+    private boolean isUp = true;
     //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
     //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();

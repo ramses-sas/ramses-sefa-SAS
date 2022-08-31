@@ -26,5 +26,11 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND m.isUp = TRUE AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.instanceId = :instanceId) AND m.timestamp < (SELECT MAX(m3.timestamp) FROM InstanceMetrics m3 WHERE m3.instanceId = :instanceId AND m3.isUp = FALSE)")
     InstanceMetrics findLatestOnlineMeasurementIfDownByInstanceId(String instanceId);
 
+    @Query("SELECT m FROM InstanceMetrics m WHERE m.serviceId = :serviceId AND m.instanceId = :instanceId AND " +
+            "(m.isUp = FALSE AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.serviceId = :serviceId AND m2.instanceId = :instanceId AND m2.isUp = FALSE) " +
+            "OR (m.isUp = TRUE AND m.timestamp = (SELECT MIN(m3.timestamp) FROM InstanceMetrics m3 WHERE m3.serviceId = :serviceId AND m3.instanceId = :instanceId AND m3.isUp = TRUE AND m3.timestamp> (SELECT MAX(m4.timestamp) FROM InstanceMetrics m4 WHERE m4.serviceId = :serviceId AND m4.instanceId = :instanceId AND m4.isUp = FALSE))))")
+    Collection<InstanceMetrics> findLatestDowntimeByServiceId(String serviceId, String instanceId);
+    //Selects the most recent "down" metric and, if present, the "online" metric that follows it (the one with the smallest timestamp greater than the "down" one)
+
 }
 

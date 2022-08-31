@@ -58,6 +58,8 @@ public class KnowledgeRestController {
              */
         }
         throw new IllegalArgumentException("Invalid query arguments");
+        //TODO se da nessuna altra parte lanciamo eccezioni (e quindi non serve un handler),
+        // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
 
