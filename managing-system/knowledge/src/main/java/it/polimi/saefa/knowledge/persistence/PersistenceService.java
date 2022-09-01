@@ -114,6 +114,10 @@ public class PersistenceService {
         return metricsRepository.findLatestByServiceIdAndInstanceId(serviceId, instanceId);
     }
 
+    public InstanceMetrics getLatestActiveByInstanceId(String instanceId) {
+        return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId);
+    }
+
     public List<InstanceMetrics> getAllLatestByServiceId(String serviceId) {
         return metricsRepository.findLatestByServiceId(serviceId).stream().toList();
     }

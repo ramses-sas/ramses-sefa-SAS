@@ -90,7 +90,7 @@ public class KnowledgeRestController {
 
     @GetMapping("/")
     public String hello() {
-        return "Hello from Knowledge Service";
+        return "Hello from Knowledge Service"+persistenceService.getLatestActiveByInstanceId("localhost:58085");
     }
 }
 
