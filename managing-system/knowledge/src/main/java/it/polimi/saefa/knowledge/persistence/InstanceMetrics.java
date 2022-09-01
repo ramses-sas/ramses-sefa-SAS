@@ -19,7 +19,8 @@ public class InstanceMetrics {
     private Long id;
     private String serviceId;
     private String instanceId;
-    private String status = InstanceStatus.ACTIVE;
+    @Enumerated(EnumType.STRING)
+    private InstanceStatus status = InstanceStatus.ACTIVE;
     //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
     //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();

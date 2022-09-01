@@ -63,7 +63,7 @@ public class MonitorApplication {
         services.forEach((serviceName, serviceInstances) -> {
             log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
-                InstanceMetrics instanceMetrics = null;
+                InstanceMetrics instanceMetrics;
                 try {
                     instanceMetrics = prometheusParser.parse(instance);
                     instanceMetrics.applyTimestamp();
