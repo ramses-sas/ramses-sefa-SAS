@@ -13,4 +13,6 @@ public class PrometheusMetrics {
     public static final String CB_SLOW_CALL_RATE = "resilience4j_circuitbreaker_slow_call_rate";
     public static final String CB_SLOW_CALLS = "resilience4j_circuitbreaker_slow_calls";
     public static final String CB_FAILURE_RATE = "resilience4j_circuitbreaker_failure_rate";
+
+    private PrometheusMetrics() { }
 }

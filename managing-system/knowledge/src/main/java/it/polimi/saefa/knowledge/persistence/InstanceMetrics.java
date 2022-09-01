@@ -19,7 +19,7 @@ public class InstanceMetrics {
     private Long id;
     private String serviceId;
     private String instanceId;
-    private boolean isUp = true;
+    private String status = InstanceStatus.ACTIVE;
     //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
     //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
@@ -103,6 +103,18 @@ public class InstanceMetrics {
         } catch (NullPointerException e) {
             return null;
         }
+    }
+
+    public boolean hasFailed() {
+        return status.equals(InstanceStatus.FAILED);
+    }
+
+    public boolean isActive() {
+        return status.equals(InstanceStatus.ACTIVE);
+    }
+
+    public boolean isShutdown() {
+        return status.equals(InstanceStatus.SHUTDOWN);
     }
 
     /*

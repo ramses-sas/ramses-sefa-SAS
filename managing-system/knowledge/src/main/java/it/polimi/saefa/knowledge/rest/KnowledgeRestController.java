@@ -5,6 +5,7 @@ import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.PersistenceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +18,14 @@ public class KnowledgeRestController {
     @Autowired
     private PersistenceService persistenceService;
 
-    @PostMapping("/")
+    @PostMapping("/addMetrics")
     public void addMetrics(@RequestBody InstanceMetrics metrics) {
         log.debug("Adding metric for {}@{} at {}", metrics.getServiceId(), metrics.getInstanceId(), metrics.getTimestamp());
+        persistenceService.addMetrics(metrics);
+    }
+
+    @PostMapping("/addMetricsList")
+    public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {
         persistenceService.addMetrics(metrics);
     }
 
@@ -76,6 +82,11 @@ public class KnowledgeRestController {
             return persistenceService.getAllLatestByServiceId(serviceId);
     }
 
+    @PostMapping("/notifyShutdown")//todo per le rest vanno messi nello url gli ID anche se è una post? Poi avrebbe body vuoto, ma non voglio renderla get
+    public ResponseEntity<String> notifyShutdownInstance(@RequestBody ServiceInstanceInfoRequest request) {
+        persistenceService.notifyShutdownInstance(request.getServiceId(), request.getInstanceId());
+        return ResponseEntity.ok("Shutdown of instance" + request + " notified");
+    }
 
     @GetMapping("/")
     public String hello() {

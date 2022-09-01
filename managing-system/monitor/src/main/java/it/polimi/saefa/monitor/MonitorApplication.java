@@ -4,6 +4,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.InstanceStatus;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,23 +57,29 @@ public class MonitorApplication {
     @Scheduled(fixedDelay = 100_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = getServicesInstances();
+        List<InstanceMetrics> metricsList = new LinkedList<>();
+
         //log.debug("Services: {}", services);
         services.forEach((serviceName, serviceInstances) -> {
             log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
+                InstanceMetrics instanceMetrics = null;
                 try {
-                    InstanceMetrics instanceMetrics = prometheusParser.parse(instance);
+                    instanceMetrics = prometheusParser.parse(instance);
                     instanceMetrics.applyTimestamp();
                     log.debug(instanceMetrics.toString());
-                    knowledgeClient.addMetrics(instanceMetrics);
+                    metricsList.add(instanceMetrics);
                 } catch (Exception e) {
-                    log.error("Error adding metrics for {}", instance.getInstanceId());
+                    log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
                     log.error(e.getMessage());
                 }
             });
         });
+        knowledgeClient.addMetrics(metricsList);
     }
 
+    /*
+    //TODO Se non si presenta il caso in cui la macchina è raggiungibile ma lo status non è UP, integrare questa logica nell'altro scheduler
     @Scheduled(fixedDelay = 50_000) //delay in milliseconds
     public void periodicCheckDownStatus() {
         Map<String, List<InstanceInfo>> services = getServicesInstances();
@@ -93,7 +101,7 @@ public class MonitorApplication {
                             // disconnected from eureka since the original services list is not updated.
                             // Still, it can happen between the check and the actual call to the service, so how to solve?
                             InstanceMetrics instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
-                            instanceMetrics.setUp(false);
+                            instanceMetrics.setStatus(InstanceStatus.FAILED);
                             instanceMetrics.applyTimestamp();
                             knowledgeClient.addMetrics(instanceMetrics);
 
@@ -103,7 +111,9 @@ public class MonitorApplication {
             });
         });
     }
-    
+
+    */
+
     public static void main(String[] args) {
         SpringApplication.run(MonitorApplication.class, args);
     }

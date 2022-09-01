@@ -8,8 +8,11 @@ import java.util.List;
 
 @FeignClient(name = "KNOWLEDGE", url = "http://localhost:58005")
 public interface KnowledgeClient {
-    @PostMapping("/rest/")
+    @PostMapping("/rest/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
+
+    @PostMapping("/rest/addMetricsList")
+    public void addMetrics(@RequestBody List<InstanceMetrics> metrics);
 
     @GetMapping("/rest/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);
