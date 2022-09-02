@@ -4,7 +4,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
-import it.polimi.saefa.knowledge.persistence.InstanceStatus;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
@@ -13,16 +12,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @EnableFeignClients
 @EnableDiscoveryClient
@@ -31,15 +26,15 @@ import java.util.Map;
 @Slf4j
 @EnableScheduling
 public class MonitorApplication {
-
     @Autowired
     private KnowledgeClient knowledgeClient;
-
     @Autowired
     PrometheusParser prometheusParser;
-
     @Autowired
     private EurekaClient discoveryClient;
+
+    private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
+    private boolean canStartLoop = true;
 
     public Map<String, List<InstanceInfo>> getServicesInstances() {
         List<Application> applications = discoveryClient.getApplications().getRegisteredApplications();
@@ -53,17 +48,15 @@ public class MonitorApplication {
         return servicesInstances;
     }
 
-
     @Scheduled(fixedDelay = 100_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = getServicesInstances();
         List<InstanceMetrics> metricsList = new LinkedList<>();
 
-        //log.debug("Services: {}", services);
         services.forEach((serviceName, serviceInstances) -> {
             log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
-                InstanceMetrics instanceMetrics = null;
+                InstanceMetrics instanceMetrics;
                 try {
                     instanceMetrics = prometheusParser.parse(instance);
                     instanceMetrics.applyTimestamp();
@@ -75,7 +68,24 @@ public class MonitorApplication {
                 }
             });
         });
-        knowledgeClient.addMetrics(metricsList);
+        instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
+        if(getCanStartLoop()){
+            for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
+                knowledgeClient.addMetrics(instanceMetricsList);
+            }
+            instanceMetricsListBuffer.clear();
+            //Notificare la nuova configurazione se presente.
+            setCanStartLoop(false);
+            //notifica l'analysis
+        }
+    }
+
+    public synchronized boolean getCanStartLoop(){
+        return canStartLoop;
+    }
+
+    public synchronized void setCanStartLoop(boolean canStartLoop){
+        this.canStartLoop = canStartLoop;
     }
 
     /*
@@ -113,6 +123,11 @@ public class MonitorApplication {
     }
 
     */
+
+    @GetMapping("/startLoop")
+    public void start() {
+        setCanStartLoop(true);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(MonitorApplication.class, args);
