@@ -40,7 +40,7 @@ public class MonitorApplication {
     private boolean canStartLoop = true;
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
-    @Scheduled(fixedDelay = 10_000) //delay in milliseconds
+    @Scheduled(fixedDelay = 1000_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
         List<InstanceMetrics> metricsList = new LinkedList<>(); //TODO RENDI THREAD SAFE
@@ -77,7 +77,7 @@ public class MonitorApplication {
         instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
         if (getCanStartLoop()) {
             for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
-                //knowledgeClient.addMetrics(instanceMetricsList); //TODO COMMENTATO PER TEST, VANNO RISOLTI PROBLEMI NEL KNOWLEDGE
+                knowledgeClient.addMetrics(instanceMetricsList); //TODO COMMENTATO PER TEST, VANNO RISOLTI PROBLEMI NEL KNOWLEDGE
             }
             instanceMetricsListBuffer.clear();
             //Notificare la nuova configurazione se presente.

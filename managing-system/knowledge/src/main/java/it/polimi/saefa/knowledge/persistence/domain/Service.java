@@ -6,27 +6,42 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
-@Entity
 @NoArgsConstructor
 @Getter
 @Setter
 public class Service {
-    @Id
     private String name;
-    @OneToOne
     private ServiceConfiguration configuration;
-    @OneToMany(cascade = CascadeType.ALL)
-    private Set<Instance> instances;
+    private Map<String, Instance> instances = new HashMap<>();
+
+    public Service(String name, String firstInstanceAddress) {
+        this.name = name;
+        instances.put(firstInstanceAddress, new Instance(firstInstanceAddress, this));
+    }
 
     public boolean isReachable(){
-        for(Instance instance : instances){
-            if(instance.getCurrentStatus() == InstanceStatus.ACTIVE){
+        for(String instanceAddress : instances.keySet()){
+            if(instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE){
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean hasInstance(String instanceId){
+        return instances.containsKey(instanceId);
+    }
+
+    public Instance getOrCreateInstance(String instanceId){
+        Instance instance = instances.get(instanceId);
+        if(instance == null){
+            instance = new Instance(instanceId, this);
+            instances.put(instanceId, instance);
+        }
+        return instance;
     }
 
     @Override
