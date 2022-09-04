@@ -18,11 +18,12 @@ public class KnowledgeRestController {
     @Autowired
     private PersistenceService persistenceService;
 
+    /*
     @PostMapping("/addMetrics")
     public void addMetrics(@RequestBody InstanceMetrics metrics) {
         log.debug("Adding metric for {}@{} at {}", metrics.getServiceId(), metrics.getInstanceId(), metrics.getTimestamp());
         persistenceService.addMetrics(metrics);
-    }
+    }*/
 
     @PostMapping("/addMetricsList")
     public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {

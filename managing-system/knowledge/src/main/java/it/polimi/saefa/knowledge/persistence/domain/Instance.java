@@ -6,34 +6,38 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Instance implements Serializable {
-    @Id
     private String address;
-    @Id
-    private String serviceId;
+    private Service service;
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<InstanceMetrics> metrics;
+    private List<InstanceMetrics> metrics = new LinkedList<>();
 
-    public Instance(String address, String serviceId) {
+    public Instance(String address, Service service) {
         this.address = address;
-        this.serviceId = serviceId;
+        this.service = service;
     }
 
-    public Instance(String address, String serviceId, InstanceStatus currentStatus) {
+    public Instance(String address, Service service, InstanceStatus currentStatus) {
         this.address = address;
-        this.serviceId = serviceId;
+        this.service = service;
         this.currentStatus = currentStatus;
+    }
+
+    public void addMetric(InstanceMetrics metric){
+        metrics.add(metric);
+    }
+
+    public String getInstanceId(){
+        return service.getName() + "@" + address;
     }
 
     @Override
@@ -42,6 +46,6 @@ public class Instance implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         Instance instance = (Instance) o;
-        return Objects.equals(address, instance.address) && Objects.equals(serviceId, instance.serviceId);
+        return Objects.equals(address, instance.address) && Objects.equals(service, instance.service);
     }
 }

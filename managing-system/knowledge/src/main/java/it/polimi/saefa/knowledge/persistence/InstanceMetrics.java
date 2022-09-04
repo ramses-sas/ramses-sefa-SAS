@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.persistence;
 
 import it.polimi.saefa.knowledge.persistence.domain.CircuitBreakerMetrics;
 import it.polimi.saefa.knowledge.persistence.domain.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.Instance;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,17 +10,19 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.*;
 
-@Table(name="INSTANCE_METRICS")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class InstanceMetrics {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
+
     private String serviceId;
     private String instanceId;
+
+
     @Enumerated(EnumType.STRING)
     private InstanceStatus status = InstanceStatus.ACTIVE;
     //@ElementCollection
@@ -29,18 +32,18 @@ public class InstanceMetrics {
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     @OneToMany(cascade = CascadeType.ALL)
-    List<HttpRequestMetrics> httpMetrics = new LinkedList<>();
+    List<HttpRequestMetrics> httpMetrics = new LinkedList<>(); //TODO prova a renderlo map come prima
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
     public InstanceMetrics(String serviceId, String instanceId) {
-        this.instanceId = instanceId;
         this.serviceId = serviceId;
+        this.instanceId = instanceId;
     }
-
 
     public void addHttpMetrics(HttpRequestMetrics metrics) {
         httpMetrics.add(metrics);
@@ -163,6 +166,8 @@ public class InstanceMetrics {
 
     @Override
     public String toString() {
+        return "Metric id: " + timestamp;
+        /*
         return "\nMetrics for instance " + instanceId + " {\n" +
                 "  date = " + timestamp + "\n" +
                 "  httpMetrics = " + httpMetrics + "\n" +
@@ -171,6 +176,8 @@ public class InstanceMetrics {
                 "  diskFreeSpace = " + diskFreeSpace + "\n" +
                 "  circuitBreakerMetrics = " + circuitBreakerMetrics +
                 "\n}";
+
+         */
     }
 
 
