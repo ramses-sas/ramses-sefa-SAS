@@ -1,6 +1,6 @@
 package it.polimi.saefa.knowledge.persistence;
 
-import it.polimi.saefa.knowledge.persistence.components.ServiceConfiguration;
+import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +16,14 @@ public class PersistenceService {
     @Autowired
     private MetricsRepository metricsRepository;
 
-    private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
+    @Autowired
+    private ServiceRepository serviceRepository; //STATO ATTUALE DEL SISTEMA
 
+    //fare un file json che descrive l'architettura statica del managed system, con:
+    //per i microservizi che rappresentano il servizio X abbiamo "lista di microservizi"
+
+    private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
     private Set<String> previouslyActiveInstances = new HashSet<>();
-//    private final Set<String> currentlyActiveInstances = new HashSet<>();
     private final Set<String> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
 
     public void addMetrics(InstanceMetrics metrics) {
@@ -87,8 +91,6 @@ public class PersistenceService {
         metricsRepository.save(metrics);
         */
     }
-
-
 
     public InstanceMetrics getMetrics(long id) {
         return metricsRepository.findById(id).orElse(null);

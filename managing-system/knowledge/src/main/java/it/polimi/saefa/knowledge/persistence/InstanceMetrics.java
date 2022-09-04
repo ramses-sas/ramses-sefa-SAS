@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.persistence;
 
-import it.polimi.saefa.knowledge.persistence.components.CircuitBreakerMetrics;
-import it.polimi.saefa.knowledge.persistence.components.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.CircuitBreakerMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.HttpRequestMetrics;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.*;
 
+@Table(name="INSTANCE_METRICS")
 @Entity
 @Getter
 @Setter

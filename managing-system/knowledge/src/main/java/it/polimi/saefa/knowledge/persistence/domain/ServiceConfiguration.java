@@ -1,19 +1,25 @@
-package it.polimi.saefa.knowledge.persistence.components;
+package it.polimi.saefa.knowledge.persistence.domain;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@Entity
 @Data
+@NoArgsConstructor
 public class ServiceConfiguration {
-    private final String serviceId;
+    @Id
+    private String serviceId;
+    @ElementCollection
     private Map<String, String> configuration = new HashMap<>();
+    @ElementCollection
     private Map<String, Double> loadBalancerWeight = new HashMap<>();
     private String loadBalancerType;
+    @ElementCollection
     private Map<String, String> circuitBreaker = new HashMap<>();
-
-
 
     public ServiceConfiguration(String serviceId) {
         this.serviceId = serviceId;
