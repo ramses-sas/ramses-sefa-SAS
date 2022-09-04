@@ -9,7 +9,7 @@ public class ConfigProperty {
     final private String[] propertyElements;
     final private String value;
 
-    protected ConfigProperty(String propertyKey, String value) {
+    public ConfigProperty(String propertyKey, String value) {
         String[] propertyFields = propertyKey.split("\\.");
         this.parentProperty = propertyFields[0];
         this.serviceId = propertyFields[1];
