@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence;
 
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +24,7 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     @Query("SELECT m FROM InstanceMetrics m WHERE m.serviceId = :serviceId AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.serviceId = :serviceId and m2.instanceId = m.instanceId)")
     Collection<InstanceMetrics> findLatestByServiceId(String serviceId);
 
-    // = it.polimi.saefa.knowledge.persistence.InstanceStatus.
+    // = it.polimi.saefa.knowledge.persistence.domain.InstanceStatus.
     @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND m.status=it.polimi.saefa.knowledge.persistence.InstanceStatus.ACTIVE " +
             "AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.instanceId = :instanceId)")
     InstanceMetrics findLatestOnlineMeasurementByInstanceId(String instanceId);

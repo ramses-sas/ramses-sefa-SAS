@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;

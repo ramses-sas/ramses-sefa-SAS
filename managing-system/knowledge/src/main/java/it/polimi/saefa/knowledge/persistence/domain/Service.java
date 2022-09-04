@@ -1,11 +1,9 @@
 package it.polimi.saefa.knowledge.persistence.domain;
 
-import it.polimi.saefa.knowledge.persistence.InstanceStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 

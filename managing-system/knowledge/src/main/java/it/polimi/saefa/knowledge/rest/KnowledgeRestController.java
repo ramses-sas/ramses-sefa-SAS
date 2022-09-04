@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.rest;
 
 
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.PersistenceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
