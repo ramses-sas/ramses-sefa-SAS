@@ -1,12 +1,7 @@
 package it.polimi.saefa.monitor;
 
-import com.google.gson.*;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import it.polimi.saefa.configparser.ConfigProperty;
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
-import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +10,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -40,9 +33,10 @@ public class MonitorApplication {
     private boolean canStartLoop = true;
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
-    @Scheduled(fixedDelay = 1000_000) //delay in milliseconds
+    @Scheduled(fixedDelay = 5_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
+        log.warn("SERVICES: " + services);
         List<InstanceMetrics> metricsList = new LinkedList<>(); //TODO RENDI THREAD SAFE
         List<Thread> threads = new LinkedList<>();
 
@@ -77,7 +71,7 @@ public class MonitorApplication {
         instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
         if (getCanStartLoop()) {
             for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
-                knowledgeClient.addMetrics(instanceMetricsList); //TODO COMMENTATO PER TEST, VANNO RISOLTI PROBLEMI NEL KNOWLEDGE
+                knowledgeClient.addMetrics(instanceMetricsList);
             }
             instanceMetricsListBuffer.clear();
             //Notificare la nuova configurazione se presente.

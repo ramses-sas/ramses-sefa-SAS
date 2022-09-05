@@ -1,7 +1,5 @@
 package it.polimi.saefa.knowledge.persistence.domain;
 
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
-import it.polimi.saefa.knowledge.persistence.InstanceStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
