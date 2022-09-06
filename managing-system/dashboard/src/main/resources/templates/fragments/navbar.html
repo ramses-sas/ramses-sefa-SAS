@@ -1,0 +1,17 @@
+<th:block th:fragment="navbar(selection)">
+    <nav id="siteNav" class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Logo and responsive toggle -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">Managing System Dashboard</a>
+            </div>
+            <!-- Navbar links -->
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li th:class="${selection==1} ? 'active' : 'inactive'"><a href="/">Home</a></li>
+                    <li th:class="${selection==2} ? 'active' : 'inactive'"><a href="/adaptation">Adaptation</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container -->
+    </nav>
+</th:block>
