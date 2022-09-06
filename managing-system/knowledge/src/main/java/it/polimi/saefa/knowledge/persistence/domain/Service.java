@@ -14,7 +14,9 @@ public class Service {
     private String currentImplementation; //name of the current implementation of the service
 
     private ServiceConfiguration configuration;
+    // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
+    // <implementationName>
     private Set<String> possibleImplementations = new HashSet<>(); //TODO HOW TO INIT?
 
     public Service(String name, String currentImplementation) {
@@ -28,6 +30,10 @@ public class Service {
         this.currentImplementation = currentImplementation;
         instances.put(firstInstanceAddress, new Instance(firstInstanceAddress, this));
         possibleImplementations.add(currentImplementation);
+    }
+
+    public void addInstance(Instance instance) {
+        instances.put(instance.getInstanceId(), instance);
     }
 
     public boolean isReachable(){

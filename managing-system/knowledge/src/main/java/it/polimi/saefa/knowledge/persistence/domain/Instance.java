@@ -34,6 +34,10 @@ public class Instance{
         metrics.add(metric);
     }
 
+    public void addInstance(Instance instance){
+        service.getInstances().put(instance.getInstanceId(), instance);
+    }
+
     public String getAddress(){
         return instanceId.split("@")[1];
     }
