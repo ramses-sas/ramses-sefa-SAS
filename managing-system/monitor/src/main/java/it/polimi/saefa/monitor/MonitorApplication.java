@@ -1,9 +1,7 @@
 package it.polimi.saefa.monitor;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +12,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -29,64 +26,78 @@ public class MonitorApplication {
     @Autowired
     private KnowledgeClient knowledgeClient;
     @Autowired
-    PrometheusParser prometheusParser;
+    private InstancesSupplier instancesSupplier;
     @Autowired
-    private EurekaClient discoveryClient;
+    private PrometheusParser prometheusParser;
 
+    private boolean loopIterationFinished = true;
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
-    private boolean canStartLoop = true;
 
-    public Map<String, List<InstanceInfo>> getServicesInstances() {
-        List<Application> applications = discoveryClient.getApplications().getRegisteredApplications();
-        Map<String, List<InstanceInfo>> servicesInstances = new HashMap<>();
-        applications.forEach(application -> {
-            if (application.getName().endsWith("-SERVICE")) {
-                List<InstanceInfo> applicationsInstances = application.getInstances();
-                servicesInstances.put(application.getName(), applicationsInstances);
-            }
-        });
-        return servicesInstances;
-    }
-
-    @Scheduled(fixedDelay = 100_000) //delay in milliseconds
+    @Scheduled(fixedDelay = 15_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
-        Map<String, List<InstanceInfo>> services = getServicesInstances();
-        List<InstanceMetrics> metricsList = new LinkedList<>();
+        Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
+        log.warn("SERVICES: " + services);
+        List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
+        List<Thread> threads = new LinkedList<>();
 
         services.forEach((serviceName, serviceInstances) -> {
             log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
-                InstanceMetrics instanceMetrics;
-                try {
-                    instanceMetrics = prometheusParser.parse(instance);
-                    instanceMetrics.applyTimestamp();
-                    log.debug(instanceMetrics.toString());
-                    metricsList.add(instanceMetrics);
-                } catch (Exception e) {
-                    log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
-                    log.error(e.getMessage());
-                }
+                Thread thread = new Thread(() -> {
+                    InstanceMetrics instanceMetrics;
+                    try {
+                        instanceMetrics = prometheusParser.parse(instance);
+                        instanceMetrics.applyTimestamp();
+                        log.debug(instanceMetrics.toString());
+                        metricsList.add(instanceMetrics);
+                    } catch (Exception e) {
+                        log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
+                        log.error(e.getMessage());
+                    }
+                });
+                threads.add(thread);
+                thread.start();
             });
         });
+
+        threads.forEach(thread -> {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                log.error(e.getMessage());
+            }
+        });
+
         instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
-        if(getCanStartLoop()){
+        if (getLoopIterationFinished()) {
             for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
                 knowledgeClient.addMetrics(instanceMetricsList);
             }
             instanceMetricsListBuffer.clear();
-            //Notificare la nuova configurazione se presente.
-            setCanStartLoop(false);
+            setLoopIterationFinished(false);
             //notifica l'analysis
         }
     }
 
-    public synchronized boolean getCanStartLoop(){
-        return canStartLoop;
+    public synchronized boolean getLoopIterationFinished() {
+        return loopIterationFinished;
     }
 
-    public synchronized void setCanStartLoop(boolean canStartLoop){
-        this.canStartLoop = canStartLoop;
+    public synchronized void setLoopIterationFinished(boolean loopIterationFinished) {
+        this.loopIterationFinished = loopIterationFinished;
     }
+
+    @GetMapping("/notifyFinishedIteration")
+    public void notifyFinishedIteration() {
+        setLoopIterationFinished(true);
+    }
+
+    public static void main(String[] args) { SpringApplication.run(MonitorApplication.class, args); }
+}
+
+
+
+
 
     /*
     //TODO Se non si presenta il caso in cui la macchina è raggiungibile ma lo status non è UP, integrare questa logica nell'altro scheduler
@@ -123,13 +134,3 @@ public class MonitorApplication {
     }
 
     */
-
-    @GetMapping("/startLoop")
-    public void start() {
-        setCanStartLoop(true);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(MonitorApplication.class, args);
-    }
-}

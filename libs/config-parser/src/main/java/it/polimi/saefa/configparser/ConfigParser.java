@@ -11,8 +11,8 @@ public class ConfigParser<T> {
         this.env = env;
     }
 
-    public int getLoadBalancerWeight(String serviceId, String instanceId) {
-        String prop = LBPREFIX+serviceId.toLowerCase()+"."+instanceId.replace(".","_").replace(":","_")+".weight";
+    public int getLoadBalancerWeight(String serviceId, String address) {
+        String prop = LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
         try {
             return Integer.parseInt(getProperty(prop));
         } catch (RuntimeException e) {

@@ -61,8 +61,8 @@ public class ConfigParserConfig {
                 int weight = Integer.parseInt(changedProperty.getValue());
                 ReactiveLoadBalancer<ServiceInstance> lb = loadBalancerClientFactory.getInstance(changedProperty.getServiceId());
                 if (lb instanceof WeightedRoundRobinLoadBalancer) {
-                    log.info("Changing load balancer weight for service {}@{} to {}", changedProperty.getServiceId(), changedProperty.getInstanceId(), changedProperty.getValue());
-                    ((WeightedRoundRobinLoadBalancer) lb).setWeight(changedProperty.getInstanceId(), weight);
+                    log.info("Changing load balancer weight for service {}@{} to {}", changedProperty.getServiceId(), changedProperty.getAddress(), changedProperty.getValue());
+                    ((WeightedRoundRobinLoadBalancer) lb).setWeight(changedProperty.getAddress(), weight);
                 }
             }
         }

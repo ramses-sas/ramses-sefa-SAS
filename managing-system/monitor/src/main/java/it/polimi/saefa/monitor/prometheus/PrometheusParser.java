@@ -1,9 +1,10 @@
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.persistence.components.HttpRequestMetrics;
-import it.polimi.saefa.knowledge.persistence.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
 import prometheus.PrometheusScraper;
 import prometheus.types.*;
@@ -16,6 +17,7 @@ import java.util.Map;
 @Slf4j
 @Controller
 public class PrometheusParser {
+
     public InstanceMetrics parse(InstanceInfo instanceInfo) {
         InstanceMetrics instanceMetrics = new InstanceMetrics(instanceInfo.getAppName(), instanceInfo.getInstanceId());
         String url = instanceInfo.getHomePageUrl()+"actuator/prometheus";
