@@ -15,6 +15,7 @@ public class CircuitBreakerConfiguration {
     private Integer permittedNumberOfCallsInHalfOpenState;
     private Integer waitDurationInOpenState;
     private Integer slowCallDurationThreshold;
+    private Integer slowCallRateThreshold;
     private Integer failureRateThreshold;
     private Integer slowCallRateThreshold;
     private Integer eventConsumerBufferSize;
@@ -38,6 +39,10 @@ public class CircuitBreakerConfiguration {
 
     public void setWaitDurationInOpenState(String waitDurationInOpenState) {
         this.waitDurationInOpenState = Integer.valueOf(waitDurationInOpenState);
+    }
+
+    public void setSlowCallRateThreshold(String slowCallRateThreshold) {
+        this.slowCallRateThreshold = Integer.valueOf(slowCallRateThreshold);
     }
 
     public void setSlowCallDurationThreshold(String slowCallDurationThreshold) {

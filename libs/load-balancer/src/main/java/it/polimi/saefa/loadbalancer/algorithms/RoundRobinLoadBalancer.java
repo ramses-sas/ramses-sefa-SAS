@@ -38,7 +38,7 @@ public class RoundRobinLoadBalancer extends BaseLoadBalancer {
             ServiceInstance instance = serviceInstances.get(pos % serviceInstances.size());
             serviceInstanceResponse = new DefaultResponse(instance);
             if (log.isDebugEnabled()) {
-                log.debug("RoundRobinLoadBalancer: selected instance "+instance.getInstanceId()+" for service: " + getServiceId());
+                log.debug("RoundRobinLoadBalancer: selected instance "+instance.getInstanceId());
             }
         }
         return serviceInstanceResponse;

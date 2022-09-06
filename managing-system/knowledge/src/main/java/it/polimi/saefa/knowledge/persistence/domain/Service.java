@@ -31,10 +31,9 @@ public class Service {
     }
 
     public boolean isReachable(){
-        for(String instanceAddress : instances.keySet()){
-            if(instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE){
+        for (String instanceAddress : instances.keySet()) {
+            if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
                 return true;
-            }
         }
         return false;
     }
@@ -45,7 +44,7 @@ public class Service {
 
     public Instance getOrCreateInstance(String instanceId){
         Instance instance = instances.get(instanceId);
-        if(instance == null){
+        if (instance == null) {
             instance = new Instance(instanceId, this);
             instances.put(instanceId, instance);
         }

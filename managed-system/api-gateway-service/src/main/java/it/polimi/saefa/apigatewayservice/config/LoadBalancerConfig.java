@@ -37,7 +37,7 @@ public class LoadBalancerConfig {
                     instanceId = instance.getInstanceId();
                     instanceWeight = configParser.getLoadBalancerWeight(serviceId, instanceId);
                     wlb.setWeight(instanceId, instanceWeight);
-                    log.debug("LoadBalancerClient for {}@{}: setting weight to {}", serviceId, instanceId, instanceWeight);
+                    log.debug("LoadBalancerClient for {}: setting weight to {}", instanceId, instanceWeight);
                 }
             }
             return wlb;
