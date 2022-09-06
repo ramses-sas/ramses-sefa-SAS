@@ -30,10 +30,10 @@ public class MonitorApplication {
     @Autowired
     private PrometheusParser prometheusParser;
 
-    private boolean canStartLoop = true;
+    private boolean loopIterationFinished = true;
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
-    @Scheduled(fixedDelay = 5_000) //delay in milliseconds
+    @Scheduled(fixedDelay = 15_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
         log.warn("SERVICES: " + services);
@@ -69,27 +69,27 @@ public class MonitorApplication {
         });
 
         instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
-        if (getCanStartLoop()) {
+        if (getLoopIterationFinished()) {
             for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
                 knowledgeClient.addMetrics(instanceMetricsList);
             }
             instanceMetricsListBuffer.clear();
-            setCanStartLoop(false);
+            setLoopIterationFinished(false);
             //notifica l'analysis
         }
     }
 
-    public synchronized boolean getCanStartLoop() {
-        return canStartLoop;
+    public synchronized boolean getLoopIterationFinished() {
+        return loopIterationFinished;
     }
 
-    public synchronized void setCanStartLoop(boolean canStartLoop) {
-        this.canStartLoop = canStartLoop;
+    public synchronized void setLoopIterationFinished(boolean loopIterationFinished) {
+        this.loopIterationFinished = loopIterationFinished;
     }
 
-    @GetMapping("/startLoop")
-    public void start() {
-        setCanStartLoop(true);
+    @GetMapping("/notifyFinishedIteration")
+    public void notifyFinishedIteration() {
+        setLoopIterationFinished(true);
     }
 
     public static void main(String[] args) { SpringApplication.run(MonitorApplication.class, args); }

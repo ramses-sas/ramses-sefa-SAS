@@ -101,7 +101,7 @@ public class ConfigurationParser {
                     if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("type"))
                         serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
                     if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("weight"))
-                        serviceToBalanceConfiguration.addLoadBalancerWeight(configProperty.getInstanceId(), Integer.valueOf(configProperty.getValue()));
+                        serviceToBalanceConfiguration.addLoadBalancerWeight(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
                 }
                 switch (key) {
                     // PARSE OTHER GLOBAL PROPERTIES HERE
