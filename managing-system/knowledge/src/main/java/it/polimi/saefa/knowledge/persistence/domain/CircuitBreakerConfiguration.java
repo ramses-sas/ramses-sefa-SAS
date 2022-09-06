@@ -16,6 +16,7 @@ public class CircuitBreakerConfiguration {
     private Integer waitDurationInOpenState;
     private Integer slowCallDurationThreshold;
     private Integer failureRateThreshold;
+    private Integer slowCallRateThreshold;
     private Integer eventConsumerBufferSize;
     private Integer minimumNumberOfCalls;
     private Integer slidingWindowSize;
@@ -41,6 +42,10 @@ public class CircuitBreakerConfiguration {
 
     public void setSlowCallDurationThreshold(String slowCallDurationThreshold) {
         this.slowCallDurationThreshold = Integer.valueOf(slowCallDurationThreshold);
+    }
+
+    public void setSlowCallRateThreshold(String slowCallRateThreshold) {
+        this.slowCallRateThreshold = Integer.valueOf(slowCallRateThreshold);
     }
 
     public void setFailureRateThreshold(String failureRateThreshold) {

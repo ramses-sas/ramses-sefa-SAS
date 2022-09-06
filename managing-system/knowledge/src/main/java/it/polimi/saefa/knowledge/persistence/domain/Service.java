@@ -4,20 +4,30 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @NoArgsConstructor
 @Getter
 @Setter
 public class Service {
     private String name;
+    private String currentImplementation; //name of the current implementation of the service
+
     private ServiceConfiguration configuration;
     private Map<String, Instance> instances = new HashMap<>();
+    private Set<String> possibleImplementations = new HashSet<>(); //TODO HOW TO INIT?
 
-    public Service(String name, String firstInstanceAddress) {
+    public Service(String name, String currentImplementation) {
         this.name = name;
+        this.currentImplementation = currentImplementation;
+        possibleImplementations.add(currentImplementation);
+    }
+
+    public Service(String name, String currentImplementation, String firstInstanceAddress) {
+        this.name = name;
+        this.currentImplementation = currentImplementation;
         instances.put(firstInstanceAddress, new Instance(firstInstanceAddress, this));
+        possibleImplementations.add(currentImplementation);
     }
 
     public boolean isReachable(){

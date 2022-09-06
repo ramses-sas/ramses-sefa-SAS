@@ -1,14 +1,17 @@
 package it.polimi.saefa.knowledge.rest;
 
 
+import it.polimi.saefa.knowledge.persistence.domain.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.PersistenceService;
+import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -84,9 +87,15 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/notifyShutdown")//todo per le rest vanno messi nello url gli ID anche se è una post? Poi avrebbe body vuoto, ma non voglio renderla get
-    public ResponseEntity<String> notifyShutdownInstance(@RequestBody ServiceInstanceInfoRequest request) {
-        persistenceService.notifyShutdownInstance(request.getServiceId(), request.getInstanceId());
-        return ResponseEntity.ok("Shutdown of instance" + request + " notified");
+    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance) {
+        persistenceService.notifyShutdownInstance(shutDownInstance);
+        return ResponseEntity.ok("Shutdown of instance" + shutDownInstance.getInstanceId() + " notified");
+    }
+
+    @PostMapping("/changeConfiguration")
+    public ResponseEntity<String> changeConfiguration(@RequestBody Map<String, ServiceConfiguration> request) {
+        persistenceService.changeServicesConfigurations(request);
+        return ResponseEntity.ok("Configuration changed");
     }
 
     @GetMapping("/")

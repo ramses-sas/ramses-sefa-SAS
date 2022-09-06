@@ -12,20 +12,20 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Instance implements Serializable {
-    private String address;
+public class Instance{
+    private String instanceId; //service implementation name @ ip : port
     private Service service;
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
 
     private List<InstanceMetrics> metrics = new LinkedList<>();
 
-    public Instance(String address, Service service) {
-        this.address = address;
+    public Instance(String instanceId, Service service) {
+        this.instanceId = instanceId;
         this.service = service;
     }
 
-    public Instance(String address, Service service, InstanceStatus currentStatus) {
-        this.address = address;
+    public Instance(String instanceId, Service service, InstanceStatus currentStatus) {
+        this.instanceId = instanceId;
         this.service = service;
         this.currentStatus = currentStatus;
     }
@@ -34,8 +34,8 @@ public class Instance implements Serializable {
         metrics.add(metric);
     }
 
-    public String getInstanceId(){
-        return service.getName() + "@" + address;
+    public String getAddress(){
+        return instanceId.split("@")[1];
     }
 
     @Override
@@ -44,6 +44,6 @@ public class Instance implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         Instance instance = (Instance) o;
-        return Objects.equals(address, instance.address) && Objects.equals(service, instance.service);
+        return Objects.equals(instanceId, instance.instanceId) && Objects.equals(service, instance.service);
     }
 }

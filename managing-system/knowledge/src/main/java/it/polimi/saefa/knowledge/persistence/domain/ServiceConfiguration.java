@@ -5,7 +5,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,9 +15,20 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ServiceConfiguration {
+@IdClass(ServiceConfiguration.CompositeKey.class)
+public class ServiceConfiguration{
+
+    protected static class CompositeKey implements Serializable {
+        private String serviceId;
+        @Temporal(TemporalType.TIMESTAMP)
+        private Date timestamp;
+    }
+
     @Id
     private String serviceId;
+    @Id
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
     @ElementCollection
     private Map<String, String> configuration = new HashMap<>();
     @ElementCollection
@@ -42,6 +55,8 @@ public class ServiceConfiguration {
         String setter = "set" + property.substring(0,1).toUpperCase() + property.substring(1);
         circuitBreakerConfigurations.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakerConfigurations.get(cbName), value);
     }
+
+
 
     @Override
     public boolean equals(Object o) {

@@ -16,8 +16,8 @@ public class InstanceMetrics {
     @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
 
-    private String serviceId;
-    private String instanceId;
+    private String serviceId; //service name
+    private String instanceId; //service implementation name @ip : port
 
 
     @Enumerated(EnumType.STRING)
@@ -42,6 +42,9 @@ public class InstanceMetrics {
         this.instanceId = instanceId;
     }
 
+    public String getServiceImplementationName(){
+        return instanceId.split("@")[0];
+    }
     public void addHttpMetrics(HttpRequestMetrics metrics) {
         httpMetrics.add(metrics);
     }

@@ -37,7 +37,7 @@ public class MonitorApplication {
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
         log.warn("SERVICES: " + services);
-        List<InstanceMetrics> metricsList = new LinkedList<>(); //TODO RENDI THREAD SAFE
+        List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
         List<Thread> threads = new LinkedList<>();
 
         services.forEach((serviceName, serviceInstances) -> {
@@ -74,7 +74,6 @@ public class MonitorApplication {
                 knowledgeClient.addMetrics(instanceMetricsList);
             }
             instanceMetricsListBuffer.clear();
-            //Notificare la nuova configurazione se presente.
             setCanStartLoop(false);
             //notifica l'analysis
         }

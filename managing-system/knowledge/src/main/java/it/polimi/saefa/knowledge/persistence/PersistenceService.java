@@ -15,6 +15,9 @@ public class PersistenceService {
     @Autowired
     private MetricsRepository metricsRepository;
 
+    @Autowired
+    private ConfigurationRepository configurationRepository;
+
     private Map<String, Service> services = new ConcurrentHashMap<>(); //va capito come vogliamo gestirlo, ovvero se
     // quando tutte le istanze di un servizio sono spente/crashate vogliamo che il servizio venga rimosso o meno
 
@@ -22,8 +25,8 @@ public class PersistenceService {
     //per i microservizi che rappresentano il servizio X abbiamo "lista di microservizi"
 
     private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
-    private Set<String> previouslyActiveInstances = new HashSet<>();
-    private final Set<String> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
+    private Set<Instance> previouslyActiveInstances = new HashSet<>();
+    private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
 
     /*public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
         if(metrics.isActive() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
@@ -45,38 +48,36 @@ public class PersistenceService {
     }
 
     public void addMetrics(List<InstanceMetrics> metricsList) {
-        Set<String> currentlyActiveInstances = new HashSet<>();
+        Set<Instance> currentlyActiveInstances = new HashSet<>();
 
         metricsList.forEach(metrics -> {
-            Service service = services.get(metrics.getServiceId());
+            Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             if(service == null){
-                service = new Service(metrics.getServiceId(), metrics.getInstanceId());
-                services.put(metrics.getServiceId(), service);
+                service = new Service(metrics.getServiceId(), metrics.getServiceImplementationName());
+                services.put(service.getName(), service);
             }
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
             addMetrics(instance, metrics);
 
             if(metrics.isActive())
-                currentlyActiveInstances.add(metrics.getServiceId() + "@" + metrics.getInstanceId());
+                currentlyActiveInstances.add(instance);
         } );
 
         if(previouslyActiveInstances.isEmpty())
             previouslyActiveInstances.addAll(currentlyActiveInstances);
         else {
-            Set<String> failedInstances = new HashSet<>(previouslyActiveInstances);
+            Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
             failedInstances.removeAll(currentlyActiveInstances);
             failedInstances.removeAll(shutdownInstances);
-            for(String instanceId : shutdownInstances){
-                if(!currentlyActiveInstances.contains(instanceId)) {
-                    shutdownInstances.remove(instanceId);
-                    String serviceName = instanceId.split("@")[0];
-                    Service service = services.get(serviceName);
-                    Instance instance = service.getOrCreateInstance(instanceId);
-                    instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
-                    InstanceMetrics metrics = new InstanceMetrics(serviceName, instanceId);
+            for(Instance shutdownInstance : shutdownInstances){
+                if(!currentlyActiveInstances.contains(shutdownInstance)) {
+                    shutdownInstances.remove(shutdownInstance);
+                    Service service = shutdownInstance.getService();
+                    shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+                    InstanceMetrics metrics = new InstanceMetrics(service.getName(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
-                    instance.addMetric(metrics);
+                    shutdownInstance.addMetric(metrics);
                     metricsRepository.save(metrics);
                 }
             }
@@ -91,12 +92,10 @@ public class PersistenceService {
                 // (ri)accesa, il Knowledge deve saperlo, per poterla eventualmente rimuovere da shutdownInstances.
             */
 
-            failedInstances.forEach(instanceId -> {
-                String serviceId = instanceId.split("@")[0];
-                Service service = services.get(serviceId);
-                Instance instance = service.getOrCreateInstance(instanceId);
+            failedInstances.forEach(instance -> {
+                Service service = instance.getService();
                 instance.setCurrentStatus(InstanceStatus.FAILED);
-                InstanceMetrics metrics = new InstanceMetrics(serviceId, instanceId);
+                InstanceMetrics metrics = new InstanceMetrics(service.getName(), instance.getInstanceId());
                 metrics.setStatus(InstanceStatus.FAILED);
                 metrics.applyTimestamp();
                 metricsRepository.save(metrics);
@@ -107,8 +106,8 @@ public class PersistenceService {
 
     }
 
-    public void notifyShutdownInstance(String serviceId, String instanceId) {
-        shutdownInstances.add(serviceId + "@" + instanceId);
+    public void notifyShutdownInstance(Instance instance) {
+        shutdownInstances.add(instance);
         //Codice rimosso perché può succedere che avvio lo shutdown di una macchina ma ricevo successivamente una
         // richiesta dal monitor che la contiene ancora.
         /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceId);
@@ -120,6 +119,18 @@ public class PersistenceService {
 
     public InstanceMetrics getMetrics(long id) {
         return metricsRepository.findById(id).orElse(null);
+    }
+
+    public void changeServicesConfigurations(Map<String, ServiceConfiguration> newConfigurations){
+        for (String serviceId : newConfigurations.keySet()){
+            Service service = services.get(serviceId);
+            /*if(service == null) { //TODO Non necessario se i servizi vengono inizializzati all'avvio.
+                service = new Service();
+                services.put(serviceId, service);
+            }*/
+            service.setConfiguration(newConfigurations.get(serviceId));
+            configurationRepository.save(newConfigurations.get(serviceId));
+        }
     }
 
     public List<InstanceMetrics> getAllInstanceMetrics(String serviceId, String instanceId) {
