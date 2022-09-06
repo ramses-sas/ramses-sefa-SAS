@@ -10,24 +10,17 @@ import java.util.*;
 @Getter
 @Setter
 public class Service {
-    private String name;
+    private String serviceId;
     private String currentImplementation; //name of the current implementation of the service
 
     private ServiceConfiguration configuration;
     private Map<String, Instance> instances = new HashMap<>();
-    private Set<String> possibleImplementations = new HashSet<>(); //TODO HOW TO INIT?
+    private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>(); //TODO HOW TO INIT?
 
-    public Service(String name, String currentImplementation) {
-        this.name = name;
-        this.currentImplementation = currentImplementation;
-        possibleImplementations.add(currentImplementation);
-    }
+    public Service(String serviceId, List<ServiceImplementation> possibleImplementations) {
+        this.serviceId = serviceId;
+        possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setService(this);});
 
-    public Service(String name, String currentImplementation, String firstInstanceAddress) {
-        this.name = name;
-        this.currentImplementation = currentImplementation;
-        instances.put(firstInstanceAddress, new Instance(firstInstanceAddress, this));
-        possibleImplementations.add(currentImplementation);
     }
 
     public boolean isReachable(){
@@ -58,6 +51,6 @@ public class Service {
 
         Service service = (Service) o;
 
-        return name.equals(service.name);
+        return serviceId.equals(service.serviceId);
     }
 }

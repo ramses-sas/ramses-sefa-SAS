@@ -1,11 +1,9 @@
-package it.polimi.saefa.monitor.serviceconfig;
+package it.polimi.saefa.knowledge;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.ConfigProperty;
 import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
-import it.polimi.saefa.monitor.InstancesSupplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,43 +18,14 @@ import java.util.*;
 @RestController
 public class ConfigurationParser {
     @Autowired
-    private InstancesSupplier instancesSupplier;
+    private EurekaClient discoveryClient;
 
     // <serviceId, configuration>
     private final Map<String, ServiceConfiguration> serviceConfigurations = new HashMap<>();
 
-    @PostMapping("/configurationChanged")
-    public String configurationChanged(@RequestBody String request) {
-        Gson g = new Gson();
-        String[] modifiedFiles = g.fromJson(g.fromJson(request, JsonObject.class)
-                .getAsJsonObject("head_commit").get("modified"), String[].class);
-        new Thread( () -> {
-            for (String modifiedFile : modifiedFiles) {
-                log.info("File " + modifiedFile + " changed");
-                if (modifiedFile.equals("application.properties"))
-                    parseGlobalProperties();
-                else
-                    parseProperties(modifiedFile.replace(".properties", ""));
-            }
-        }).start();
-        return "OK";
-    }
-
-    @GetMapping("/refreshConfigurations")
-    public String refreshConfigurations() {
-        new Thread( () -> {
-            parseGlobalProperties();
-            for (String serviceId : instancesSupplier.getServicesInstances().keySet()) {
-                parseProperties(serviceId);
-            }
-        }).start();
-        return "OK";
-    }
-
-
     @GetMapping("/testParsing/{serviceId}") // TODO: remove annotation after test
     public void parseProperties(@PathVariable String serviceId) {
-        InstanceInfo configInstance = instancesSupplier.getConfigServerInstance();
+        InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId + ".properties";
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
@@ -82,7 +51,7 @@ public class ConfigurationParser {
 
     @GetMapping("/testGlobalParsing") // TODO: remove annotation after test
     public void parseGlobalProperties() {
-        InstanceInfo configInstance = instancesSupplier.getConfigServerInstance();
+        InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/application.properties";
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration("application");
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
@@ -111,4 +80,37 @@ public class ConfigurationParser {
             }
         }
     }
+
+    private InstanceInfo getConfigServerInstance() {
+        return discoveryClient.getApplication("CONFIG-SERVER").getInstances().get(0);
+    }
+
+    /*@GetMapping("/refreshConfigurations")
+    public String refreshConfigurations() {
+        new Thread( () -> {
+            parseGlobalProperties();
+            for (String serviceId : instancesSupplier.getServicesInstances().keySet()) {
+                parseProperties(serviceId);
+            }
+        }).start();
+        return "OK";
+    }
+    @PostMapping("/configurationChanged")
+    public String configurationChanged(@RequestBody String request) {
+        Gson g = new Gson();
+        String[] modifiedFiles = g.fromJson(g.fromJson(request, JsonObject.class)
+                .getAsJsonObject("head_commit").get("modified"), String[].class);
+        new Thread( () -> {
+            for (String modifiedFile : modifiedFiles) {
+                log.info("File " + modifiedFile + " changed");
+                if (modifiedFile.equals("application.properties"))
+                    parseGlobalProperties();
+                else
+                    parseProperties(modifiedFile.replace(".properties", ""));
+            }
+        }).start();
+        return "OK";
+    }*/
+
+
 }
