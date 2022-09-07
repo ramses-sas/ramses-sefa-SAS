@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain;
+package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 /*public final class InstanceStatus {
     public static final String ACTIVE = "ACTIVE";

@@ -1,9 +1,9 @@
-package it.polimi.saefa.knowledge;
+package it.polimi.saefa.knowledge.parser;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.ConfigProperty;
-import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,5 +1,6 @@
-package it.polimi.saefa.knowledge.persistence.domain;
+package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,9 @@ public class Service {
 
     private ServiceConfiguration configuration;
     private Map<String, Instance> instances = new HashMap<>();
-    private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>(); //TODO HOW TO INIT?
+    private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
+
+    private List<AdaptationParameter> adaptationParameters = new LinkedList<>();
 
     public Service(String serviceId, List<ServiceImplementation> possibleImplementations) {
         this.serviceId = serviceId;

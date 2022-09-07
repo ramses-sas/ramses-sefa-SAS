@@ -1,6 +1,10 @@
 package it.polimi.saefa.knowledge.persistence;
 
-import it.polimi.saefa.knowledge.persistence.domain.*;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
