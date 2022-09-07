@@ -1,0 +1,129 @@
+{
+	"services"	: [
+		{
+			"service_id":"API-GATEWAY-SERVICE",
+			"adaptation_parameters" : {
+				"availability" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"average_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"max_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"total_cost" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				}
+			}
+		},
+		{
+			"service_id":"RESTAURANT-SERVICE",
+			"adaptation_parameters" : {
+				"availability" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"average_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"max_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"total_cost" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				}
+			}
+		},
+		{
+			"service_id":"ORDERING-SERVICE",
+			"adaptation_parameters" : {
+				"availability" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"average_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"max_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"total_cost" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				}
+			}
+		},
+		{
+			"service_id":"PAYMENT-PROXY-SERVICE",
+			"adaptation_parameters" : {
+				"availability" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"average_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"max_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"total_cost" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				}
+			}
+		},
+		{
+			"service_id":"DELIVERY-PROXY-SERVICE",
+			"adaptation_parameters" : {
+				"availability" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"average_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"max_response_time" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				},
+				"total_cost" : {
+					"weight" : 0,
+					"threshold": 0,
+					"priority":0
+				}
+			}
+		}
+	]	
+}

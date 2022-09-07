@@ -1,10 +1,10 @@
-package it.polimi.saefa.knowledge.persistence.domain;
+package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;

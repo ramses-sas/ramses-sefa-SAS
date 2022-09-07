@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain;
+package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package it.polimi.saefa.monitor;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.extern.slf4j.Slf4j;
