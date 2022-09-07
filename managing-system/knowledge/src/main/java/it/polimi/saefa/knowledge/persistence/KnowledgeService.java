@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @org.springframework.stereotype.Service
-public class PersistenceService {
+public class KnowledgeService {
     @Autowired
     private MetricsRepository metricsRepository;
 
@@ -37,6 +37,14 @@ public class PersistenceService {
         }
         return false;
     }*/
+
+    public void addService(Service service){
+        services.put(service.getServiceId(), service);
+    }
+
+    public Collection<Service> getServices(){
+        return services.values();
+    }
     public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
         if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
             //if the instance is down, only save it if it's the first detection
@@ -52,10 +60,6 @@ public class PersistenceService {
 
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
-            if(service == null){
-                service = new Service(metrics.getServiceId(), metrics.getServiceImplementationName());
-                services.put(service.getName(), service);
-            }
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
             addMetrics(instance, metrics);
 
@@ -74,7 +78,7 @@ public class PersistenceService {
                     shutdownInstances.remove(shutdownInstance);
                     Service service = shutdownInstance.getService();
                     shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
-                    InstanceMetrics metrics = new InstanceMetrics(service.getName(), shutdownInstance.getInstanceId());
+                    InstanceMetrics metrics = new InstanceMetrics(service.getServiceId(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
                     shutdownInstance.addMetric(metrics);
@@ -95,7 +99,7 @@ public class PersistenceService {
             failedInstances.forEach(instance -> {
                 Service service = instance.getService();
                 instance.setCurrentStatus(InstanceStatus.FAILED);
-                InstanceMetrics metrics = new InstanceMetrics(service.getName(), instance.getInstanceId());
+                InstanceMetrics metrics = new InstanceMetrics(service.getServiceId(), instance.getInstanceId());
                 metrics.setStatus(InstanceStatus.FAILED);
                 metrics.applyTimestamp();
                 metricsRepository.save(metrics);
