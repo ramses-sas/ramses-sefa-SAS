@@ -7,6 +7,23 @@
 
 <div class="content">
     <p>HOME</p>
+    <table>
+        <tbody>
+        <tr th:each="service : ${currentConfiguration}">
+            <td th:text="${service}">id goes here</td>
+            <td th:text="${menuItem.name}">name goes here</td>
+            <td th:text="${menuItem.price}">price goes here</td>
+            <td>
+                <form th:action="|/customer/cart/${cartId}/addItem|" method="POST">
+                    <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                    <input type="hidden" name="cartId" th:value="${cartId}">
+                    <input type="hidden" name="itemId" th:value="${menuItem.id}">
+                    <input type="submit" value="Add">
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <!--
