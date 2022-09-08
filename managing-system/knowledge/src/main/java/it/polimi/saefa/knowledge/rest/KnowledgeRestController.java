@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.rest;
 
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.knowledge.persistence.KnowledgeService;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
@@ -28,17 +29,17 @@ public class KnowledgeRestController {
         persistenceService.addMetrics(metrics);
     }*/
 
-    @PostMapping("/addMetricsList")
+    @PostMapping("/metrics/addMetricsList")
     public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {
         knowledgeService.addMetrics(metrics);
     }
 
-    @GetMapping("/{metricsId}")
+    @GetMapping("/metrics/{metricsId}")
     public InstanceMetrics getMetrics(@PathVariable long metricsId) {
         return knowledgeService.getMetrics(metricsId);
     }
 
-    @GetMapping("/get")
+    @GetMapping("/metrics/get")
     public List<InstanceMetrics> getMetrics(
             @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
@@ -72,8 +73,12 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
+    @GetMapping("/getServices")
+    public List<Service> getServices() {
+        return knowledgeService.getServices();
+    }
 
-    @GetMapping("/getLatest")
+    @GetMapping("/metrics/getLatest")
     public List<InstanceMetrics> getLatestMetrics(
             @RequestParam String serviceId,
             @RequestParam(required = false) String instanceId

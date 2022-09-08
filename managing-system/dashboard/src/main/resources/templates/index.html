@@ -14,6 +14,8 @@
                 <h6 th:text="${service.getServiceId()}">Service name goes here</h6>
                 <h5>Implemented by</h5>
                 <h6 th:text="${service.getCurrentImplementation()}">Implementation name goes here</h6>
+                <h5>Active instances</h5>
+                <a th:href="@{'/customer/restaurants/'+${restaurant.id}+'/menu'}">Restaurants menu</a>
                 <h5>Configuration</h5>
                 <h6 th:text="${service.getConfiguration().toString()}">Configuration goes here</h6>
             </div>

@@ -1,11 +1,14 @@
 package it.polimi.saefa.dashboard.domain;
 
+import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -13,6 +16,12 @@ import java.util.*;
 @Slf4j
 @org.springframework.stereotype.Service
 public class DashboardWebService {
+	@Autowired
+	private KnowledgeClient knowledgeClient;
+
+	public List<Service> getAllServices() {
+		return knowledgeClient.getServices();
+	}
 
 	public Map<String, Service> getConfiguration() {
 		Map<String, Service> currentConfiguration = new HashMap<>();
@@ -25,6 +34,9 @@ public class DashboardWebService {
 		test.setCurrentImplementation("payment-proxy-1-service");
 		test.setConfiguration(sc);
 		currentConfiguration.put("PAYMENT-PROXY-SERVICE", test);
+		/*getAllServices().forEach(service -> {
+			currentConfiguration.put(service.getServiceId(), service);
+		});*/
 		return currentConfiguration;
 	}
 

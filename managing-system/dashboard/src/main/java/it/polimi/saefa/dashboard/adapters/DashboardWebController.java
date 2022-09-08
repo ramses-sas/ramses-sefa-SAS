@@ -17,6 +17,13 @@ public class DashboardWebController {
 	private DashboardWebService dashboardWebService;
 
 	/* Mostra home page */
+	@GetMapping("/${serviceId}/instances")
+	public String instancesDetails(Model model, @PathVariable String serviceId) {
+		model.addAttribute("currentConfiguration", dashboardWebService.getConfiguration().values().stream().toList());
+		return "index";
+	}
+
+	/* Mostra home page */
 	@GetMapping("/")
 	public String index(Model model) {
 		model.addAttribute("currentConfiguration", dashboardWebService.getConfiguration().values().stream().toList());

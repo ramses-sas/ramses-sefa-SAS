@@ -3,7 +3,6 @@ package it.polimi.saefa.knowledge.persistence.domain.architecture;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -15,7 +14,6 @@ import java.util.Map;
 @Entity
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @IdClass(ServiceConfiguration.CompositeKey.class)
 public class ServiceConfiguration{
@@ -28,34 +26,50 @@ public class ServiceConfiguration{
 
     @Id
     private String serviceId;
+
     @Id
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
-    @ElementCollection
-    private Map<String, String> configuration = new HashMap<>();
-    @ElementCollection
-    private Map<String, Integer> loadBalancerWeight = new HashMap<>(); // <instanceId, weight>
+
+    @ElementCollection // <instanceId, weight>
+    private Map<String, Integer> loadBalancerWeights = new HashMap<>();
     private String loadBalancerType;
-    @ElementCollection
-    private Map<String, CircuitBreakerConfiguration> circuitBreakerConfigurations = new HashMap<>();
+
+    @ElementCollection // <circuitBreakerName, circuitBreakerConfiguration>
+    private Map<String, CircuitBreakerConfiguration> circuitBreakersConfiguration = new HashMap<>();
+
+    @Override
+    public String toString() {
+        return "Configuration of service: " + serviceId + "\n" +
+                "captured at: " + timestamp + "\n" +
+                "loadBalancerType: " + loadBalancerType + "\n" +
+                //pesi commentati altrimenti la stampa può esplodere. Si possono ottenere nella stampa di una singola istanza
+                //(loadBalancerWeights.isEmpty() ? "" : ("loadBalancerWeights: " + loadBalancerWeights + "\n")) +
+                (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration);
+    }
 
     public ServiceConfiguration(String serviceId) {
         this.serviceId = serviceId;
     }
 
+    /*
+    @ElementCollection
+    private Map<String, String> configuration = new HashMap<>();
+
     public void addConfigurationItem(String key, String value){
         configuration.put(key, value);
     }
+     */
 
     public void addLoadBalancerWeight(String instance, Integer value){
-        loadBalancerWeight.put(instance, value);
+        loadBalancerWeights.put(instance, value);
     }
 
     public void addCircuitBreakerProperty(String cbName, String property, String value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        if (!circuitBreakerConfigurations.containsKey(cbName))
-            circuitBreakerConfigurations.put(cbName, new CircuitBreakerConfiguration(cbName));
+        if (!circuitBreakersConfiguration.containsKey(cbName))
+            circuitBreakersConfiguration.put(cbName, new CircuitBreakerConfiguration(cbName));
         String setter = "set" + property.substring(0,1).toUpperCase() + property.substring(1);
-        circuitBreakerConfigurations.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakerConfigurations.get(cbName), value);
+        circuitBreakersConfiguration.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakersConfiguration.get(cbName), value);
     }
 
 
@@ -71,7 +85,6 @@ public class ServiceConfiguration{
     @Getter
     @Setter
     @Embeddable
-    @ToString
     public static class CircuitBreakerConfiguration {
         private String circuitBreakerName;
 
@@ -86,6 +99,22 @@ public class ServiceConfiguration{
         private Integer slidingWindowSize;
         private String  slidingWindowType;
 
+        @Override
+        public String toString() {
+            return "CircuitBreakerConfiguration:\n"+
+                "\tcircuitBreakerName: " + circuitBreakerName + "\n" +
+                "\tregisterHealthIndicator: " + registerHealthIndicator + "\n" +
+                "\tpermittedNumberOfCallsInHalfOpenState: " + permittedNumberOfCallsInHalfOpenState + "\n" +
+                "\twaitDurationInOpenState: " + waitDurationInOpenState + "\n" +
+                "\tslowCallDurationThreshold: " + slowCallDurationThreshold + "\n" +
+                "\tslowCallRateThreshold: " + slowCallRateThreshold + "\n" +
+                "\tfailureRateThreshold: " + failureRateThreshold + "\n" +
+                "\teventConsumerBufferSize: " + eventConsumerBufferSize + "\n" +
+                "\tminimumNumberOfCalls: " + minimumNumberOfCalls + "\n" +
+                "\tslidingWindowSize: " + slidingWindowSize + "\n" +
+                "\tslidingWindowType: " + slidingWindowType;
+        }
+        
         public CircuitBreakerConfiguration(String circuitBreakerName) {
             this.circuitBreakerName = circuitBreakerName;
         }

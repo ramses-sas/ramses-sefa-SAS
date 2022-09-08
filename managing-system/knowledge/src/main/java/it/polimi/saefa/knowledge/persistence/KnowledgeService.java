@@ -46,9 +46,10 @@ public class KnowledgeService {
         services.put(service.getServiceId(), service);
     }
 
-    public Collection<Service> getServices(){
-        return services.values();
+    public List<Service> getServices(){
+        return services.values().stream().toList();
     }
+
     public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
         if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
             //if the instance is down, only save it if it's the first detection
@@ -71,7 +72,7 @@ public class KnowledgeService {
                 currentlyActiveInstances.add(instance);
         } );
 
-        if(previouslyActiveInstances.isEmpty())
+        if (previouslyActiveInstances.isEmpty())
             previouslyActiveInstances.addAll(currentlyActiveInstances);
         else {
             Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);

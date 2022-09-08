@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Getter
@@ -40,6 +41,10 @@ public class Instance{
 
     public String getAddress(){
         return instanceId.split("@")[1];
+    }
+
+    public Map<String, Integer> getLoadBalancerWeights() {
+        return service.getConfiguration().getLoadBalancerWeights();
     }
 
     @Override

@@ -1,5 +1,6 @@
-package it.polimi.saefa.monitor.externalinterfaces;
+package it.polimi.saefa.dashboard.externalinterfaces;
 
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +33,8 @@ public interface KnowledgeClient {
             @RequestParam String serviceId,
             @RequestParam(required = false) String instanceId
     );
+
+    @GetMapping("/rest/getServices")
+    List<Service> getServices();
 
 }

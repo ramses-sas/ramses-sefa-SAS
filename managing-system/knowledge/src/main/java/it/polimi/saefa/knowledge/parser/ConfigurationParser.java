@@ -41,10 +41,11 @@ public class ConfigurationParser {
                     String cbName = parts[parts.length-2];
                     String propName = parts[parts.length-1];
                     serviceConfiguration.addCircuitBreakerProperty(cbName, propName, value);
-                    log.debug(serviceConfiguration.getCircuitBreakerConfigurations().get(cbName).toString());
+                    log.debug(serviceConfiguration.getCircuitBreakersConfiguration().get(cbName).toString());
                 }
             } catch (Exception e) {
                 log.error("Error parsing line {}", line);
+                log.error(e.getMessage());
             }
         }
     }
