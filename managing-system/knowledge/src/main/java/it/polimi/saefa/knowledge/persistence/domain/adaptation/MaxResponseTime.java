@@ -1,9 +1,14 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MaxResponseTime extends AdaptationParameter {
+    @JsonProperty("max_threshold")
     private double maxThreshold;
 
     @Override
@@ -22,6 +27,22 @@ public class MaxResponseTime extends AdaptationParameter {
         super.setPriority(parameter.get("priority").getAsInt());
         super.setWeight(parameter.get("weight").getAsDouble());
         maxThreshold = parameter.get("max_threshold").getAsDouble();
+    }
+
+    @JsonCreator
+    public MaxResponseTime(
+            @JsonProperty("value") Double value,
+            @JsonProperty("weight") Double weight,
+            @JsonProperty("priority") int priority,
+            @JsonProperty("max_threshold") Double max_threshold) {
+        super(value, weight, priority);
+        this.maxThreshold = max_threshold;
+    }
+
+
+    @Override
+    public String toString() {
+        return super.toString() + ", Threshold: " + maxThreshold + ")";
     }
 }
 

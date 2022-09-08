@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @EnableDiscoveryClient
 public class KnowledgeApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(KnowledgeApplication.class, args);
     }

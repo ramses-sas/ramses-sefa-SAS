@@ -1,6 +1,5 @@
 package it.polimi.saefa.knowledge.rest;
 
-
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
@@ -21,13 +20,6 @@ public class KnowledgeRestController {
 
     @Autowired
     private KnowledgeService knowledgeService;
-
-    /*
-    @PostMapping("/addMetrics")
-    public void addMetrics(@RequestBody InstanceMetrics metrics) {
-        log.debug("Adding metric for {}@{} at {}", metrics.getServiceId(), metrics.getInstanceId(), metrics.getTimestamp());
-        persistenceService.addMetrics(metrics);
-    }*/
 
     @PostMapping("/metrics/addMetricsList")
     public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {

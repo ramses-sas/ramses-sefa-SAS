@@ -41,8 +41,8 @@ public class ServiceConfiguration{
     @Override
     public String toString() {
         return "Configuration of service: " + serviceId + "\n" +
-                "captured at: " + timestamp + "\n" +
-                "loadBalancerType: " + loadBalancerType + "\n" +
+                "\tcaptured at: " + timestamp + "\n" +
+                "\tloadBalancerType: " + loadBalancerType + "\n" +
                 //pesi commentati altrimenti la stampa può esplodere. Si possono ottenere nella stampa di una singola istanza
                 //(loadBalancerWeights.isEmpty() ? "" : ("loadBalancerWeights: " + loadBalancerWeights + "\n")) +
                 (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration);
@@ -70,18 +70,6 @@ public class ServiceConfiguration{
             circuitBreakersConfiguration.put(cbName, new CircuitBreakerConfiguration(cbName));
         String setter = "set" + property.substring(0,1).toUpperCase() + property.substring(1);
         circuitBreakersConfiguration.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakersConfiguration.get(cbName), value);
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceConfiguration{" +
-                "serviceId='" + serviceId + '\'' +
-                ", timestamp=" + timestamp +
-                ", configuration=" + configuration +
-                ", loadBalancerWeight=" + loadBalancerWeight +
-                ", loadBalancerType='" + loadBalancerType + '\'' +
-                ", circuitBreakerConfigurations=" + circuitBreakerConfigurations +
-                '}';
     }
 
     @Override
@@ -167,22 +155,6 @@ public class ServiceConfiguration{
             this.slidingWindowSize = Integer.valueOf(slidingWindowSize);
         }
 
-        @Override
-        public String toString() {
-            return "CircuitBreakerConfiguration{" +
-                    "circuitBreakerName='" + circuitBreakerName + '\'' +
-                    ", registerHealthIndicator=" + registerHealthIndicator +
-                    ", permittedNumberOfCallsInHalfOpenState=" + permittedNumberOfCallsInHalfOpenState +
-                    ", waitDurationInOpenState=" + waitDurationInOpenState +
-                    ", slowCallDurationThreshold=" + slowCallDurationThreshold +
-                    ", slowCallRateThreshold=" + slowCallRateThreshold +
-                    ", failureRateThreshold=" + failureRateThreshold +
-                    ", eventConsumerBufferSize=" + eventConsumerBufferSize +
-                    ", minimumNumberOfCalls=" + minimumNumberOfCalls +
-                    ", slidingWindowSize=" + slidingWindowSize +
-                    ", slidingWindowType='" + slidingWindowType + '\'' +
-                    '}';
-        }
     }
 }
 

@@ -14,7 +14,7 @@ import java.util.*;
 @NoArgsConstructor
 public class InstanceMetrics {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue//(strategy = GenerationType.TABLE)
     private Long id;
 
     private String serviceId; //service name

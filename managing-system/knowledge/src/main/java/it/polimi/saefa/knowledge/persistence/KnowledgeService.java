@@ -46,7 +46,7 @@ public class KnowledgeService {
         services.put(service.getServiceId(), service);
     }
 
-    public List<Service> getServices(){
+    public synchronized List<Service> getServices(){
         return services.values().stream().toList();
     }
 
@@ -55,7 +55,8 @@ public class KnowledgeService {
     public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
         if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
             //if the instance is down, only save it if it's the first detection
-            instance.addMetric(metrics);
+            // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
+            //instance.addMetric(metrics);
             metricsRepository.save(metrics);
             return true;
         }
@@ -63,6 +64,7 @@ public class KnowledgeService {
     }
 
     public void addMetrics(List<InstanceMetrics> metricsList) {
+        log.info("Saving new set of metrics");
         Set<Instance> currentlyActiveInstances = new HashSet<>();
 
         metricsList.forEach(metrics -> {
@@ -83,13 +85,14 @@ public class KnowledgeService {
             failedInstances.removeAll(shutdownInstances);
             for(Instance shutdownInstance : shutdownInstances){
                 if(!currentlyActiveInstances.contains(shutdownInstance)) {
+                    // the instance has been correctly shutdown
                     shutdownInstances.remove(shutdownInstance);
-                    Service service = shutdownInstance.getService();
                     shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
-                    InstanceMetrics metrics = new InstanceMetrics(service.getServiceId(), shutdownInstance.getInstanceId());
+                    InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
-                    shutdownInstance.addMetric(metrics);
+                    // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
+                    //shutdownInstance.addMetric(metrics);
                     metricsRepository.save(metrics);
                 }
             }
@@ -105,9 +108,8 @@ public class KnowledgeService {
             */
 
             failedInstances.forEach(instance -> {
-                Service service = instance.getService();
                 instance.setCurrentStatus(InstanceStatus.FAILED);
-                InstanceMetrics metrics = new InstanceMetrics(service.getServiceId(), instance.getInstanceId());
+                InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
                 metrics.setStatus(InstanceStatus.FAILED);
                 metrics.applyTimestamp();
                 metricsRepository.save(metrics);

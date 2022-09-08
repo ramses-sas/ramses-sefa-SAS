@@ -38,11 +38,11 @@ public class KnowledgeInit implements CommandLineRunner {
         FileReader adaptationParametersReader = new FileReader(ResourceUtils.getFile("classpath:adaptation_parameters_specification.json"));
         Map<String, List<AdaptationParameter>> servicesAdaptationParameters = AdaptationParametersParser.parse(adaptationParametersReader);
         for (String serviceName : servicesAdaptationParameters.keySet()) {
-            knowledgeService.getService(serviceName).setAdaptationParameters(servicesAdaptationParameters.get(serviceName));
+            knowledgeService.getService(serviceName).setAdaptationParameters(servicesAdaptationParameters.get(serviceName).toArray(AdaptationParameter[]::new));
+        }
+        for (Service service : serviceList) {
+            log.debug(service.toString());
         }
         log.info("Knowledge initialized");
-        for (Service service : serviceList) {
-            log.info(service.toString());
-        }
     }
 }

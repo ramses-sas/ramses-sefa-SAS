@@ -1,109 +1,114 @@
 {
 	"services"	: [
 		{
-		"service_id":"API-GATEWAY-SERVICE",
-		"implementations" : [
-			{
-				"implementation_id" : "API-GATEWAY-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 1
-			}
-		]
-		
+			"service_id":"API-GATEWAY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "API-GATEWAY-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				}
+			]
 		},
 		{
-		"service_id":"RESTAURANT-SERVICE",
-		"implementations" : [
-			{
-				"implementation_id" : "RESTAURANT-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 1
-			}
-		]
-		
+			"service_id":"WEB-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "WEB-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				}
+			]
 		},
 		{
-		"service_id":"ORDERING-SERVICE",
-		"implementations" : [
-			{
-				"implementation_id" : "ORDERING-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 1
-			}
-		]
-		
+			"service_id":"RESTAURANT-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "RESTAURANT-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				}
+			]
 		},
 		{
-		"service_id":"PAYMENT-PROXY-SERVICE",
-		"implementations" : [
-			{
-				"implementation_id" : "PAYMENT-PROXY-1-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 1
-			},
-			{
-				"implementation_id" : "PAYMENT-PROXY-2-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 0
-			},
-			{
-				"implementation_id" : "PAYMENT-PROXY-3-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 0
-			}
-
-		]
-		
+			"service_id":"ORDERING-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "ORDERING-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				}
+			]
 		},
 		{
-		"service_id":"DELIVERY-PROXY-SERVICE",
-		"implementations" : [
-			{
-				"implementation_id" : "DELIVERY-PROXY-1-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 0
-			},
-			{
-				"implementation_id" : "DELIVERY-PROXY-2-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 0
-			},
-			{
-				"implementation_id" : "DELIVERY-PROXY-3-SERVICE",
-				"cost_per_instance" : 0,
-				"cost_per_request" : 0,
-				"cost_per_second" : 0,
-				"cost_per_boot" : 0,
-				"score" : 1
-			}
-		]
+			"service_id":"PAYMENT-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "PAYMENT-PROXY-1-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				},
+				{
+					"implementation_id" : "PAYMENT-PROXY-2-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 0
+				},
+				{
+					"implementation_id" : "PAYMENT-PROXY-3-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 0
+				}
+			]
+		},
+		{
+			"service_id":"DELIVERY-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "DELIVERY-PROXY-1-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 0
+				},
+				{
+					"implementation_id" : "DELIVERY-PROXY-2-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 0
+				},
+				{
+					"implementation_id" : "DELIVERY-PROXY-3-SERVICE",
+					"cost_per_instance" : 0,
+					"cost_per_request" : 0,
+					"cost_per_second" : 0,
+					"cost_per_boot" : 0,
+					"score" : 1
+				}
+			]
 		}
-
 	]
-	
-
 }

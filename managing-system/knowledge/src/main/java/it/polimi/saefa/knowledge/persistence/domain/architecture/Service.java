@@ -17,9 +17,10 @@ public class Service {
     private ServiceConfiguration configuration;
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
+    // <instanceId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
 
-    private List<AdaptationParameter> adaptationParameters = new LinkedList<>();
+    private AdaptationParameter[] adaptationParameters = {};
 
     public Service(String serviceId) {
         this.serviceId = serviceId;
@@ -27,8 +28,7 @@ public class Service {
 
     public Service(String serviceId, List<ServiceImplementation> possibleImplementations) {
         this.serviceId = serviceId;
-        possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setService(this);});
-
+        possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setServiceId(getServiceId());});
     }
 
     public void addInstance(Instance instance) {
@@ -47,10 +47,10 @@ public class Service {
         return instances.containsKey(instanceId);
     }
 
-    public Instance getOrCreateInstance(String instanceId){
+    public Instance getOrCreateInstance(String instanceId) {
         Instance instance = instances.get(instanceId);
         if (instance == null) {
-            instance = new Instance(instanceId, this);
+            instance = new Instance(instanceId, serviceId);
             instances.put(instanceId, instance);
         }
         return instance;
@@ -75,12 +75,10 @@ public class Service {
             possibleImplementations.append(implId);
         }
 
-        return "Service{" +
-                "serviceId='" + serviceId + '\'' +
-                ", configuration=" + configuration +
-                ", instances=" + instances +
-                ", possibleImplementations= {" + possibleImplementations + "}" +
-                ", adaptationParameters=" + adaptationParameters +
-                '}';
+        return "\nService '" + serviceId + "'" + "\n" +
+                (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t")) +
+                "\tinstances: " + instances.keySet() + "\n" +
+                "\tpossibleImplementations: [" + possibleImplementations + "]\n" +
+                (adaptationParameters.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParameters));
     }
 }

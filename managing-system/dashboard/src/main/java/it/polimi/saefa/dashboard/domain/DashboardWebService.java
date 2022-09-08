@@ -28,17 +28,15 @@ public class DashboardWebService {
 	public Map<String, Service> getArchitecture() {
 		Map<String, Service> currentArchitecture = new HashMap<>();
 		// TODO: implement. Call Knowledge REST endpoint (to create)
-		Service test = new Service("PAYMENT-PROXY-SERVICE");
-		Instance i = new Instance("payment-proxy-1-service@localhost:00000", test);
+		/*Service test = new Service("PAYMENT-PROXY-SERVICE");
+		Instance i = new Instance("payment-proxy-1-service@localhost:00000", "PAYMENT-PROXY-SERVICE");
 		ServiceConfiguration sc = new ServiceConfiguration();
 		sc.setTimestamp(new Date());
 		test.addInstance(i);
 		test.setCurrentImplementation("payment-proxy-1-service");
 		test.setConfiguration(sc);
-		currentArchitecture.put("PAYMENT-PROXY-SERVICE", test);
-		/*getAllServices().forEach(service -> {
-			currentArchitecture.put(service.getServiceId(), service);
-		});*/
+		currentArchitecture.put("PAYMENT-PROXY-SERVICE", test);*/
+		getAllServices().forEach(s -> currentArchitecture.put(s.getServiceId(), s));
 		return currentArchitecture;
 	}
 

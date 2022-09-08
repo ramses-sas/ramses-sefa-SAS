@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ServiceImplementation {
-    private Service service;
+    private String serviceId;
     private String implementationId;
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta

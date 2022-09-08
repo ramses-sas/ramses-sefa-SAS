@@ -42,13 +42,13 @@ public class ConfigurationParser {
                     String cbName = parts[parts.length-2];
                     String propName = parts[parts.length-1];
                     serviceConfiguration.addCircuitBreakerProperty(cbName, propName, value);
-                    log.debug(serviceConfiguration.getCircuitBreakersConfiguration().get(cbName).toString());
                 }
             } catch (Exception e) {
                 log.error("Error parsing line {}", line);
                 log.error(e.getMessage());
             }
         }
+        serviceConfiguration.setTimestamp(new Date());
         return serviceConfiguration;
     }
 
@@ -56,7 +56,6 @@ public class ConfigurationParser {
     public void parseGlobalProperties(Map<String, Service> services) {
         InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/application.properties";
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration("application");
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
         String[] lines = Arrays.stream(response.getBody().split("\n")).filter(line -> line.matches("([\\w\\.-])+=.+")).toArray(String[]::new);
         for (String line : lines) {
@@ -67,9 +66,6 @@ public class ConfigurationParser {
                 // se è una proprietà dei load balancer
                 if (key.startsWith("loadbalancing.")) {
                     ConfigProperty configProperty = new ConfigProperty(key, value);
-                    /*if (!services.containsKey(configProperty.getServiceId()))
-                        serviceConfigurations.put(configProperty.getServiceId(), new ServiceConfiguration(configProperty.getServiceId()));
-                     */
                     if (services.containsKey(configProperty.getServiceId())) {
                         ServiceConfiguration serviceToBalanceConfiguration = services.get(configProperty.getServiceId()).getConfiguration();
                         if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("type"))

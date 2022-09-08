@@ -36,19 +36,18 @@ public class MonitorApplication {
     @Scheduled(fixedDelay = 15_000) //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
-        log.warn("SERVICES: " + services);
+        log.debug("SERVICES: " + services);
         List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
         List<Thread> threads = new LinkedList<>();
 
         services.forEach((serviceName, serviceInstances) -> {
-            log.debug("Getting data for service {}", serviceName);
             serviceInstances.forEach(instance -> {
                 Thread thread = new Thread(() -> {
                     InstanceMetrics instanceMetrics;
                     try {
                         instanceMetrics = prometheusParser.parse(instance);
                         instanceMetrics.applyTimestamp();
-                        log.debug(instanceMetrics.toString());
+                        log.debug("Adding metric to {}({})", serviceName, instanceMetrics);
                         metricsList.add(instanceMetrics);
                     } catch (Exception e) {
                         log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
