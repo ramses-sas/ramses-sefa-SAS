@@ -174,6 +174,9 @@ public class KnowledgeService {
         return serviceConfigurationSet.put(serviceId,serviceConfiguration)!=null;
     }
 
+    public Service getService(String serviceName) {
+        return services.get(serviceName);
+    }
 }
 
 
