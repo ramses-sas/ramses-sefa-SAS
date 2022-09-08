@@ -72,7 +72,17 @@ public class ServiceConfiguration{
         circuitBreakersConfiguration.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakersConfiguration.get(cbName), value);
     }
 
-
+    @Override
+    public String toString() {
+        return "ServiceConfiguration{" +
+                "serviceId='" + serviceId + '\'' +
+                ", timestamp=" + timestamp +
+                ", configuration=" + configuration +
+                ", loadBalancerWeight=" + loadBalancerWeight +
+                ", loadBalancerType='" + loadBalancerType + '\'' +
+                ", circuitBreakerConfigurations=" + circuitBreakerConfigurations +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -157,6 +167,22 @@ public class ServiceConfiguration{
             this.slidingWindowSize = Integer.valueOf(slidingWindowSize);
         }
 
+        @Override
+        public String toString() {
+            return "CircuitBreakerConfiguration{" +
+                    "circuitBreakerName='" + circuitBreakerName + '\'' +
+                    ", registerHealthIndicator=" + registerHealthIndicator +
+                    ", permittedNumberOfCallsInHalfOpenState=" + permittedNumberOfCallsInHalfOpenState +
+                    ", waitDurationInOpenState=" + waitDurationInOpenState +
+                    ", slowCallDurationThreshold=" + slowCallDurationThreshold +
+                    ", slowCallRateThreshold=" + slowCallRateThreshold +
+                    ", failureRateThreshold=" + failureRateThreshold +
+                    ", eventConsumerBufferSize=" + eventConsumerBufferSize +
+                    ", minimumNumberOfCalls=" + minimumNumberOfCalls +
+                    ", slidingWindowSize=" + slidingWindowSize +
+                    ", slidingWindowType='" + slidingWindowType + '\'' +
+                    '}';
+        }
     }
 }
 

@@ -50,6 +50,8 @@ public class KnowledgeService {
         return services.values().stream().toList();
     }
 
+    public Map<String,Service> getServicesMap() { return services; }
+    
     public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
         if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
             //if the instance is down, only save it if it's the first detection
@@ -66,6 +68,7 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
+            //service.setCurrentImplementation(metrics.getServiceImplementationName()); TODO problema: al primo giro non sappiamo chi implementa i servizi
             addMetrics(instance, metrics);
 
             if(metrics.isActive())
@@ -175,6 +178,9 @@ public class KnowledgeService {
         return serviceConfigurationSet.put(serviceId,serviceConfiguration)!=null;
     }
 
+    public Service getService(String serviceName) {
+        return services.get(serviceName);
+    }
 }
 
 

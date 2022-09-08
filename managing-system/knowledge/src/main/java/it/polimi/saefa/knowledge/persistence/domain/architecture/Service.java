@@ -65,4 +65,22 @@ public class Service {
 
         return serviceId.equals(service.serviceId);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder possibleImplementations = new StringBuilder();
+        for (String implId : this.possibleImplementations.keySet()) {
+            if (!possibleImplementations.isEmpty())
+                possibleImplementations.append(", ");
+            possibleImplementations.append(implId);
+        }
+
+        return "Service{" +
+                "serviceId='" + serviceId + '\'' +
+                ", configuration=" + configuration +
+                ", instances=" + instances +
+                ", possibleImplementations= {" + possibleImplementations + "}" +
+                ", adaptationParameters=" + adaptationParameters +
+                '}';
+    }
 }
