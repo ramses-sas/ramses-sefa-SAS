@@ -1,6 +1,7 @@
 package it.polimi.saefa.knowledge;
 
 import it.polimi.saefa.knowledge.parser.AdaptationParametersParser;
+import it.polimi.saefa.knowledge.parser.ConfigurationParser;
 import it.polimi.saefa.knowledge.parser.SystemArchitectureParser;
 import it.polimi.saefa.knowledge.persistence.KnowledgeService;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
@@ -20,18 +21,28 @@ public class KnowledgeInit implements CommandLineRunner {
     @Autowired
     private KnowledgeService knowledgeService;
 
+    @Autowired
+    private ConfigurationParser configurationParser;
+
     @Override
     public void run(String... args) throws Exception {
         FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
         serviceList.forEach(knowledgeService::addService);
+        serviceList.forEach(service -> {
+            service.setConfiguration(configurationParser.parseProperties(service.getServiceId()));
+            knowledgeService.addService(service);
+        });
+        configurationParser.parseGlobalProperties(knowledgeService.getServicesMap());
 
         FileReader adaptationParametersReader = new FileReader(ResourceUtils.getFile("classpath:adaptation_parameters_specification.json"));
         Map<String, List<AdaptationParameter>> servicesAdaptationParameters = AdaptationParametersParser.parse(adaptationParametersReader);
         for (String serviceName : servicesAdaptationParameters.keySet()) {
             knowledgeService.getService(serviceName).setAdaptationParameters(servicesAdaptationParameters.get(serviceName));
         }
-
         log.info("Knowledge initialized");
+        for (Service service : serviceList) {
+            log.info(service.toString());
+        }
     }
 }

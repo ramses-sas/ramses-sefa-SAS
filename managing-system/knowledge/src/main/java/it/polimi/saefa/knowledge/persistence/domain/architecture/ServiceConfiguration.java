@@ -56,7 +56,17 @@ public class ServiceConfiguration{
         circuitBreakerConfigurations.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakerConfigurations.get(cbName), value);
     }
 
-
+    @Override
+    public String toString() {
+        return "ServiceConfiguration{" +
+                "serviceId='" + serviceId + '\'' +
+                ", timestamp=" + timestamp +
+                ", configuration=" + configuration +
+                ", loadBalancerWeight=" + loadBalancerWeight +
+                ", loadBalancerType='" + loadBalancerType + '\'' +
+                ", circuitBreakerConfigurations=" + circuitBreakerConfigurations +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {

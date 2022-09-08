@@ -3,6 +3,7 @@ package it.polimi.saefa.knowledge.parser;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.ConfigProperty;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,10 @@ public class ConfigurationParser {
     private EurekaClient discoveryClient;
 
     // <serviceId, configuration>
-    private final Map<String, ServiceConfiguration> serviceConfigurations = new HashMap<>();
+    //private final Map<String, ServiceConfiguration> serviceConfigurations = new HashMap<>();
 
     @GetMapping("/testParsing/{serviceId}") // TODO: remove annotation after test
-    public void parseProperties(@PathVariable String serviceId) {
+    public ServiceConfiguration parseProperties(@PathVariable String serviceId) {
         InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId + ".properties";
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
@@ -47,10 +48,11 @@ public class ConfigurationParser {
                 log.error("Error parsing line {}", line);
             }
         }
+        return serviceConfiguration;
     }
 
     @GetMapping("/testGlobalParsing") // TODO: remove annotation after test
-    public void parseGlobalProperties() {
+    public void parseGlobalProperties(Map<String, Service> services) {
         InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/application.properties";
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration("application");
@@ -64,19 +66,22 @@ public class ConfigurationParser {
                 // se è una proprietà dei load balancer
                 if (key.startsWith("loadbalancing.")) {
                     ConfigProperty configProperty = new ConfigProperty(key, value);
-                    if (!serviceConfigurations.containsKey(configProperty.getServiceId()))
+                    /*if (!services.containsKey(configProperty.getServiceId()))
                         serviceConfigurations.put(configProperty.getServiceId(), new ServiceConfiguration(configProperty.getServiceId()));
-                    ServiceConfiguration serviceToBalanceConfiguration = serviceConfigurations.get(configProperty.getServiceId());
-                    if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("type"))
-                        serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
-                    if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("weight"))
-                        serviceToBalanceConfiguration.addLoadBalancerWeight(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
+                     */
+                    if (services.containsKey(configProperty.getServiceId())) {
+                        ServiceConfiguration serviceToBalanceConfiguration = services.get(configProperty.getServiceId()).getConfiguration();
+                        if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("type"))
+                            serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
+                        if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("weight"))
+                            serviceToBalanceConfiguration.addLoadBalancerWeight(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
+                    }
                 }
                 switch (key) {
                     // PARSE OTHER GLOBAL PROPERTIES HERE
                 }
             } catch (Exception e) {
-                log.error("Error parsing line {}", line);
+                log.error("Error parsing line {}, cause:{}", line, e.getMessage());
             }
         }
     }
