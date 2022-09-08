@@ -37,7 +37,7 @@ public class ConfigurationParser {
                 String key = keyValue[0];
                 String value = keyValue[1];
                 // se è una proprietà dei circuit breaker
-                if (key.startsWith("resilience4j.circuitbreaker.")) {
+                if (key.startsWith("resilience4j.circuitbreaker.") && !key.endsWith("ignoreExceptions")) {
                     String[] parts = keyValue[0].split("\\.");
                     String cbName = parts[parts.length-2];
                     String propName = parts[parts.length-1];
@@ -45,7 +45,7 @@ public class ConfigurationParser {
                     log.debug(serviceConfiguration.getCircuitBreakerConfigurations().get(cbName).toString());
                 }
             } catch (Exception e) {
-                log.error("Error parsing line {}", line);
+                log.error("Error parsing line {}, cause:{}", line, e.getMessage());
             }
         }
         return serviceConfiguration;
