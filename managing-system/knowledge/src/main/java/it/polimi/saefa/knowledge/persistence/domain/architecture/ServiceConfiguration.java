@@ -41,11 +41,11 @@ public class ServiceConfiguration{
     @Override
     public String toString() {
         return "Configuration of service: " + serviceId + "\n" +
-                "\tcaptured at: " + timestamp + "\n" +
+                "\tcaptured at: " + timestamp + "\n\n" +
                 "\tloadBalancerType: " + loadBalancerType + "\n" +
                 //pesi commentati altrimenti la stampa può esplodere. Si possono ottenere nella stampa di una singola istanza
                 //(loadBalancerWeights.isEmpty() ? "" : ("loadBalancerWeights: " + loadBalancerWeights + "\n")) +
-                (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration);
+                (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration.values());
     }
 
     public ServiceConfiguration(String serviceId) {
@@ -99,8 +99,8 @@ public class ServiceConfiguration{
 
         @Override
         public String toString() {
-            return "CircuitBreakerConfiguration:\n"+
-                "\tcircuitBreakerName: " + circuitBreakerName + "\n" +
+            return //"CircuitBreakerConfiguration:\n"+
+                "\ncircuitBreakerName: " + circuitBreakerName + "\n" +
                 "\tregisterHealthIndicator: " + registerHealthIndicator + "\n" +
                 "\tpermittedNumberOfCallsInHalfOpenState: " + permittedNumberOfCallsInHalfOpenState + "\n" +
                 "\twaitDurationInOpenState: " + waitDurationInOpenState + "\n" +
@@ -110,7 +110,7 @@ public class ServiceConfiguration{
                 "\teventConsumerBufferSize: " + eventConsumerBufferSize + "\n" +
                 "\tminimumNumberOfCalls: " + minimumNumberOfCalls + "\n" +
                 "\tslidingWindowSize: " + slidingWindowSize + "\n" +
-                "\tslidingWindowType: " + slidingWindowType;
+                "\tslidingWindowType: " + slidingWindowType + "\n";
         }
         
         public CircuitBreakerConfiguration(String circuitBreakerName) {

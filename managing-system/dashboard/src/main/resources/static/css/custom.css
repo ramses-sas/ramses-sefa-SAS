@@ -30,8 +30,10 @@ img.fullwidth {
 /* Float four columns side by side */
 .column {
     float: left;
-    width: 25%;
-    padding: 0 10px;
+    min-width: 24%;
+    /*max-width: 31%;
+    width: 25%;*/
+    padding: 10px;
 }
 
 /* Remove extra left and right margins, due to padding in columns */

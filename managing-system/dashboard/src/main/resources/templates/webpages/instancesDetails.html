@@ -6,7 +6,17 @@
 
 
 <div class="content">
-    <p>Adaptation</p>
+    <div class="card">
+        <h4>Service</h4>
+        <h5 th:text="${service.getServiceId()}">Service name goes here</h5>
+        <br>
+        <h5>Current Implementation</h5>
+        <h6 th:text="${service.getCurrentImplementation()}">Impl goes here</h6>
+        <h6 th:text="${currentImplementation.toString()}">Impl goes here</h6>
+        <br>
+        <h5>Instances</h5>
+        <h6 th:each="instance : ${service.getInstances().values()}" th:text="${instance.toString()}">Instances goes here</h6>
+    </div>
 </div>
 
 

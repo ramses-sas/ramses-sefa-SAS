@@ -22,11 +22,11 @@ public class KnowledgeService {
     @Autowired
     private ConfigurationRepository configurationRepository;
 
-    private Map<String, Service> services = new ConcurrentHashMap<>(); //va capito come vogliamo gestirlo, ovvero se
+    private final Map<String, Service> services = new ConcurrentHashMap<>();
+    //va capito come vogliamo gestirlo, ovvero se
     // quando tutte le istanze di un servizio sono spente/crashate vogliamo che il servizio venga rimosso o meno
-
-    //fare un file json che descrive l'architettura statica del managed system, con:
-    //per i microservizi che rappresentano il servizio X abbiamo "lista di microservizi"
+    // Scelta progettuale: una volta che un servizio è stato creato non viene mai rimosso, ma solo le sue istanze
+    // (altrimenti è come il cambio di un functional requirement)
 
     private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
     private Set<Instance> previouslyActiveInstances = new HashSet<>();
@@ -70,12 +70,12 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
-            //service.setCurrentImplementation(metrics.getServiceImplementationName()); TODO problema: al primo giro non sappiamo chi implementa i servizi
+            service.setCurrentImplementation(metrics.getServiceImplementationName()); // TODO problema: al primo giro non sappiamo chi implementa i servizi
             addMetrics(instance, metrics);
 
-            if(metrics.isActive())
+            if (metrics.isActive())
                 currentlyActiveInstances.add(instance);
-        } );
+        });
 
         if (previouslyActiveInstances.isEmpty())
             previouslyActiveInstances.addAll(currentlyActiveInstances);
@@ -117,7 +117,6 @@ public class KnowledgeService {
             previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
         }
         currentlyActiveInstances.clear();
-
     }
 
     public void notifyShutdownInstance(Instance instance) {
@@ -180,8 +179,8 @@ public class KnowledgeService {
         return serviceConfigurationSet.put(serviceId,serviceConfiguration)!=null;
     }
 
-    public Service getService(String serviceName) {
-        return services.get(serviceName);
+    public Service getService(String serviceId) {
+        return services.get(serviceId);
     }
 }
 

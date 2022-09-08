@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.rest;
 
+/*
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,3 +17,4 @@ public class ServiceInstanceInfoRequest {
         return serviceId + "@" + instanceId;
     }
 }
+ */

@@ -20,9 +20,11 @@ public class DashboardWebController {
 	/* Mostra home page */
 	@GetMapping("/{serviceId}/instances")
 	public String instancesDetails(Model model, @PathVariable String serviceId) {
-		Service service = dashboardWebService.getAllServices().stream().filter(s -> s.getServiceId().equals(serviceId)).findFirst().orElse(null);
+		//Service s = dashboardWebService.getAllServices().stream().filter(s -> s.getServiceId().equals(serviceId)).findFirst().orElse(null);
+		Service service = dashboardWebService.getService(serviceId);
 		log.info("Service: " + service);
 		model.addAttribute("service", service);
+		model.addAttribute("currentImplementation", service.getPossibleImplementations().get(service.getCurrentImplementation()));
 		return "webpages/instancesDetails";
 	}
 

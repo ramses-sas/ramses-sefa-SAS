@@ -72,7 +72,7 @@ public class KnowledgeRestController {
 
     @GetMapping("/service/{serviceId}")
     public Service getService(@PathVariable String serviceId) {
-        return knowledgeService.getServices().stream().filter(s -> s.getServiceId().equals(serviceId)).findFirst().orElse(null);
+        return knowledgeService.getService(serviceId);
     }
 
     @GetMapping("/metrics/getLatest")

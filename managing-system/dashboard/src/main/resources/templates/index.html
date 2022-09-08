@@ -6,12 +6,14 @@
 
 
 <div class="content">
-    <p>HOME</p>
     <div class="row">
         <div class="column" th:each="service : ${architecture}">
             <div class="card">
                 <h5>Service</h5>
                 <h6 th:text="${service.getServiceId()}">Service name goes here</h6>
+                <br>
+                <h5>Possible implementations</h5>
+                <h6 th:each="impl : ${service.getPossibleImplementations().keySet()}" th:text="${impl}">Implementation name goes here</h6>
                 <br>
                 <h5>Implemented by</h5>
                 <h6 th:text="${service.getCurrentImplementation()}">Implementation name goes here</h6>
@@ -20,7 +22,10 @@
                 <h6><a th:href="@{'/'+${service.getServiceId()}+'/instances'}">See all</a></h6>
                 <br>
                 <h5>Configuration</h5>
-                <h6 class="toString" th:text="${service.getConfiguration().toString()}">Configuration goes here</h6>
+                <h6 class="toString" th:text="${service.getConfiguration().toString().replace('[','').replace(']','')}">Configuration goes here</h6>
+                <br>
+                <h5>Adaptation Parameters</h5>
+                <h6 class="toString" th:each="params : ${service.getAdaptationParameters()}" th:text="${params.toString()}">Adaptation params go here</h6>
             </div>
         </div>
     </div>

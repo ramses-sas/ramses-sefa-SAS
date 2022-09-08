@@ -5,27 +5,56 @@
 			"adaptation_parameters" : [
 				{
 					"name" : "availability",
-					"weight" : 1,
-					"priority" :0,
-					"min_threshold" : 0
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
 				},
 				{
 					"name" : "average_response_time",
-					"weight" : 0,
-					"priority" : 0,
-					"max_threshold": 0
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
 				},
 				{
 					"name" : "max_response_time",
-					"weight" : 0,
-					"priority" : 0,
-					"max_threshold" : 0
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
 				},
 				{
 					"name" : "total_cost",
-					"weight" : 0,
-					"priority" : 0,
-					"max_threshold": 0
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
+				}
+			]
+		},
+		{
+			"service_id" : "WEB-SERVICE",
+			"adaptation_parameters" : [
+				{
+					"name" : "availability",
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
+				},
+				{
+					"name" : "max_response_time",
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
+				},
+				{
+					"name" : "total_cost",
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
 				}
 			]
 		},
@@ -33,28 +62,28 @@
 			"service_id":"RESTAURANT-SERVICE",
 			"adaptation_parameters" : [
 				{
-					"name":"availability",
-					"weight" : 1,
-					"priority":0,
-					"min_threshold": 0
+					"name" : "availability",
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
 				},
 				{
-					"name":"average_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "average_response_time",
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
 				},
 				{
-					"name":"max_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "max_response_time",
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
 				},
 				{
-					"name":"total_cost",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "total_cost",
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
 				}
 			]
 		},
@@ -62,28 +91,28 @@
 			"service_id":"ORDERING-SERVICE",
 			"adaptation_parameters" : [
 				{
-					"name":"availability",
-					"weight" : 1,
-					"priority":0,
-					"min_threshold": 0
+					"name" : "availability",
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
 				},
 				{
-					"name":"average_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "average_response_time",
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
 				},
 				{
-					"name":"max_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "max_response_time",
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
 				},
 				{
-					"name":"total_cost",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "total_cost",
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
 				}
 			]
 		},
@@ -92,27 +121,27 @@
 			"adaptation_parameters" : [
 				{
 					"name" : "availability",
-					"weight" : 1,
-					"priority" : 0,
-					"min_threshold": 0
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
 				},
 				{
 					"name" : "average_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
 				},
 				{
 					"name" : "max_response_time",
-					"weight" : 0,
-					"priority" : 0,
-					"max_threshold": 0
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
 				},
 				{
 					"name" : "total_cost",
-					"weight" : 0,
-					"priority" : 0,
-					"max_threshold": 0
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
 				}
 			]
 		},
@@ -120,28 +149,28 @@
 			"service_id" : "DELIVERY-PROXY-SERVICE",
 			"adaptation_parameters" : [
 				{
-					"name":"availability",
-					"weight" : 1,
-					"priority":0,
-					"min_threshold": 0
+					"name" : "availability",
+					"weight" : 0.4,
+					"priority" : 1,
+					"min_threshold" : 0.95
 				},
 				{
-					"name":"average_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "average_response_time",
+					"weight" : 0.2,
+					"priority" : 2,
+					"max_threshold": 1
 				},
 				{
-					"name":"max_response_time",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "max_response_time",
+					"weight" : 0.2,
+					"priority" : 3,
+					"max_threshold" : 2
 				},
 				{
-					"name":"total_cost",
-					"weight" : 0,
-					"priority":0,
-					"max_threshold": 0
+					"name" : "total_cost",
+					"weight" : 0.2,
+					"priority" : 4,
+					"max_threshold": 1000
 				}
 			]
 		}

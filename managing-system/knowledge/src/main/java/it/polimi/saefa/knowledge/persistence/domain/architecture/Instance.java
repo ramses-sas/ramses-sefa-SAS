@@ -1,17 +1,11 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Instance {
     private String instanceId; //service implementation name @ ip : port

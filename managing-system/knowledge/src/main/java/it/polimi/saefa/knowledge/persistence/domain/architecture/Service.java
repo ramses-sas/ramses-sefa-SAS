@@ -76,9 +76,10 @@ public class Service {
         }
 
         return "\nService '" + serviceId + "'" + "\n" +
-                (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t")) +
-                "\tinstances: " + instances.keySet() + "\n" +
-                "\tpossibleImplementations: [" + possibleImplementations + "]\n" +
+                "\tImplemented by: '" + currentImplementation + "'" + "\n" +
+                (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
+                "\tInstances: " + instances.keySet() + "\n" +
+                "\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 (adaptationParameters.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParameters));
     }
 }
