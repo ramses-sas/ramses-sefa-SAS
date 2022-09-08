@@ -34,7 +34,10 @@ public interface KnowledgeClient {
             @RequestParam(required = false) String instanceId
     );
 
-    @GetMapping("/rest/getServices")
+    @GetMapping("/rest/service")
     List<Service> getServices();
+
+    @GetMapping("/rest/service/{serviceId}")
+    Service getService(@PathVariable String serviceId);
 
 }

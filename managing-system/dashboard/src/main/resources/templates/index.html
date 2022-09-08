@@ -8,16 +8,19 @@
 <div class="content">
     <p>HOME</p>
     <div class="row">
-        <div class="column" th:each="service : ${currentConfiguration}">
+        <div class="column" th:each="service : ${architecture}">
             <div class="card">
                 <h5>Service</h5>
                 <h6 th:text="${service.getServiceId()}">Service name goes here</h6>
+                <br>
                 <h5>Implemented by</h5>
                 <h6 th:text="${service.getCurrentImplementation()}">Implementation name goes here</h6>
+                <br>
                 <h5>Active instances</h5>
-                <a th:href="@{'/customer/restaurants/'+${restaurant.id}+'/menu'}">Restaurants menu</a>
+                <h6><a th:href="@{'/'+${service.getServiceId()}+'/instances'}">See all</a></h6>
+                <br>
                 <h5>Configuration</h5>
-                <h6 th:text="${service.getConfiguration().toString()}">Configuration goes here</h6>
+                <h6 class="toString" th:text="${service.getConfiguration().toString()}">Configuration goes here</h6>
             </div>
         </div>
     </div>

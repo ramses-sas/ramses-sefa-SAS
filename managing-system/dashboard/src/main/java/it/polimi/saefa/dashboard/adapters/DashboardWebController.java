@@ -1,6 +1,7 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +18,17 @@ public class DashboardWebController {
 	private DashboardWebService dashboardWebService;
 
 	/* Mostra home page */
-	@GetMapping("/${serviceId}/instances")
+	@GetMapping("/{serviceId}/instances")
 	public String instancesDetails(Model model, @PathVariable String serviceId) {
-		model.addAttribute("currentConfiguration", dashboardWebService.getConfiguration().values().stream().toList());
-		return "index";
+		Service service = dashboardWebService.getService(serviceId);
+		model.addAttribute("service", service);
+		return "webpages/instancesDetails";
 	}
 
 	/* Mostra home page */
 	@GetMapping("/")
 	public String index(Model model) {
-		model.addAttribute("currentConfiguration", dashboardWebService.getConfiguration().values().stream().toList());
+		model.addAttribute("architecture", dashboardWebService.getArchitecture().values().stream().toList());
 		return "index";
 	}
 

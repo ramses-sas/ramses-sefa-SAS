@@ -73,9 +73,14 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
-    @GetMapping("/getServices")
+    @GetMapping("/service")
     public List<Service> getServices() {
         return knowledgeService.getServices();
+    }
+
+    @GetMapping("/service/{serviceId}")
+    public Service getService(@PathVariable String serviceId) {
+        return knowledgeService.getServices().stream().filter(s -> s.getServiceId().equals(serviceId)).findFirst().orElse(null);
     }
 
     @GetMapping("/metrics/getLatest")
