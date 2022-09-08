@@ -3,6 +3,7 @@ package it.polimi.saefa.knowledge.persistence.domain.architecture;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.util.Map;
 @Entity
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @IdClass(ServiceConfiguration.CompositeKey.class)
 public class ServiceConfiguration{
@@ -69,6 +71,7 @@ public class ServiceConfiguration{
     @Getter
     @Setter
     @Embeddable
+    @ToString
     public static class CircuitBreakerConfiguration {
         private String circuitBreakerName;
 

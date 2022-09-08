@@ -21,6 +21,10 @@ public class Service {
 
     private List<AdaptationParameter> adaptationParameters = new LinkedList<>();
 
+    public Service(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
     public Service(String serviceId, List<ServiceImplementation> possibleImplementations) {
         this.serviceId = serviceId;
         possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setService(this);});

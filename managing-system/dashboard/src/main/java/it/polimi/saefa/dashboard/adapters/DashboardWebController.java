@@ -1,7 +1,6 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
-import it.polimi.saefa.knowledge.persistence.domain.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
