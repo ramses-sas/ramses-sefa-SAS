@@ -35,7 +35,7 @@ public class Service {
         instances.put(instance.getInstanceId(), instance);
     }
 
-    public boolean isReachable(){
+    public boolean isReachable() {
         for (String instanceAddress : instances.keySet()) {
             if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
                 return true;
