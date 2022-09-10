@@ -25,11 +25,15 @@ public abstract class AdaptationParameter {
 
     public abstract boolean isSatisfied();
 
+    public abstract Double getThreshold();
+
     public abstract void parseFromJson(String json);
 
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "(value: " + value + ", weight: " + weight + ", priority: " + priority;
     }
+
+
 
 }

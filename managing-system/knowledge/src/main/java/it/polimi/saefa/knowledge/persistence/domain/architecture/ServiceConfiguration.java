@@ -16,7 +16,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @IdClass(ServiceConfiguration.CompositeKey.class)
-public class ServiceConfiguration{
+public class ServiceConfiguration {
 
     protected static class CompositeKey implements Serializable {
         private String serviceId;
@@ -61,8 +61,8 @@ public class ServiceConfiguration{
     }
      */
 
-    public void addLoadBalancerWeight(String instance, Integer value){
-        loadBalancerWeights.put(instance, value);
+    public void addLoadBalancerWeightForInstanceAtAddress(String instanceAddress, Integer value){
+        loadBalancerWeights.put(instanceAddress, value);
     }
 
     public void addCircuitBreakerProperty(String cbName, String property, String value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

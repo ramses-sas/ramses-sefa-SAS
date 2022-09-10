@@ -6,16 +6,30 @@
 
 
 <div class="content">
+    <div class="column">
     <div class="card">
-        <h4>Service</h4>
-        <h5 th:text="${service.getServiceId()}">Service name goes here</h5>
+        <h5 class="cardElementTitle">Service</h5>
+        <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
         <br>
-        <h5>Current Implementation</h5>
-        <h6 th:text="${service.getCurrentImplementation()}">Impl goes here</h6>
-        <h6 th:text="${currentImplementation.toString()}">Impl goes here</h6>
+        <h5 class="cardElementTitle">Possible implementations</h5>
+        <h6 class="cardElementContent" th:each="impl : ${possibleImplementations}" th:text="${impl}">Implementation name goes here</h6>
         <br>
-        <h5>Instances</h5>
-        <h6 th:each="instance : ${service.getInstances().values()}" th:text="${instance.toString()}">Instances goes here</h6>
+        <h5 class="cardElementTitle">Instances</h5>
+        <table class="configTable">
+            <thead>
+            <tr>
+                <th>InstanceId</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${instancesTable}">
+                <td th:text="${entry[0]}">InstanceId goes here</td>
+                <td th:text="${entry[1]}">Status goes here</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
     </div>
 </div>
 

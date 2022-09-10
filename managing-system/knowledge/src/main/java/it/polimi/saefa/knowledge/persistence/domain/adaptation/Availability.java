@@ -39,6 +39,10 @@ public class Availability extends AdaptationParameter{
         this.minThreshold = min_threshold;
     }
 
+    public Double getThreshold() {
+        return minThreshold;
+    }
+
     @Override
     public String toString() {
         return super.toString() + ", Threshold: " + minThreshold + ")";

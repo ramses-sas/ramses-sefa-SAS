@@ -39,6 +39,9 @@ public class MaxResponseTime extends AdaptationParameter {
         this.maxThreshold = max_threshold;
     }
 
+    public Double getThreshold() {
+        return maxThreshold;
+    }
 
     @Override
     public String toString() {

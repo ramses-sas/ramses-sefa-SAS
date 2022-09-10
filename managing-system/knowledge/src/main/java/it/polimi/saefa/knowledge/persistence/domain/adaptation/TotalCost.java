@@ -39,6 +39,10 @@ public class TotalCost extends AdaptationParameter {
         this.maxThreshold = max_threshold;
     }
 
+    public Double getThreshold() {
+        return maxThreshold;
+    }
+
     @Override
     public String toString() {
         return super.toString() + ", Threshold: " + maxThreshold + ")";

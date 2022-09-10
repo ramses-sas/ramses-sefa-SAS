@@ -216,7 +216,46 @@ header .header-content .header-content-inner p {
     font-weight: 400;
 }
 
+table.configTable {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: #f1f1f1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+table.configTable td, th {
+    padding-left: 8px;
+    padding-right: 8px;
+    vertical-align: center;
+    font-size: 13px;
+    text-align: center;
+}
+table.configTable tbody tr:last-child {
+    border: 0;
+}
+table.configTable tbody tr {
+    height: 20px;
+    font-weight: 300;
+    border-bottom: 0 solid darkgray;
+}
+table.configTable thead th {
+    font-weight: 400;
+}
 
+h5.cardElementTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: black;
+}
+h6.cardElementContent {
+    font-size: 13px;
+    color: black;
+    font-weight: 300;
+}
+
+/*
 
 table {
     border-collapse: collapse;
@@ -292,7 +331,7 @@ table td.r, table th.r {
 
 
 
-/*
+
 .navbar-default .navbar-header .navbar-brand:hover,
 .navbar-default .navbar-header .navbar-brand:focus {
     color: #eb3812;

@@ -66,19 +66,27 @@ public class ConfigurationParser {
                 // se è una proprietà dei load balancer
                 if (key.startsWith("loadbalancing.")) {
                     ConfigProperty configProperty = new ConfigProperty(key, value);
-                    if (services.containsKey(configProperty.getServiceId())) {
-                        ServiceConfiguration serviceToBalanceConfiguration = services.get(configProperty.getServiceId()).getConfiguration();
-                        if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("type"))
-                            serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
-                        if (configProperty.getPropertyElements().length == 1 && configProperty.getPropertyElements()[0].equals("weight"))
-                            serviceToBalanceConfiguration.addLoadBalancerWeight(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
+                    if (configProperty.getPropertyElements().length == 1) {
+                        String propertyName = configProperty.getPropertyElements()[0];
+                        if (configProperty.isServiceGlobal() && propertyName.equals("type")) {
+                            for (Service service : services.values())
+                                service.getConfiguration().setLoadBalancerType(configProperty.getValue());
+                        } else if (services.containsKey(configProperty.getServiceId())) {
+                            ServiceConfiguration serviceToBalanceConfiguration = services.get(configProperty.getServiceId()).getConfiguration();
+                            switch (propertyName) {
+                                case "type" ->
+                                    serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
+                                case "weight" ->
+                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
+                            }
+                        }
                     }
                 }
                 switch (key) {
                     // PARSE OTHER GLOBAL PROPERTIES HERE
                 }
             } catch (Exception e) {
-                log.error("Error parsing line {}, cause:{}", line, e.getMessage());
+                log.error("Error parsing line {}, cause: {}", line, e.getMessage());
             }
         }
     }

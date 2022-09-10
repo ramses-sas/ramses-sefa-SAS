@@ -1,10 +1,10 @@
 package it.polimi.saefa.loadbalancer;
 
-import it.polimi.saefa.loadbalancer.algorithms.RoundRobinLoadBalancer;
-import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
+import it.polimi.saefa.loadbalancer.algorithms.*;
 
 public enum LoadBalancerType {
     ROUND_ROBIN,
+    RANDOM,
     WEIGHTED_ROUND_ROBIN;
     //Custom
 
@@ -12,7 +12,7 @@ public enum LoadBalancerType {
         //log.info("Test property: {}", common);
         return switch (this) {
             case ROUND_ROBIN -> RoundRobinLoadBalancer.class;
-            //case Custom -> RoundRobinLoadBalancer.class;
+            case RANDOM -> RandomLoadBalancer.class;
             case WEIGHTED_ROUND_ROBIN -> WeightedRoundRobinLoadBalancer.class;
         };
     }
