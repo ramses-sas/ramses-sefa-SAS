@@ -30,7 +30,7 @@ public class InstanceMetrics {
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     @OneToMany(cascade = CascadeType.ALL)
-    List<HttpRequestMetrics> httpMetrics = new LinkedList<>(); //TODO provare a renderlo map come prima?
+    List<HttpRequestMetrics> httpMetrics = new LinkedList<>(); // TODO provare a renderlo map come prima?
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;

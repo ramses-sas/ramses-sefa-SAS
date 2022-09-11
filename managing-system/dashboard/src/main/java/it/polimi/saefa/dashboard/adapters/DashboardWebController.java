@@ -6,6 +6,9 @@ import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.CircuitBreakerMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +31,7 @@ public class DashboardWebController {
 		Service service = dashboardWebService.getService(serviceId);
 		log.info("Service: " + service);
 		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
-		// [[InstanceId, Status]]
+		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
 		for (Instance instance : service.getInstances().values()) {
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
@@ -39,7 +42,57 @@ public class DashboardWebController {
 		model.addAttribute("possibleImplementations", possibleImplementations);
 		model.addAttribute("instancesTable", instancesTable);
 		//model.addAttribute("currentImplementation", service.getPossibleImplementations().get(service.getCurrentImplementation()));
+
+		GraphData[] graphs = new GraphData[3];
+		GraphData data = new GraphData("Instant", "Availability");
+		for (int i = 0; i < 20; i++) {
+			data.addPoint("" + i, i * Math.random());
+		}
+		graphs[0] = data;
+		GraphData data1 = new GraphData("Instant", "Average Response Time");
+		for (int i = 0; i < 20; i++) {
+			data1.addPoint("" + i, i * Math.random());
+		}
+		graphs[1] = data1;
+		GraphData data2 = new GraphData("Instant", "Max Response Time");
+		for (int i = 0; i < 20; i++) {
+			data2.addPoint("" + i, i * Math.random());
+		}
+		graphs[2] = data2;
+		log.debug("Graphs: " + Arrays.toString(graphs));
+		model.addAttribute("graphs", graphs);
+
 		return "webpages/instancesDetails";
+	}
+
+	@GetMapping("/{serviceId}/{instanceId}/metrics")
+	public String instanceMetrics(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
+		InstanceMetrics latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
+		log.debug("Latest metrics: " + latestMetrics);
+		List<String[]> resourceTable = new ArrayList<>();
+		List<String[]> httpMetricsTable = new ArrayList<>();
+		List<String[]> circuitBreakersTable = new ArrayList<>();
+		if (latestMetrics != null) {
+			resourceTable.add(new String[]{"CPU Usage", "" + latestMetrics.getCpuUsage()});
+			resourceTable.add(new String[]{"Disk Free Space", "" + latestMetrics.getDiskFreeSpace()});
+			resourceTable.add(new String[]{"Disk Total Space", "" + latestMetrics.getDiskTotalSpace()});
+			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics())
+				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(), httpMetrics.getOutcome(), httpMetrics.getAverageDuration()+"ms"});
+			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
+				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
+				circuitBreakersTable.add(new String[]{"Failure Rate", cbMetrics.getFailureRate()+"%"});
+				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
+				circuitBreakersTable.add(new String[]{"Slow Calls Rate", cbMetrics.getSlowCallRate()+"%"});
+				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
+				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
+					circuitBreakersTable.add(new String[]{"Average Call Duration when " + status, cbMetrics.getAverageDuration(status)+""});
+				}
+			}
+		}
+		model.addAttribute("resourceTable", resourceTable);
+		model.addAttribute("httpMetricsTable", httpMetricsTable);
+		model.addAttribute("circuitBreakersTable", circuitBreakersTable);
+		return "webpages/instanceMetrics";
 	}
 
 	/* Mostra home page */
