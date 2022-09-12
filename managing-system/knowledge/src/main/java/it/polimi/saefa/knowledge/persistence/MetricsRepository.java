@@ -1,6 +1,8 @@
 package it.polimi.saefa.knowledge.persistence;
 
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +19,10 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     Collection<InstanceMetrics> findAllByInstanceIdAndTimestampBetween(String instanceId, Date start, Date end);
 
     // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
+
+    Page<InstanceMetrics> findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);
+
+    Page<InstanceMetrics> findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);
 
     @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND m.timestamp = (SELECT MAX(m2.timestamp) FROM InstanceMetrics m2 WHERE m2.instanceId = :instanceId)")
     Collection<InstanceMetrics> findLatestByInstanceId(@Param("instanceId") String instanceId);
