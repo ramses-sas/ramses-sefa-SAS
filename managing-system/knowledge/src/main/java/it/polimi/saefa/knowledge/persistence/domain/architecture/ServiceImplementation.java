@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,7 @@ public class ServiceImplementation {
         return false;
     }
 
+    @JsonIgnore
     public boolean isReachable() {
         for (String instanceAddress : instances.keySet()) {
             if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)

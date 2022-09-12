@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,6 @@ import java.util.*;
 public class Service {
     private String serviceId;
     private String currentImplementation; //name of the current implementation of the service
-
     private ServiceConfiguration configuration;
 
     // <ServiceImplementationId, ServiceImplementation>
@@ -30,9 +30,11 @@ public class Service {
         possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setServiceId(getServiceId());});
     }
 
-    public ServiceImplementation getCurrentImplementation(){
+    @JsonIgnore
+    public ServiceImplementation getCurrentImplementationObject(){
         return possibleImplementations.get(currentImplementation);
     }
+
 
     /*public void addInstance(Instance instance) {
         instances.put(instance.getInstanceId(), instance);

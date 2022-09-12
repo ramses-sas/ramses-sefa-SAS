@@ -9,7 +9,6 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Instance { //TODO controlla che ovunque ora usi il service implementation
     private String instanceId; //service implementation name @ ip : port
-
     private String serviceId; //service name //todo aggiungi al costuttore
     private String serviceImplementationId; //service implementation name
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
