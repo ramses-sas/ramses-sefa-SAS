@@ -37,4 +37,18 @@ public interface KnowledgeClient {
     @GetMapping("/service")
     List<Service> getServices();
 
+    @GetMapping("/metrics/getLatestNBefore")
+    List<InstanceMetrics> getLatestNMetricsBeforeDate(
+            @RequestParam String instanceId,
+            @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam int n
+    );
+
+    @GetMapping("/metrics/getLatestNAfter")
+    List<InstanceMetrics> getLatestNMetricsAfterDate(
+            @RequestParam String instanceId,
+            @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam int n
+    );
+
 }

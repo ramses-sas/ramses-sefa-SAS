@@ -10,6 +10,7 @@ import prometheus.types.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ public class PrometheusParser {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        Map<String, Double> httpMaxDuration = new HashMap<>();
         metricFamilies.forEach(metricFamily -> {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
             //MetricType metricType = elem.getType(); //e.g. GAUGE
@@ -36,6 +39,8 @@ public class PrometheusParser {
                 switch (propertyName) {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->
                             instanceMetrics.addHttpMetrics(handleHttpServerRequestsSeconds((Histogram) metric));
+                    case PrometheusMetrics.HTTP_REQUESTS_MAX_TIME ->
+                        httpMaxDuration.put(labels.get("method") + "@" + labels.get("uri"), ((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_FREE_SPACE ->
                             instanceMetrics.setDiskFreeSpace(((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
@@ -61,6 +66,7 @@ public class PrometheusParser {
                 }
             });
         } );
+        httpMaxDuration.forEach((endpoint, maxDuration) -> instanceMetrics.getHttpMetrics().get(endpoint).setMaxDuration(maxDuration));
         return instanceMetrics;
     }
 

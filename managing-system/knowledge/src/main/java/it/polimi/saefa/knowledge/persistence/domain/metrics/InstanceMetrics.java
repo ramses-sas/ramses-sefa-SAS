@@ -20,7 +20,6 @@ public class InstanceMetrics {
     private String serviceId; //service name
     private String instanceId; //service implementation name @ip : port
 
-
     @Enumerated(EnumType.STRING)
     private InstanceStatus status = InstanceStatus.ACTIVE;
     //@ElementCollection
@@ -29,8 +28,9 @@ public class InstanceMetrics {
     @OneToMany(cascade = CascadeType.ALL)
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
+    // Map<HTTP-Method@endpoint, HttpRequestMetrics>
     @OneToMany(cascade = CascadeType.ALL)
-    List<HttpRequestMetrics> httpMetrics = new LinkedList<>(); // TODO provare a renderlo map come prima?
+    Map<String, HttpRequestMetrics> httpMetrics = new HashMap<>(); // TODO provare a renderlo map come prima?
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
@@ -47,7 +47,7 @@ public class InstanceMetrics {
         return instanceId.split("@")[0];
     }
     public void addHttpMetrics(HttpRequestMetrics metrics) {
-        httpMetrics.add(metrics);
+        httpMetrics.put( metrics.getHttpMethod() + "@" + metrics.getEndpoint(), metrics);
     }
     public void applyTimestamp() {
         timestamp = new Date();
