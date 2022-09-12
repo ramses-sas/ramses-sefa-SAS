@@ -1,4 +1,3 @@
 rootProject.name = 'managing-system'
-include('monitor', 'knowledge', 'dashboard')
-include 'analyze'
+include('monitor', 'analyse', 'knowledge', 'dashboard')
 

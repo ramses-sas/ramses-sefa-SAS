@@ -28,7 +28,6 @@ public class KnowledgeService {
     // Scelta progettuale: una volta che un servizio è stato creato non viene mai rimosso, ma solo le sue istanze
     // (altrimenti è come il cambio di un functional requirement)
 
-    private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
     private Set<Instance> previouslyActiveInstances = new HashSet<>();
     private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
 
@@ -46,7 +45,7 @@ public class KnowledgeService {
         services.put(service.getServiceId(), service);
     }
 
-    public synchronized List<Service> getServices(){
+    public List<Service> getServices(){
         return services.values().stream().toList();
     }
 
@@ -173,10 +172,7 @@ public class KnowledgeService {
         return metricsRepository.findLatestByServiceId(serviceId).stream().toList();
     }
 
-    public boolean addInstanceConfigurationProperty(String serviceId, String property, String value) {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
-        return serviceConfigurationSet.put(serviceId,serviceConfiguration)!=null;
-    }
+
 
     public Service getService(String serviceId) {
         return services.get(serviceId);
