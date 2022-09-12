@@ -70,11 +70,11 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
-            service.setCurrentImplementation(metrics.getServiceImplementationName()); // TODO problema: al primo giro non sappiamo chi implementa i servizi
-            addMetrics(instance, metrics);
-
-            if (metrics.isActive())
-                currentlyActiveInstances.add(instance);
+            if(instance!=null) {
+                addMetrics(instance, metrics);
+                if (metrics.isActive())
+                    currentlyActiveInstances.add(instance);
+            }
         });
 
         if (previouslyActiveInstances.isEmpty())
@@ -96,9 +96,8 @@ public class KnowledgeService {
                     metricsRepository.save(metrics);
                 }
             }
-            shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
-
-            //it won't be reached from the monitor in the future, thus it can be removed from the set of shutdown instances
+            //shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
+            //it won't be reached from the monitor in the future, thus it can be removed from the set of shutdown instances TODO ^è già fatto nel foreach, no?
 
             /*Caso risolto utilizzando la riga di codice precedente
                 //shutDownInstances.clear(); Non possiamo pulire questo set. Questo perché magari eureka non rimuove

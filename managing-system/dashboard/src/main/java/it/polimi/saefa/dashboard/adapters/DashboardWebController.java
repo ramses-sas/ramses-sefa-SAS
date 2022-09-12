@@ -33,7 +33,7 @@ public class DashboardWebController {
 		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
-		for (Instance instance : service.getInstances().values()) {
+		for (Instance instance : service.getInstances()) {
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
 		}
 		//model.addAttribute("service", service);
