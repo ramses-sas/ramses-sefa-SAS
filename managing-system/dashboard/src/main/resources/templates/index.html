@@ -7,16 +7,16 @@
 
 <div class="content">
     <div class="row">
-        <div class="column" th:each="service : ${architecture}">
+        <div class="column" th:each="serviceId : ${servicesIds}">
             <div class="card">
                 <h5 class="cardElementTitle">Service</h5>
-                <h6 class="cardElementContent" th:text="${service.getServiceId()}">Service name goes here</h6>
-                <h6><a th:href="@{'/'+${service.getServiceId()}+'/instances'}">Show details and active instances</a></h6>
+                <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
+                <h6><a th:href="@{'/'+${serviceId}}">Show details and active instances</a></h6>
                 <br>
                 <h5 class="cardElementTitle">Current Implementation</h5>
                 <table class="configTable">
                     <tbody>
-                    <tr th:each="entry : ${servicesCurrentImplementationTable.get(service.getServiceId())}">
+                    <tr th:each="entry : ${servicesCurrentImplementationTable.get(serviceId)}">
                         <td th:text="${entry[0]}">Key goes here</td>
                         <td th:text="${entry[1]}">Value goes here</td>
                     </tr>
@@ -26,7 +26,7 @@
                 <h5 class="cardElementTitle">Configuration</h5>
                 <table class="configTable">
                     <tbody>
-                        <tr th:each="entry : ${servicesConfigurationTable.get(service.getServiceId())}">
+                        <tr th:each="entry : ${servicesConfigurationTable.get(serviceId)}">
                             <td th:text="${entry[0]}">Key goes here</td>
                             <td th:text="${entry[1]}">Value goes here</td>
                         </tr>
@@ -45,7 +45,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="entry : ${servicesAdaptationParametersTable.get(service.getServiceId())}">
+                        <tr th:each="entry : ${servicesAdaptationParametersTable.get(serviceId)}">
                             <td th:text="${entry[0]}">Key goes here</td>
                             <td th:text="${entry[1]}">Value goes here</td>
                             <td th:text="${entry[2]}">Threshold goes here</td>

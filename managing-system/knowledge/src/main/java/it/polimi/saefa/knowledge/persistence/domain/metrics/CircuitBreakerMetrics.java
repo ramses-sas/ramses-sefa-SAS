@@ -58,8 +58,9 @@ public class CircuitBreakerMetrics {
         SUCCESSFUL, FAILED, IGNORED, NOT_PERMITTED
     }
 
-    public double getAverageDuration(CallOutcomeStatus status) {
-        return callDuration.get(status)/callCount.get(status);
+    public Double getAverageDuration(CallOutcomeStatus status) {
+        try { return callDuration.get(status)/callCount.get(status); }
+        catch (Exception e) { return Double.NaN; }
     }
 
     public int getTotalCallsCount() {

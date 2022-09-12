@@ -25,12 +25,14 @@ public class Instance {
         this.currentStatus = currentStatus;
     }
 
-    /*public void addMetric(InstanceMetrics metric){
-        metrics.add(metric);
-    }*/
+
 
     public String getAddress(){
         return instanceId.split("@")[1];
+    }
+
+    /*public void addMetric(InstanceMetrics metric){
+        metrics.add(metric);
     }
 
     @Override
@@ -41,4 +43,6 @@ public class Instance {
         Instance instance = (Instance) o;
         return Objects.equals(instanceId, instance.instanceId) && Objects.equals(serviceId, instance.serviceId);
     }
+
+     */
 }

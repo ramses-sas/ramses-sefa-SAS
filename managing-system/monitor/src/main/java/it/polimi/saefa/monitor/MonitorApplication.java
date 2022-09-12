@@ -47,7 +47,7 @@ public class MonitorApplication {
                     try {
                         instanceMetrics = prometheusParser.parse(instance);
                         instanceMetrics.applyTimestamp();
-                        log.debug("Adding metric to {}({})", serviceName, instanceMetrics);
+                        log.debug("Adding metric for instance {}", instanceMetrics.getInstanceId());
                         metricsList.add(instanceMetrics);
                     } catch (Exception e) {
                         log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
