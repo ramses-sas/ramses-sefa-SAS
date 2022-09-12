@@ -72,13 +72,14 @@ public class ServiceConfiguration {
         circuitBreakersConfiguration.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakersConfiguration.get(cbName), value);
     }
 
+    /*
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServiceConfiguration that = (ServiceConfiguration) o;
         return serviceId.equals(that.serviceId);
-    }
+    }*/
 
     @Getter
     @Setter

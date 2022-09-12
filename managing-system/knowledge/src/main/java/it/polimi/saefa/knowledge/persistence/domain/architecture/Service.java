@@ -60,6 +60,7 @@ public class Service {
         return possibleImplementations.get(currentImplementation).getOrCreateInstance(instanceId);
     }
 
+    /*
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -68,7 +69,7 @@ public class Service {
         Service service = (Service) o;
 
         return serviceId.equals(service.serviceId);
-    }
+    }*/
 
     @Override
     public String toString() {
