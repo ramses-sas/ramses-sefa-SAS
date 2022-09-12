@@ -7,6 +7,7 @@ import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfigur
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -153,6 +154,16 @@ public class KnowledgeService {
         Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
         Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByTimestampBetween(startDate, endDate).stream().toList();
+    }
+
+    public List<InstanceMetrics> getNMetricsBefore(String instanceId, String timestampStr, int n) {
+        Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
+    }
+
+    public List<InstanceMetrics> getNMetricsAfter(String instanceId, String timestampStr, int n) {
+        Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
