@@ -1,0 +1,64 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(2)"></th:block>
+
+
+
+
+<div class="content">
+    <p>Adaptation</p>
+    <div class="row">
+        <div class="column" th:each="graph : ${graphs}">
+            <div class="card" th:id="${graph.getYAxisName()}"></div>
+        </div>
+    </div>
+</div>
+
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script th:inline="javascript" type="text/javascript" th:each="graph : ${graphs}" th:id="${graph.getYAxisName()}">
+    google.charts.load('current', {'packages':['line']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        /*<![CDATA[*/
+            var xAxisName = /*[[${graph.getXAxisName()}]]*/;
+            var yAxisName = /*[[${graph.getYAxisName()}]]*/;
+            var pointsList = /*[[${graph.getPoints()}]]*/;
+            //console.log(yAxisName);
+            //console.log(pointsList);
+        /*]]>*/
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', xAxisName);
+        data.addColumn('number', yAxisName);
+        data.addRows(pointsList);
+
+        var options = {
+            chart: { title: yAxisName },
+            legend: {
+                position: 'none'
+            },
+            backgroundColor: '#f1f1f1',
+            chartArea: {
+                backgroundColor: '#f1f1f1'
+            },
+            width: Math.max(screen.availWidth/2.4, 500),
+            height: Math.max(screen.availHeight/1.6, 400),
+            axes: {
+                x: {
+                    0: {side: 'bottom'}
+                }
+            }
+        };
+        var chart = new google.charts.Line(document.getElementById(yAxisName));
+
+        chart.draw(data, google.charts.Line.convertOptions(options));
+    }
+</script>
+</body>
+</html>

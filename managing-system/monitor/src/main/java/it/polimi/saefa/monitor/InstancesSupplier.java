@@ -27,8 +27,5 @@ public class InstancesSupplier {
         return servicesInstances;
     }
 
-    public InstanceInfo getConfigServerInstance() {
-        return discoveryClient.getApplication("CONFIG-SERVER").getInstances().get(0);
-    }
 
 }

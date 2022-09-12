@@ -1,23 +1,24 @@
 package it.polimi.saefa.monitor.externalinterfaces;
 
-import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// TODO: add the correct url from application.properties
 @FeignClient(name = "KNOWLEDGE", url = "http://localhost:58005")
 public interface KnowledgeClient {
-    @PostMapping("/rest/addMetrics")
+    @PostMapping("/rest/metrics/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
 
-    @PostMapping("/rest/addMetricsList")
+    @PostMapping("/rest/metrics/addMetricsList")
     public void addMetrics(@RequestBody List<InstanceMetrics> metrics);
 
-    @GetMapping("/rest/{metricsId}")
+    @GetMapping("/rest/metrics/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);
 
-    @GetMapping("/rest/get")
+    @GetMapping("/rest/metrics/get")
     List<InstanceMetrics> getMetrics(
             @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
@@ -26,7 +27,7 @@ public interface KnowledgeClient {
             @RequestParam(required = false) String after
     );
 
-    @GetMapping("/rest/getLatest")
+    @GetMapping("/rest/metrics/getLatest")
     List<InstanceMetrics> getLatestMetrics(
             @RequestParam String serviceId,
             @RequestParam(required = false) String instanceId

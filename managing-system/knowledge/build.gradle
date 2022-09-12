@@ -2,4 +2,6 @@ dependencies {
     implementation 'org.hsqldb:hsqldb:2.7.0'
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
 }

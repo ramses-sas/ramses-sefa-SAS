@@ -13,18 +13,19 @@ import java.util.Map;
 
 public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
 
-    // The weights of the services. Key is the instanceId, value is the weight.
-    protected Map<String,Integer> instancesWeights;
+    // The weights of the services. Key is the instanceAddress, value is the weight.
+    protected Map<String,Integer> weightPerAddress;
 
-    private int defaultWeight = 1;
+    private int defaultWeight;
 
-    public WeightedRoundRobinLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider) {
+    public WeightedRoundRobinLoadBalancer(ServiceInstanceListSupplier serviceInstanceListSupplierProvider, int defaultWeight) {
         super(serviceInstanceListSupplierProvider);
-        instancesWeights = new HashMap<>();
+        weightPerAddress = new HashMap<>();
+        this.defaultWeight = defaultWeight;
     }
 
-    public void setWeight(String instanceId, int weight) {
-        instancesWeights.put(instanceId, weight);
+    public void setWeightForInstanceAtAddress(String instanceAddress, int weight) {
+        weightPerAddress.put(instanceAddress, weight);
     }
 
     @Override
@@ -37,7 +38,7 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
         } else {
             List<ServiceInstance> weightedServiceInstances = new ArrayList<>();
             for (ServiceInstance instance : serviceInstances) {
-                Integer instanceWeight = instancesWeights.getOrDefault(instance.getInstanceId(), 1);
+                Integer instanceWeight = weightPerAddress.getOrDefault(instance.getHost()+":"+instance.getPort(), defaultWeight);
                 for (int i = 0; i < instanceWeight; i++) {
                     weightedServiceInstances.add(instance);
                 }
@@ -46,7 +47,7 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
             ServiceInstance instance = weightedServiceInstances.get(pos % weightedServiceInstances.size());
             serviceInstanceResponse = new DefaultResponse(instance);
             if (log.isDebugEnabled()) {
-                log.debug("WeightedRoundRobinLoadBalancer: selected instance "+instance.getInstanceId());
+                log.debug("WeightedRoundRobinLoadBalancer: selected instance "+instance.getInstanceId()+" with weight "+ weightPerAddress.get(instance.getHost()+":"+instance.getPort()));
             }
         }
         return serviceInstanceResponse;

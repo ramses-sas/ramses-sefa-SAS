@@ -11,26 +11,26 @@ public class ConfigParser<T> {
         this.env = env;
     }
 
-    public int getLoadBalancerWeight(String serviceId, String address) {
+    public int getLoadBalancerInstanceWeight(String serviceId, String address) {
         String prop = LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
         try {
             return Integer.parseInt(getProperty(prop));
         } catch (RuntimeException e) {
             // If the weight for that instance is not (correctly) set, return the default weight for that service
-            return getLoadBalancerWeight(serviceId);
+            return getLoadBalancerServiceDefaultWeight(serviceId);
         }
 
     }
 
     // return the default weight to use for the service or 1 if not set
-    public int getLoadBalancerWeight(String serviceId) {
+    public int getLoadBalancerServiceDefaultWeight(String serviceId) {
         String prop = LBPREFIX+serviceId.toLowerCase()+".global.weight";
         return Integer.parseInt(getProperty(prop, "1"));
     }
 
-    public String getLoadBalancerType(String serviceId) {
+    public String getLoadBalancerTypeOrDefault(String serviceId) {
         String prop = LBPREFIX+serviceId.toLowerCase()+".global.type";
-        return getProperty(prop, "ROUND_ROBIN");
+        return getProperty(prop, getProperty(LBPREFIX+".global.type", "ROUND_ROBIN"));
     }
 
     public ConfigProperty parse(String propertyKey) {

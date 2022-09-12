@@ -1,10 +1,10 @@
 package it.polimi.saefa.knowledge.rest;
 
-
-import it.polimi.saefa.knowledge.persistence.domain.Instance;
-import it.polimi.saefa.knowledge.persistence.domain.InstanceMetrics;
-import it.polimi.saefa.knowledge.persistence.PersistenceService;
-import it.polimi.saefa.knowledge.persistence.domain.ServiceConfiguration;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.persistence.KnowledgeService;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,46 +19,39 @@ import java.util.Map;
 public class KnowledgeRestController {
 
     @Autowired
-    private PersistenceService persistenceService;
+    private KnowledgeService knowledgeService;
 
-    /*
-    @PostMapping("/addMetrics")
-    public void addMetrics(@RequestBody InstanceMetrics metrics) {
-        log.debug("Adding metric for {}@{} at {}", metrics.getServiceId(), metrics.getInstanceId(), metrics.getTimestamp());
-        persistenceService.addMetrics(metrics);
-    }*/
-
-    @PostMapping("/addMetricsList")
+    @PostMapping("/metrics/addMetricsList")
     public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {
-        persistenceService.addMetrics(metrics);
+        knowledgeService.addMetrics(metrics);
     }
 
-    @GetMapping("/{metricsId}")
+    @GetMapping("/metrics/{metricsId}")
     public InstanceMetrics getMetrics(@PathVariable long metricsId) {
-        return persistenceService.getMetrics(metricsId);
+        return knowledgeService.getMetrics(metricsId);
     }
 
-    @GetMapping("/get")
+    @GetMapping("/metrics/get")
     public List<InstanceMetrics> getMetrics(
-            @RequestParam(required = false) String serviceId,
+            //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp,
             @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
             @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
     ) {
         // before + after
-        if (instanceId == null && startDate != null && endDate != null && serviceId == null)
-            return persistenceService.getAllMetricsBetween(startDate, endDate);
+        if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
+            return knowledgeService.getAllMetricsBetween(startDate, endDate);
 
-        // serviceId + instanceId
-        if (serviceId != null && instanceId != null) {
+        // instanceId
+        if (/*serviceId != null && */instanceId != null) {
             // + startDate + endDate
             if (startDate != null && endDate != null)
-                return persistenceService.getAllInstanceMetricsBetween(serviceId, instanceId, startDate, endDate);
+                return knowledgeService.getAllInstanceMetricsBetween(instanceId, startDate, endDate);
 
             // all
             if (startDate == null && endDate == null)
-                return persistenceService.getAllInstanceMetrics(serviceId, instanceId);
+                return knowledgeService.getAllInstanceMetrics(instanceId);
 
             /* + timestamp
             if (timestamp != null && startDate == null && endDate == null)
@@ -72,29 +65,40 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
+    @GetMapping("/service")
+    public List<Service> getServices() {
+        return knowledgeService.getServices();
+    }
 
-    @GetMapping("/getLatest")
+    @GetMapping("/service/{serviceId}")
+    public Service getService(@PathVariable String serviceId) {
+        return knowledgeService.getService(serviceId);
+    }
+
+    @GetMapping("/metrics/getLatest")
     public List<InstanceMetrics> getLatestMetrics(
-            @RequestParam String serviceId,
+            @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId
     ) {
+        if (serviceId == null && instanceId == null)
+            throw new IllegalArgumentException("Invalid query arguments");
         if (instanceId != null)
             try {
-                return List.of(persistenceService.getLatestByInstanceId(serviceId, instanceId));
+                return List.of(knowledgeService.getLatestByInstanceId(instanceId));
             } catch (NullPointerException e) { return List.of(); }
         else
-            return persistenceService.getAllLatestByServiceId(serviceId);
+            return knowledgeService.getAllLatestByServiceId(serviceId);
     }
 
     @PostMapping("/notifyShutdown")//todo per le rest vanno messi nello url gli ID anche se è una post? Poi avrebbe body vuoto, ma non voglio renderla get
     public ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance) {
-        persistenceService.notifyShutdownInstance(shutDownInstance);
+        knowledgeService.notifyShutdownInstance(shutDownInstance);
         return ResponseEntity.ok("Shutdown of instance" + shutDownInstance.getInstanceId() + " notified");
     }
 
     @PostMapping("/changeConfiguration")
     public ResponseEntity<String> changeConfiguration(@RequestBody Map<String, ServiceConfiguration> request) {
-        persistenceService.changeServicesConfigurations(request);
+        knowledgeService.changeServicesConfigurations(request);
         return ResponseEntity.ok("Configuration changed");
     }
 

@@ -1,0 +1,64 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(1)"></th:block>
+
+
+<div class="content">
+    <div class="row">
+        <div class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">Resources Metrics</h5>
+                <table class="configTable">
+                    <tbody>
+                        <tr th:each="entry : ${resourceTable}">
+                            <td th:text="${entry[0]}">Key goes here</td>
+                            <td th:text="${entry[1]}">Value goes here</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">HTTP Metrics</h5>
+                <table class="configTable">
+                    <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Average Duration</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${httpMetricsTable}">
+                        <td th:text="${entry[0]}">Key goes here</td>
+                        <td th:text="${entry[1]}">Value goes here</td>
+                        <td th:text="${entry[2]}">Value goes here</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">Circuit Breakers Metrics</h5>
+                <table class="configTable">
+                    <tbody>
+                    <tr th:each="entry : ${circuitBreakersTable}">
+                        <td th:text="${entry[0]}">Key goes here</td>
+                        <td th:text="${entry[1]}">Value goes here</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
