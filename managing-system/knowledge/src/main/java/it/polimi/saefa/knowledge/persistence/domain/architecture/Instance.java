@@ -7,20 +7,23 @@ import java.util.Objects;
 
 @Data
 @NoArgsConstructor
-public class Instance {
+public class Instance { //TODO controlla che ovunque ora usi il service implementation
     private String instanceId; //service implementation name @ ip : port
-    private String serviceId;
+    private String serviceId; //service name //todo aggiungi al costuttore
+    private String serviceImplementationId; //service implementation name
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
 
     //private List<InstanceMetrics> metrics = new LinkedList<>();
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;
+        this.serviceImplementationId = instanceId.split("@")[0];
         this.serviceId = serviceId;
     }
 
     public Instance(String instanceId, String serviceId, InstanceStatus currentStatus) {
         this.instanceId = instanceId;
+        this.serviceImplementationId = instanceId.split("@")[0];
         this.serviceId = serviceId;
         this.currentStatus = currentStatus;
     }
@@ -41,7 +44,7 @@ public class Instance {
         if (o == null || getClass() != o.getClass()) return false;
 
         Instance instance = (Instance) o;
-        return Objects.equals(instanceId, instance.instanceId) && Objects.equals(serviceId, instance.serviceId);
+        return Objects.equals(instanceId, instance.instanceId);
     }
 
      */

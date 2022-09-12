@@ -1,15 +1,22 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class ServiceImplementation {
-    private String serviceId;
-    private String implementationId;
+    private String serviceId; //implemented service name
+    private String implementationId; //specific implementation name
+
+    // <instanceId, Instance>
+    private Map<String, Instance> instances = new HashMap<>();
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
     private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)
@@ -23,5 +30,37 @@ public class ServiceImplementation {
         this.costPerSecond = costPerSecond;
         this.costPerBoot = costPerBoot;
         this.score = score;
+    }
+
+    public boolean addInstance(Instance instance) {
+        if(instance.getServiceImplementationId().equals(implementationId)) {
+            instances.put(instance.getInstanceId(), instance);
+            return true;
+        }
+        return false;
+    }
+
+    @JsonIgnore
+    public boolean isReachable() {
+        for (String instanceAddress : instances.keySet()) {
+            if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
+                return true;
+        }
+        return false;
+    }
+
+    public boolean hasInstance(String instanceId){
+        return instances.containsKey(instanceId);
+    }
+
+    public Instance getOrCreateInstance(String instanceId) {
+        Instance instance = instances.get(instanceId);
+        if (instance == null) {
+            if(instanceId.split("@")[0].equals(implementationId)) {
+                instance = new Instance(instanceId, serviceId);
+                instances.put(instanceId, instance);
+            }
+        }
+        return instance;
     }
 }

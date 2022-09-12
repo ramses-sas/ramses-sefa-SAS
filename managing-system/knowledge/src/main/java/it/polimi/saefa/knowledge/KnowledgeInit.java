@@ -1,5 +1,9 @@
 package it.polimi.saefa.knowledge;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.parser.AdaptationParametersParser;
 import it.polimi.saefa.knowledge.parser.ConfigurationParser;
 import it.polimi.saefa.knowledge.parser.SystemArchitectureParser;
@@ -20,9 +24,10 @@ import java.util.Map;
 public class KnowledgeInit implements CommandLineRunner {
     @Autowired
     private KnowledgeService knowledgeService;
-
     @Autowired
     private ConfigurationParser configurationParser;
+    @Autowired
+    private EurekaClient discoveryClient;
 
     @Override
     public void run(String... args) throws Exception {
@@ -40,6 +45,16 @@ public class KnowledgeInit implements CommandLineRunner {
         for (String serviceName : servicesAdaptationParameters.keySet()) {
             knowledgeService.getService(serviceName).setAdaptationParameters(servicesAdaptationParameters.get(serviceName).toArray(AdaptationParameter[]::new));
         }
+
+        for (Service service : knowledgeService.getServicesMap().values()) {
+            log.debug("Service: " + service.getServiceId());
+            Application serviceApplication = discoveryClient.getApplication(service.getServiceId());
+            if(serviceApplication!=null) {
+                service.setCurrentImplementation(serviceApplication.getInstances().get(0).getInstanceId().split("@")[0]);
+                log.debug(discoveryClient.getApplication(service.getServiceId()).getName());
+            }
+        }
+
         for (Service service : serviceList) {
             log.debug(service.toString());
         }

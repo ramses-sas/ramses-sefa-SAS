@@ -25,7 +25,8 @@ public class DashboardWebService {
 
 	public Map<String, Service> getArchitecture() {
 		Map<String, Service> currentArchitecture = new HashMap<>();
-		getAllServices().forEach(s -> currentArchitecture.put(s.getServiceId(), s));
+		List<Service> services = getAllServices();
+		services.forEach(s -> currentArchitecture.put(s.getServiceId(), s));
 		return currentArchitecture;
 	}
 

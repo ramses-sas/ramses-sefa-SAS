@@ -21,7 +21,7 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/metrics/get")
     List<InstanceMetrics> getMetrics(
-            @RequestParam(required = false) String serviceId,
+            //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp, // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
             @RequestParam(required = false) String before,
@@ -30,7 +30,7 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/metrics/getLatest")
     List<InstanceMetrics> getLatestMetrics(
-            @RequestParam String serviceId,
+            @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId
     );
 
