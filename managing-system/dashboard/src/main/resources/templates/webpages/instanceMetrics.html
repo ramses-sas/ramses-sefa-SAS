@@ -13,7 +13,7 @@
                 <table class="configTable">
                     <tbody>
                         <tr th:each="entry : ${resourceTable}">
-                            <td><a th:href="@{'/'+${serviceId}+'/'+${instanceId}+'/metrics'}" th:text="${entry[0]}">Show metrics</a></td>
+                            <td th:text="${entry[0]}">Key goes here</td>
                             <td th:text="${entry[1]}">Value goes here</td>
                         </tr>
                     </tbody>

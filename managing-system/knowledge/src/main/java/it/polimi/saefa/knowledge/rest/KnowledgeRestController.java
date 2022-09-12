@@ -33,25 +33,25 @@ public class KnowledgeRestController {
 
     @GetMapping("/metrics/get")
     public List<InstanceMetrics> getMetrics(
-            @RequestParam(required = false) String serviceId,
+            //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp,
             @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
             @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
     ) {
         // before + after
-        if (instanceId == null && startDate != null && endDate != null && serviceId == null)
+        if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
             return knowledgeService.getAllMetricsBetween(startDate, endDate);
 
-        // serviceId + instanceId
-        if (serviceId != null && instanceId != null) {
+        // instanceId
+        if (/*serviceId != null && */instanceId != null) {
             // + startDate + endDate
             if (startDate != null && endDate != null)
-                return knowledgeService.getAllInstanceMetricsBetween(serviceId, instanceId, startDate, endDate);
+                return knowledgeService.getAllInstanceMetricsBetween(instanceId, startDate, endDate);
 
             // all
             if (startDate == null && endDate == null)
-                return knowledgeService.getAllInstanceMetrics(serviceId, instanceId);
+                return knowledgeService.getAllInstanceMetrics(instanceId);
 
             /* + timestamp
             if (timestamp != null && startDate == null && endDate == null)
@@ -77,12 +77,14 @@ public class KnowledgeRestController {
 
     @GetMapping("/metrics/getLatest")
     public List<InstanceMetrics> getLatestMetrics(
-            @RequestParam String serviceId,
+            @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId
     ) {
+        if (serviceId == null && instanceId == null)
+            throw new IllegalArgumentException("Invalid query arguments");
         if (instanceId != null)
             try {
-                return List.of(knowledgeService.getLatestByInstanceId(serviceId, instanceId));
+                return List.of(knowledgeService.getLatestByInstanceId(instanceId));
             } catch (NullPointerException e) { return List.of(); }
         else
             return knowledgeService.getAllLatestByServiceId(serviceId);

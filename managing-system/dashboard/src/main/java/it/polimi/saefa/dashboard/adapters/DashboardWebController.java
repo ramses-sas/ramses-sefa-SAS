@@ -26,8 +26,8 @@ public class DashboardWebController {
 	private DashboardWebService dashboardWebService;
 
 	/* Mostra home page */
-	@GetMapping("/{serviceId}/instances")
-	public String instancesDetails(Model model, @PathVariable String serviceId) {
+	@GetMapping("/{serviceId}")
+	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
 		log.info("Service: " + service);
 		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
@@ -62,7 +62,7 @@ public class DashboardWebController {
 		log.debug("Graphs: " + Arrays.toString(graphs));
 		model.addAttribute("graphs", graphs);
 
-		return "webpages/instancesDetails";
+		return "webpages/serviceDetails";
 	}
 
 	@GetMapping("/{serviceId}/{instanceId}/metrics")
@@ -73,20 +73,25 @@ public class DashboardWebController {
 		List<String[]> httpMetricsTable = new ArrayList<>();
 		List<String[]> circuitBreakersTable = new ArrayList<>();
 		if (latestMetrics != null) {
-			resourceTable.add(new String[]{"CPU Usage", "" + latestMetrics.getCpuUsage()});
-			resourceTable.add(new String[]{"Disk Free Space", "" + latestMetrics.getDiskFreeSpace()});
-			resourceTable.add(new String[]{"Disk Total Space", "" + latestMetrics.getDiskTotalSpace()});
+			resourceTable.add(new String[]{"CPU Usage", "" + String.format("%,.2f", latestMetrics.getCpuUsage()*100)+"%"});
+			resourceTable.add(new String[]{"Disk Free Space", String.format("%,.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"Disk Total Space", String.format("%,.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
 			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics())
-				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(), httpMetrics.getOutcome(), httpMetrics.getAverageDuration()+"ms"});
+				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
+						httpMetrics.getOutcome(), String.format("%,.2f", httpMetrics.getAverageDuration())+" ms"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
 				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
-				circuitBreakersTable.add(new String[]{"Failure Rate", cbMetrics.getFailureRate()+"%"});
+				double failureRate = cbMetrics.getFailureRate();
+				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format("%,.1f", failureRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
-				circuitBreakersTable.add(new String[]{"Slow Calls Rate", cbMetrics.getSlowCallRate()+"%"});
+				double slowCallRate = cbMetrics.getSlowCallRate();
+				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format("%,.1f", slowCallRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
 				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
-					circuitBreakersTable.add(new String[]{"Average Call Duration when " + status, cbMetrics.getAverageDuration(status)+""});
+					Double avgDuration = cbMetrics.getAverageDuration(status);
+					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format("%,.2f", avgDuration)+" ms"});
 				}
+				circuitBreakersTable.add(new String[]{"", ""});
 			}
 		}
 		model.addAttribute("resourceTable", resourceTable);
@@ -149,7 +154,7 @@ public class DashboardWebController {
 			servicesCurrentImplementationTable.put(s.getServiceId(), currentImplementationTable);
 		}
 
-		model.addAttribute("architecture", services);
+		model.addAttribute("servicesIds", services.stream().map(Service::getServiceId).toList());
 		model.addAttribute("servicesConfigurationTable", servicesConfigurationTable);
 		model.addAttribute("servicesAdaptationParametersTable", servicesAdaptationParametersTable);
 		model.addAttribute("servicesCurrentImplementationTable", servicesCurrentImplementationTable);

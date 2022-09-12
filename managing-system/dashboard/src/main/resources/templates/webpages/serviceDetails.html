@@ -12,30 +12,30 @@
                 <td class="col1">
                     <div class="row">
                         <div class="column">
-                        <div class="card">
-                            <h5 class="cardElementTitle">Service</h5>
-                            <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
-                            <br>
-                            <h5 class="cardElementTitle">Possible implementations</h5>
-                            <h6 class="cardElementContent" th:each="impl : ${possibleImplementations}" th:text="${impl}">Implementation name goes here</h6>
-                            <br>
-                            <h5 class="cardElementTitle">Instances</h5>
-                            <table class="configTable">
-                                <thead>
-                                <tr>
-                                    <th>InstanceId</th>
-                                    <th>Status</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="entry : ${instancesTable}">
-                                    <td th:text="${entry[0]}">Id goes here</td>
-                                    <td th:text="${entry[1]}">Status goes here</td>
-                                </tr>
-                                </tbody>
-                            </table>
+                            <div class="card">
+                                <h5 class="cardElementTitle">Service</h5>
+                                <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
+                                <br>
+                                <h5 class="cardElementTitle">Possible implementations</h5>
+                                <h6 class="cardElementContent" th:each="impl : ${possibleImplementations}" th:text="${impl}">Implementation name goes here</h6>
+                                <br>
+                                <h5 class="cardElementTitle">Instances</h5>
+                                <table class="configTable">
+                                    <thead>
+                                    <tr>
+                                        <th>InstanceId</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="entry : ${instancesTable}">
+                                        <td><a th:href="@{'/'+${serviceId}+'/'+${entry[0]}+'/metrics'}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td th:text="${entry[1]}">Status goes here</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </td>
                 <td class="col2">
@@ -82,7 +82,7 @@
             chartArea: {
                 backgroundColor: '#f1f1f1'
             },
-            width: Math.max(screen.availWidth/3, 450),
+            width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
             axes: {
                 x: {

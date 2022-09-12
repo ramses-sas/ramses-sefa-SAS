@@ -53,7 +53,7 @@ public class KnowledgeService {
     public Map<String,Service> getServicesMap() { return services; }
     
     public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
-        if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
+        if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstanceId()).isActive()) {
             //if the instance is down, only save it if it's the first detection
             // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
             //instance.addMetric(metrics);
@@ -145,8 +145,8 @@ public class KnowledgeService {
         }
     }
 
-    public List<InstanceMetrics> getAllInstanceMetrics(String serviceId, String instanceId) {
-        return metricsRepository.findAllByServiceIdAndInstanceId(serviceId, instanceId).stream().toList();
+    public List<InstanceMetrics> getAllInstanceMetrics(String instanceId) {
+        return metricsRepository.findAllByInstanceId(instanceId).stream().toList();
     }
 
     public List<InstanceMetrics> getAllMetricsBetween(String startDateStr, String endDateStr) {
@@ -155,18 +155,18 @@ public class KnowledgeService {
         return metricsRepository.findAllByTimestampBetween(startDate, endDate).stream().toList();
     }
 
-    public List<InstanceMetrics> getAllInstanceMetricsBetween(String serviceId, String instanceId, String startDateStr, String endDateStr) {
+    public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
         Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
         Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
-        return metricsRepository.findAllByServiceIdAndInstanceIdAndTimestampBetween(serviceId, instanceId, startDate, endDate).stream().toList();
+        return metricsRepository.findAllByInstanceIdAndTimestampBetween(instanceId, startDate, endDate).stream().toList();
     }
 
-    public InstanceMetrics getLatestByInstanceId(String serviceId, String instanceId) {
-        return metricsRepository.findLatestByServiceIdAndInstanceId(serviceId, instanceId);
+    public InstanceMetrics getLatestByInstanceId(String instanceId) {
+        return metricsRepository.findLatestByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
     public InstanceMetrics getLatestActiveByInstanceId(String instanceId) {
-        return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId);
+        return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
     public List<InstanceMetrics> getAllLatestByServiceId(String serviceId) {

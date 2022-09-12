@@ -29,12 +29,14 @@ public class Instance { //TODO controlla che ovunque ora usi il service implemen
         this.currentStatus = currentStatus;
     }
 
-    /*public void addMetric(InstanceMetrics metric){
-        metrics.add(metric);
-    }*/
+
 
     public String getAddress(){
         return instanceId.split("@")[1];
+    }
+
+    /*public void addMetric(InstanceMetrics metric){
+        metrics.add(metric);
     }
 
     @Override
@@ -45,4 +47,6 @@ public class Instance { //TODO controlla che ovunque ora usi il service implemen
         Instance instance = (Instance) o;
         return Objects.equals(instanceId, instance.instanceId);
     }
+
+     */
 }
