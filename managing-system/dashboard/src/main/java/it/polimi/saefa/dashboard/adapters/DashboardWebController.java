@@ -76,7 +76,7 @@ public class DashboardWebController {
 			resourceTable.add(new String[]{"CPU Usage", "" + String.format("%,.2f", latestMetrics.getCpuUsage()*100)+"%"});
 			resourceTable.add(new String[]{"Disk Free Space", String.format("%,.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
 			resourceTable.add(new String[]{"Disk Total Space", String.format("%,.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
-			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics())
+			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
 				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
 						httpMetrics.getOutcome(), String.format("%,.2f", httpMetrics.getAverageDuration())+" ms"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {

@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence.domain.metrics;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -24,7 +25,9 @@ public class HttpRequestMetrics {
     private int status;
     private long count;
     private double totalDuration;
+    private double maxDuration;
 
+    @JsonIgnore
     public double getAverageDuration() {
         return totalDuration / count;
     }
@@ -46,6 +49,7 @@ public class HttpRequestMetrics {
                 ", status=" + status +
                 ", requestsCount=" + count +
                 ", totalDuration=" + totalDuration +
+                ", maxDuration=" + maxDuration +
                 '}';
     }
 }
