@@ -34,7 +34,7 @@ public class KnowledgeRestController {
     @GetMapping("/metrics/getLatestNBefore")
     public List<InstanceMetrics> getLatestNMetricsBeforeDate(
             @RequestParam String instanceId,
-            @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
             @RequestParam int n
     ) {
         return knowledgeService.getNMetricsBefore(instanceId, timestamp, n);
@@ -43,7 +43,7 @@ public class KnowledgeRestController {
     @GetMapping("/metrics/getLatestNAfter")
     public List<InstanceMetrics> getLatestNMetricsAfterDate(
             @RequestParam String instanceId,
-            @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
             @RequestParam int n
     ) {
         return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
@@ -54,8 +54,8 @@ public class KnowledgeRestController {
             //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp,
-            @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
-            @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
+            @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
+            @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
     ) {
         // before + after
         if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
