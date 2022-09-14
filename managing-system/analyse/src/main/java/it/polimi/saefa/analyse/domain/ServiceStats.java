@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -53,6 +51,6 @@ public class ServiceStats {
     public void updateAvailability() {
         if (instancesStats.isEmpty())
             availability = null;
-        availability = instancesStats.stream().mapToDouble(InstanceStats::getAvailability).reduce(1.0, (accumulator, val) -> accumulator * (1-val));
+        availability = 1-instancesStats.stream().mapToDouble(InstanceStats::getAvailability).reduce(1.0, (accumulator, val) -> accumulator * (1-val));
     }
 }
