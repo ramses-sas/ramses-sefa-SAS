@@ -39,7 +39,17 @@ public class RequestsGenerator {
                 cart.getTotalPrice() == menuItem.getPrice() * 2;
         ConfirmOrderResponse confirmedOrder = customerWebService.confirmOrder(cartId, "1111111111111111", 12, 2023, "023",
                 "Via REST Client", "Roma", 1, "12345", "1234567890", new Date());
+        if (!confirmedOrder.isConfirmed()) {
+            if (confirmedOrder.getRequiresCashPayment()) {
+                logger.info("Order confirmed, but requires cash payment");
+                confirmedOrder = customerWebService.confirmCashPayment(cartId, "Via REST Client", "Roma", 1, "12345", "1234567890", new Date());
+            }
+            if (!confirmedOrder.isConfirmed() && confirmedOrder.getIsTakeAway()) {
+                logger.info("Order confirmed, but requires take away");
+                confirmedOrder = customerWebService.handleTakeAway(cartId, true);
+            }
+        }
         assert confirmedOrder.isConfirmed();
-        logger.info("All requests executed successfully");
+        logger.info("Order confirmed!");
     }
 }
