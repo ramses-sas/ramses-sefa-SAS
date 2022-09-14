@@ -64,6 +64,7 @@ public class AnalyseService {
                 serviceStats.addInstanceStats(instanceStats);
             }
             serviceStats.updateStats();
+            // Inutile?
             currentArchitectureStats.add(serviceStats);
         }
         lastAnalysisTimestamp = new Date();
