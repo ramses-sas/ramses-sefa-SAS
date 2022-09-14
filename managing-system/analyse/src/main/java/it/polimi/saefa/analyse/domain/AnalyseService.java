@@ -23,8 +23,9 @@ public class AnalyseService {
     private KnowledgeClient knowledgeClient;
 
     public void startAnalysis() {
-        List<Service> currentServices = knowledgeClient.getServices();
-        for (Service service : currentServices) {
+        List<Service> currentArchitecture = knowledgeClient.getServices();
+        List<ServiceStats> currentArchitectureStats = new LinkedList<>();
+        for (Service service : currentArchitecture) {
             ServiceStats serviceStats = new ServiceStats(service);
             // Analyze all the instances
             for (Instance instance : service.getInstances()) {
@@ -62,10 +63,15 @@ public class AnalyseService {
                         computeMaxResponseTime(endpointMaxRespTime), computeAvailability(metrics));
                 serviceStats.addInstanceStats(instanceStats);
             }
-
+            serviceStats.updateStats();
+            currentArchitectureStats.add(serviceStats);
         }
         lastAnalysisTimestamp = new Date();
-        //creare lista di liste di servizi da mandare al pranner
+        //creare set di possibili architetture da mandare al Plan
+    }
+
+    private void handleMaxResponseTime(ServiceStats serviceStats) {
+        //TODO
     }
 
     private Double computeAvailability(List<InstanceMetrics> metrics) {

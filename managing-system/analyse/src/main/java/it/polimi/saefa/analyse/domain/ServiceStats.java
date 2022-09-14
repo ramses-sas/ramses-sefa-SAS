@@ -32,6 +32,12 @@ public class ServiceStats {
         instancesStats.add(instanceStats);
     }
 
+    public void updateStats() {
+        updateAverageResponseTime();
+        updateMaxResponseTime();
+        updateAvailability();
+    }
+
     public void updateAverageResponseTime() {
         if (instancesStats.isEmpty())
             averageResponseTime = null;
