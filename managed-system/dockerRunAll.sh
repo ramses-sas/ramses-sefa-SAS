@@ -57,10 +57,10 @@ BuildNRun() {
 
 if [ "$IS_REMOTE" = "no" ] ; then
   cd "servers/eureka-registry-server/" || return
-  BuildNRun
+  bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
   cd ../..
   cd "servers/config-server/" || return
-  BuildNRun
+  bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
   cd ../..
   echo; echo
   echo "Waiting for the config server to be ready..."
@@ -107,7 +107,12 @@ echo "Press 'x' to exit and keep all containers running."
 echo
 
 DockerStop() {
-  docker stop `awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
+  SERVICE_IMPLEMENTATION_NAME=`awk -v FS="IMPLEMENTATION_NAME=" 'NF>1{print $2}' ./src/main/resources/application.properties`
+  if [ "$SERVICE_IMPLEMENTATION_NAME" = "" ]; then
+    PrintError "UNKNOWN SERVICE IMPLEMENTATION NAME. Make sure that IMPLEMENTATION_NAME is set in application.properties. Using spring.application.name property"
+    SERVICE_IMPLEMENTATION_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
+  fi
+  docker stop $SERVICE_IMPLEMENTATION_NAME
 }
 
 while : ; do

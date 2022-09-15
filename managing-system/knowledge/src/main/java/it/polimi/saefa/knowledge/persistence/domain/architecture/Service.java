@@ -31,7 +31,7 @@ public class Service {
     }
 
     @JsonIgnore
-    public ServiceImplementation getCurrentImplementationObject(){
+    public ServiceImplementation getCurrentImplementationObject() {
         return possibleImplementations.get(currentImplementation);
     }
 
