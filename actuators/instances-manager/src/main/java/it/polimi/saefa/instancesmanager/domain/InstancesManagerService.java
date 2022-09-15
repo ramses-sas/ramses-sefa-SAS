@@ -7,16 +7,14 @@ import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.net.UnknownHostException;
+import java.util.*;
 
 import static com.github.dockerjava.api.model.HostConfig.newHostConfig;
 
@@ -24,20 +22,22 @@ import static com.github.dockerjava.api.model.HostConfig.newHostConfig;
 @Slf4j
 @Service
 public class InstancesManagerService {
-    @Value("${EUREKA_IP_PORT}") String EUREKA_IP_PORT;
-    @Value("${API_GATEWAY_IP_PORT}") String API_GATEWAY_IP_PORT;
-    @Value("${MYSQL_SERVER}") String MYSQL_SERVER;
-
-    @Autowired
     Environment env;
-
+    String dockerIp;
     DockerClient dockerClient;
 
-    public InstancesManagerService(@Value("${DOCKER_HOST}") String dockerHost) {
+    public InstancesManagerService(Environment env) throws UnknownHostException {
+        this.env = env;
+        dockerIp = env.getProperty("DOCKER_IP");
+        String dockerPort = env.getProperty("DOCKER_PORT");
+        if (dockerIp == null || dockerIp.isEmpty())
+            dockerIp = InetAddress.getLocalHost().getHostAddress();
+        if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())
+            throw new RuntimeException("Docker IP and port must be set");
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(dockerHost)
+                .withDockerHost("tcp://"+dockerIp+":"+dockerPort)
                 .build();
-        log.warn("Docker host: {}", dockerHost);
+        log.warn("Docker host: {}", config.getDockerHost());
         dockerClient = DockerClientBuilder.getInstance(config).build();
         List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
         for (Container container : containers) {
@@ -48,7 +48,7 @@ public class InstancesManagerService {
 
     }
 
-    // TODO deve ritornare info sul container creato, tipo id, ip, porta, etc
+
     public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances) {
         String imageName = serviceImplementationName;
         List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
@@ -57,31 +57,43 @@ public class InstancesManagerService {
             ExposedPort serverPort = ExposedPort.tcp(randomPort);
             Ports portBindings = new Ports();
             portBindings.bind(serverPort, Ports.Binding.bindIpAndPort("0.0.0.0", randomPort));
-            log.error("Port: {}", randomPort);
-
-            //containers.forEach(container -> log.info("Container: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A")));
             String newContainerId = dockerClient.createContainerCmd(imageName)
-                    .withName(imageName + "@" + randomPort)
-                    .withEnv("EUREKA_IP_PORT=" + EUREKA_IP_PORT, "MYSQL_SERVER=" + MYSQL_SERVER, "SERVER_PORT=" + randomPort) // TODO: add host
+                    .withName(imageName + "_" + randomPort)
+                    .withEnv(buildContainerEnvVariables(randomPort))
                     .withExposedPorts(serverPort)
                     .withHostConfig(newHostConfig().withPortBindings(portBindings))
                     .exec().getId();
             dockerClient.startContainerCmd(newContainerId).exec();
-            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "@" + randomPort, randomPort));
+            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "_" + randomPort, dockerIp, randomPort));
         }
         return serviceContainerInfos;
     }
 
-    private String buildContainerEnvVariables() {
-        StringBuilder sb = new StringBuilder();
+    public void removeInstance(String serviceImplementationName, String address, int port) {
+        List<Container> containers = dockerClient.listContainersCmd().withNameFilter(Collections.singleton(serviceImplementationName+"_"+port)).exec();
+        if (containers.size() == 1) {
+            Container container = containers.get(0);
+            dockerClient.stopContainerCmd(container.getId()).exec();
+            dockerClient.removeContainerCmd(container.getId()).exec();
+            return;
+        }
+        throw new RuntimeException("Container not found");
+    }
+
+    private List<String> buildContainerEnvVariables(int serverPort) {
+        List<String> envVars = new LinkedList<>();
         String eurekaIpPort = env.getProperty("EUREKA_IP_PORT");
         if (eurekaIpPort != null)
-            sb.append("EUREKA_IP_PORT=").append(eurekaIpPort);
+            envVars.add("EUREKA_IP_PORT="+eurekaIpPort);
         String apiGatewayIpPort = env.getProperty("API_GATEWAY_IP_PORT");
         if (apiGatewayIpPort != null)
-            sb.append(", API_GATEWAY_IP_PORT=").append(apiGatewayIpPort);
-
-        return "EUREKA_IP_PORT=" + EUREKA_IP_PORT + ",API_GATEWAY_IP_PORT=" + API_GATEWAY_IP_PORT + ",MYSQL_SERVER=" + MYSQL_SERVER;
+            envVars.add("API_GATEWAY_IP_PORT="+apiGatewayIpPort);
+        String mySqlIpPort = env.getProperty("MYSQL_IP_PORT");
+        if (mySqlIpPort != null)
+            envVars.add("MYSQL_IP_PORT="+mySqlIpPort);
+        envVars.add("SERVER_PORT="+serverPort);
+        envVars.add("HOST="+dockerIp);
+        return envVars;
     }
 
     private int getRandomPort() {
@@ -94,6 +106,13 @@ public class InstancesManagerService {
         }
     }
 
-	
+
+    public String getDockerIp() {
+        return dockerIp;
+    }
+
+    public DockerClient getDockerClient() {
+        return dockerClient;
+    }
 }
 

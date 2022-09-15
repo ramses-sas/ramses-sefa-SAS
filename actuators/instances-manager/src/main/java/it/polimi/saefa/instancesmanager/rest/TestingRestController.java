@@ -7,20 +7,27 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Array;
+
 @RestController
 @RequestMapping(path="/rest/test")
 public class TestingRestController {
     @Autowired
     private InstancesManagerService instancesManagerService;
 
-    @GetMapping("/{echovar}")
-    public String dummy(@PathVariable String echovar) {
-        return echovar;
+    @GetMapping("/")
+    public String dummy() {
+        return "Hi!";
     }
 
     @GetMapping("/createContainer")
     public String createContainer() {
-        instancesManagerService.addInstances("payment-proxy-1-service", 1);
+        return instancesManagerService.addInstances("payment-proxy-1-service", 1).toString();
+    }
+
+    @GetMapping("/removeContainer/{dockerPort}")
+    public String removeContainer(@PathVariable("dockerPort") String dockerPort) {
+        instancesManagerService.removeInstance("payment-proxy-1-service", instancesManagerService.getDockerIp(), Integer.parseInt(dockerPort));
         return "OK";
     }
 }

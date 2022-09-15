@@ -13,8 +13,8 @@ public class AddInstancesResponse {
 
     private final List<SingleInstanceResponse> dockerizedInstances = new ArrayList<>();
 
-    public void addContainerInfo(String imageName, String containerId, String containerName, int port) {
-        dockerizedInstances.add(new SingleInstanceResponse(imageName, containerId, containerName, port));
+    public void addContainerInfo(String imageName, String containerId, String containerName, String address, int port) {
+        dockerizedInstances.add(new SingleInstanceResponse(imageName, containerId, containerName, address, port));
     }
 
     @AllArgsConstructor
@@ -23,6 +23,7 @@ public class AddInstancesResponse {
         private String imageName;
         private String containerId;
         private String containerName;
+        private String address;
         private int port;
     }
 }

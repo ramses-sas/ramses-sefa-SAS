@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddInstancesRequest {
-    private String serviceId;
     private String serviceImplementationName;
     private int numberOfInstances;
 }
