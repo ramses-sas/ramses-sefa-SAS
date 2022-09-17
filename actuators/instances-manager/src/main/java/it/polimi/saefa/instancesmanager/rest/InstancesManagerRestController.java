@@ -22,7 +22,7 @@ public class InstancesManagerRestController implements InstancesManagerRestInter
 
 	@Override
 	@PostMapping(path = "/addInstances")
-	public AddInstancesResponse deliverOrder(@RequestBody AddInstancesRequest request) {
+	public AddInstancesResponse addInstances(@RequestBody AddInstancesRequest request) {
 		AddInstancesResponse response = new AddInstancesResponse();
 		List<ServiceContainerInfo> di = instancesManagerService.addInstances(request.getServiceImplementationName(), request.getNumberOfInstances());
 		di.forEach(info -> response.addContainerInfo(info.getImageName(), info.getContainerId(), info.getContainerName(), info.getAddress(), info.getPort()));
@@ -31,7 +31,7 @@ public class InstancesManagerRestController implements InstancesManagerRestInter
 
 	@Override
 	@PostMapping(path = "/removeInstance")
-	public RemoveInstanceResponse deliverOrder(@RequestBody RemoveInstanceRequest request) {
+	public RemoveInstanceResponse removeInstance(@RequestBody RemoveInstanceRequest request) {
 		instancesManagerService.removeInstance(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 		return new RemoveInstanceResponse(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 	}

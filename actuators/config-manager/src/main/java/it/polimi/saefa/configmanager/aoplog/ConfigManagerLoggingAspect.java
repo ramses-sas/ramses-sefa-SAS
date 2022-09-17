@@ -1,4 +1,4 @@
-package it.polimi.saefa.instancesmanager.aoplog;
+package it.polimi.saefa.configmanager.aoplog;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -12,11 +12,11 @@ import java.util.Arrays;
 @Slf4j
 public class ConfigManagerLoggingAspect {
 
-    @Pointcut("execution(public * it.polimi.saefa.instancesmanager.domain.InstancesManagerService.*(..))")
-    public void instancesManagerMethods() {}
+    @Pointcut("execution(public * it.polimi.saefa.configmanager.domain.ConfigManagerService.*(..))")
+    public void configManagerMethods() {}
 
-    @Pointcut("execution(public void it.polimi.saefa.instancesmanager.domain.InstancesManagerService.*(..))")
-    public void instancesManagerVoidMethods() {}
+    @Pointcut("execution(public void it.polimi.saefa.configmanager.domain.ConfigManagerService.*(..))")
+    public void configManagerVoidMethods() {}
 
 	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
@@ -48,19 +48,19 @@ public class ConfigManagerLoggingAspect {
     //public void logBeforeExecuteMethod(JoinPoint joinPoint) { logInvocation(joinPoint); }
 
     /* Eseguito quando il metodo è terminato (con successo) */
-    @AfterReturning(value="instancesManagerMethods() &&! instancesManagerVoidMethods()", returning="retValue")
+    @AfterReturning(value="configManagerMethods() &&! configManagerVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         logTermination(joinPoint, retValue);
     }
 
     /* Eseguito quando il metodo (void) è terminato (con successo) */
-    @AfterReturning("instancesManagerVoidMethods()")
+    @AfterReturning("configManagerVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         logVoidTermination(joinPoint);
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="instancesManagerMethods()", throwing="exception")
+    @AfterThrowing(value="configManagerMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }

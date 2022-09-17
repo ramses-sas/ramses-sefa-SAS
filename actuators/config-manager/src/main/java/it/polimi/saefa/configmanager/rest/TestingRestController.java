@@ -1,9 +1,8 @@
 package it.polimi.saefa.configmanager.rest;
 
-import it.polimi.saefa.instancesmanager.domain.ConfigManagerService;
+import it.polimi.saefa.configmanager.domain.ConfigManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,9 +12,24 @@ public class TestingRestController {
     @Autowired
     private ConfigManagerService configManagerService;
 
-    @GetMapping("/")
-    public String dummy() {
-        return "Hi!";
+    @GetMapping("/add")
+    public String add() {
+        try {
+            configManagerService.addOrUpdatePropertyAndPush("test", "test", "application.properties");
+        } catch (Exception e) {
+            return "FAILED!\n"+e.getMessage();
+        }
+        return "Done!";
+    }
+
+    @GetMapping("/remove")
+    public String remove() {
+        try {
+            configManagerService.removePropertyAndPush("test", "application.properties");
+        } catch (Exception e) {
+            return "FAILED!\n"+e.getMessage();
+        }
+        return "Done!";
     }
 
 }
