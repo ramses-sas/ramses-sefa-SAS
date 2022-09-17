@@ -29,7 +29,8 @@ public class PrometheusParser {
             throw new RuntimeException(e);
         }
 
-        Map<String, Double> httpMaxDuration = new HashMap<>();
+        Map<String, HttpRequestMetrics> httpMetricsMap = new HashMap<>();
+
         metricFamilies.forEach(metricFamily -> {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
             //MetricType metricType = elem.getType(); //e.g. GAUGE
@@ -38,9 +39,9 @@ public class PrometheusParser {
                 Map<String, String> labels = metric.getLabels();
                 switch (propertyName) {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->
-                            instanceMetrics.addHttpMetrics(handleHttpServerRequestsSeconds((Histogram) metric));
+                            handleHttpServerRequestsSeconds(httpMetricsMap, (Histogram) metric);
                     case PrometheusMetrics.HTTP_REQUESTS_MAX_TIME ->
-                        httpMaxDuration.put(labels.get("method") + "@" + labels.get("uri"), ((Gauge) metric).getValue());
+                            handleHttpServerRequestsMaxDuration(httpMetricsMap, (Gauge) metric);
                     case PrometheusMetrics.DISK_FREE_SPACE ->
                             instanceMetrics.setDiskFreeSpace(((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
@@ -66,15 +67,22 @@ public class PrometheusParser {
                 }
             });
         } );
-        httpMaxDuration.forEach((endpoint, maxDuration) -> instanceMetrics.getHttpMetrics().get(endpoint).setMaxDuration(maxDuration));
+        instanceMetrics.setHttpMetrics(httpMetricsMap);
         return instanceMetrics;
     }
 
-    private HttpRequestMetrics handleHttpServerRequestsSeconds(Histogram metric) {
-        Map<String, String> labels = metric.getLabels(); //e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
-        return new HttpRequestMetrics(
-                labels.get("uri"), labels.get("method"), labels.get("outcome"),
-                Integer.parseInt(labels.get("status")), metric.getSampleCount(), metric.getSampleSum());
+    private void handleHttpServerRequestsSeconds(Map<String, HttpRequestMetrics> httpMetricsMap, Histogram metric) {
+        Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
+        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
+        metrics.addOrSetOutcomeMetricsDetails(labels.get("outcome"), Integer.parseInt(labels.get("status")), (int) metric.getSampleCount(), metric.getSampleSum());
+        httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
+    }
+
+    private void handleHttpServerRequestsMaxDuration(Map<String, HttpRequestMetrics> httpMetricsMap, Gauge metric) {
+        Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
+        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
+        metrics.addOrSetOutcomeMetricsMaxDuration(labels.get("outcome"), metric.getValue());
+        httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
     }
 
 

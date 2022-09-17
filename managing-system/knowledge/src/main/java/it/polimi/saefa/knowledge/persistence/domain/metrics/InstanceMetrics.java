@@ -30,7 +30,7 @@ public class InstanceMetrics {
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     // Map<HTTP-Method@endpoint, HttpRequestMetrics>
     @OneToMany(cascade = CascadeType.ALL)
-    Map<String, HttpRequestMetrics> httpMetrics = new HashMap<>(); // TODO provare a renderlo map come prima?
+    Map<String, HttpRequestMetrics> httpMetrics = new HashMap<>();
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
@@ -121,6 +121,10 @@ public class InstanceMetrics {
 
     public boolean isShutdown() {
         return status.equals(InstanceStatus.SHUTDOWN);
+    }
+
+    public boolean isUnreachable() {
+        return status.equals(InstanceStatus.UNREACHABLE);
     }
 
     /*

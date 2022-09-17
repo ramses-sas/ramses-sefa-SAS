@@ -11,7 +11,7 @@
             <div class="card">
                 <h5 class="cardElementTitle">Service</h5>
                 <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
-                <h6><a th:href="@{'/'+${serviceId}}">Show details and active instances</a></h6>
+                <h6><a th:href="@{'/service/'+${serviceId}}">Show details and active instances</a></h6>
                 <br>
                 <h5 class="cardElementTitle">Current Implementation</h5>
                 <table class="configTable">

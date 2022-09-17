@@ -1,6 +1,7 @@
 package it.polimi.saefa.monitor;
 
 import com.netflix.appinfo.InstanceInfo;
+import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
@@ -52,6 +53,10 @@ public class MonitorApplication {
                     } catch (Exception e) {
                         log.error("Error adding metrics for {}. Considering it as down", instance.getInstanceId());
                         log.error(e.getMessage());
+                        instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
+                        instanceMetrics.setStatus(InstanceStatus.UNREACHABLE);
+                        instanceMetrics.applyTimestamp();
+                        metricsList.add(instanceMetrics);
                     }
                 });
                 threads.add(thread);

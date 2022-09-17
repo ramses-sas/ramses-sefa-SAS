@@ -25,11 +25,10 @@ public class DashboardWebController {
 	@Autowired 
 	private DashboardWebService dashboardWebService;
 
-	/* Mostra home page */
-	@GetMapping("/{serviceId}")
+	@GetMapping("/service/{serviceId}")
 	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
-		log.info("Service: " + service);
+		log.info("Service: " + service + " for serviceId: " + serviceId);
 		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
@@ -65,7 +64,7 @@ public class DashboardWebController {
 		return "webpages/serviceDetails";
 	}
 
-	@GetMapping("/{serviceId}/{instanceId}/metrics")
+	@GetMapping("/service/{serviceId}/{instanceId}/metrics")
 	public String instanceMetrics(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
 		InstanceMetrics latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
 		log.debug("Latest metrics: " + latestMetrics);
@@ -77,8 +76,9 @@ public class DashboardWebController {
 			resourceTable.add(new String[]{"Disk Free Space", String.format("%,.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
 			resourceTable.add(new String[]{"Disk Total Space", String.format("%,.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
 			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
-				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
-						httpMetrics.getOutcome(), String.format("%,.2f", httpMetrics.getAverageDuration())+" ms"});
+				for(String outcome : httpMetrics.getOutcomes())
+					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
+						outcome, httpMetrics.getAverageDurationByOutcome(outcome) == -1 ? "N/A" : String.format("%,.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
 				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
 				double failureRate = cbMetrics.getFailureRate();
@@ -89,7 +89,7 @@ public class DashboardWebController {
 				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
 				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
 					Double avgDuration = cbMetrics.getAverageDuration(status);
-					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format("%,.2f", avgDuration)+" ms"});
+					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format("%,.2f", avgDuration)+" s"});
 				}
 				circuitBreakersTable.add(new String[]{"", ""});
 			}

@@ -11,6 +11,7 @@ package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 public enum InstanceStatus {
     ACTIVE,
+    UNREACHABLE,
     FAILED,
     SHUTDOWN
 }

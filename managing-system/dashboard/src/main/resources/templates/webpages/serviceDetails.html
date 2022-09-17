@@ -29,7 +29,7 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td><a th:href="@{'/'+${serviceId}+'/'+${entry[0]}+'/metrics'}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}+'/metrics'}" th:text="${entry[0]}">instanceId here</a></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
                                     </tr>
                                     </tbody>

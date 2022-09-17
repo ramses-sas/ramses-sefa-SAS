@@ -15,6 +15,7 @@ public class Service {
     private String serviceId;
     private String currentImplementation; //name of the current implementation of the service
     private ServiceConfiguration configuration;
+    private List<String> dependencies; //names of services that this service depends on
 
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
@@ -25,8 +26,9 @@ public class Service {
         this.serviceId = serviceId;
     }
 
-    public Service(String serviceId, List<ServiceImplementation> possibleImplementations) {
+    public Service(String serviceId, List<ServiceImplementation> possibleImplementations, List<String> dependencies) {
         this.serviceId = serviceId;
+        this.dependencies = dependencies;
         possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setServiceId(getServiceId());});
     }
 
@@ -84,6 +86,7 @@ public class Service {
                 "\tImplemented by: '" + currentImplementation + "'" + "\n" +
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\tPossible Implementations: [" + possibleImplementations + "]\n" +
+                "\tDependencies: " + dependencies + "\n" +
                 (adaptationParameters.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParameters));
     }
 }
