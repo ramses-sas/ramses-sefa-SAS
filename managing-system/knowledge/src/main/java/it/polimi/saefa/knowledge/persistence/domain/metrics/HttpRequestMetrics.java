@@ -45,6 +45,53 @@ public class HttpRequestMetrics {
             return totalDuration / count;
         }
 
+        public OutcomeMetrics(String outcome) {
+            this.outcome = outcome;
+        }
+    }
+
+    @JsonIgnore
+    public double getAverageDuration(){
+        double totalDuration = 0;
+        double totalCount = 0;
+
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            totalDuration += outcomeMetrics.getTotalDuration();
+            totalCount += outcomeMetrics.getCount();
+        }
+
+        if(totalCount == 0)
+            return -1;
+
+        return totalDuration / totalCount;
+    }
+
+    @JsonIgnore
+    public double getTotalDuration(){
+        double total = 0;
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            total += outcomeMetrics.getTotalDuration();
+        }
+        return total;
+    }
+
+    @JsonIgnore
+    public int getTotalCount(){
+        int total = 0;
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            total += outcomeMetrics.getCount();
+        }
+        return total;
+    }
+
+    @JsonIgnore
+    public double getMaxDuration(){
+        double max = 0;
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            if(outcomeMetrics.getMaxDuration() > max)
+                max = outcomeMetrics.getMaxDuration();
+        }
+        return max;
     }
 
     @JsonIgnore
@@ -93,7 +140,7 @@ public class HttpRequestMetrics {
     }
 
     public void addOrSetOutcomeMetricsDetails(String outcome, int status, long count, double totalDuration) {
-        OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics());
+        OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics(outcome));
         outcomeMetric.setStatus(status);
         outcomeMetric.setCount(count);
         outcomeMetric.setTotalDuration(totalDuration);
@@ -101,7 +148,7 @@ public class HttpRequestMetrics {
     }
 
     public void addOrSetOutcomeMetricsMaxDuration(String outcome, double maxDuration) {
-        OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics());
+        OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics(outcome));
         outcomeMetric.setMaxDuration(maxDuration);
         outcomeMetrics.put(outcome, outcomeMetric);
     }

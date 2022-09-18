@@ -49,6 +49,14 @@ public class KnowledgeRestController {
         return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
     }
 
+    @GetMapping("/metrics/getLatestNOfCurrentInstance")
+    public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(
+            @RequestParam String instanceId,
+            @RequestParam int n
+    ) {
+        return knowledgeService.getLatestNMetricsOfCurrentInstance(instanceId, n);
+    }
+
     @GetMapping("/metrics/get")
     public List<InstanceMetrics> getMetrics(
             //@RequestParam(required = false) String serviceId,

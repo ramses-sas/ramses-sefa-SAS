@@ -20,6 +20,10 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
 
     // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
 
+    @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND m.timestamp >= (SELECT MAX(m1.timestamp) FROM InstanceMetrics m1 WHERE m1.instanceId = :instanceId AND m.status=it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus.SHUTDOWN) ORDER BY m.timestamp DESC")
+    Page<InstanceMetrics> findLatestOfCurrentInstanceOrderByTimestampDesc(String instanceId, Pageable pageable);
+
+
     Page<InstanceMetrics> findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);
 
     Page<InstanceMetrics> findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);

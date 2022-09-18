@@ -111,7 +111,7 @@ public class InstanceMetrics {
         }
     }
 
-    public boolean hasFailed() {
+    public boolean isFailed() {
         return status.equals(InstanceStatus.FAILED);
     }
 

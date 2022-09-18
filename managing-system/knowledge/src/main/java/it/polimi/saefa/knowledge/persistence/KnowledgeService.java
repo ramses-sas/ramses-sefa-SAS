@@ -52,15 +52,11 @@ public class KnowledgeService {
 
     public Map<String,Service> getServicesMap() { return services; }
     
-    public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
-        if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstanceId()).isActive()) {
-            //if the instance is down, only save it if it's the first detection
-            // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
-            //instance.addMetric(metrics);
-            metricsRepository.save(metrics);
-            return true;
-        }
-        return false;
+    public void addMetrics(Instance instance, InstanceMetrics metrics) {
+        //if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstanceId()).isActive()) {
+        //se la metrica è unreachable io voglio che venga salvata
+        metricsRepository.save(metrics);
+        instance.setCurrentStatus(metrics.getStatus());
     }
 
     public void addMetrics(List<InstanceMetrics> metricsList) {
@@ -71,7 +67,8 @@ public class KnowledgeService {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
             if(instance!=null) {
-                addMetrics(instance, metrics);
+                metricsRepository.save(metrics);
+                instance.setCurrentStatus(metrics.getStatus());
                 if (metrics.isActive())
                     currentlyActiveInstances.add(instance);
             }
@@ -163,6 +160,10 @@ public class KnowledgeService {
     public List<InstanceMetrics> getNMetricsAfter(String instanceId, String timestampStr, int n) {
         Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
+    }
+
+    public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(String instanceId, int n) {
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
