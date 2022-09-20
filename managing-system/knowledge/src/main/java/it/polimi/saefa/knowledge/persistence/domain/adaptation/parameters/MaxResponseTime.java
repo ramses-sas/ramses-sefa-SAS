@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -22,6 +22,7 @@ public class ServiceImplementation {
     private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)
     private double costPerBoot; //costo per avvio di un'istanza
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
+    private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
 
     public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score) {
         this.implementationId = implementationId;
@@ -62,5 +63,10 @@ public class ServiceImplementation {
             }
         }
         return instance;
+    }
+
+    public double addPenalty(double penalty) {
+        this.penalty += penalty;
+        return this.penalty;
     }
 }

@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AverageResponseTime extends AdaptationParameter{
+public class TotalCost extends AdaptationParameter {
     @JsonProperty("max_threshold")
     private double maxThreshold;
 
@@ -16,7 +16,7 @@ public class AverageResponseTime extends AdaptationParameter{
         return super.getValue()<= maxThreshold;
     }
 
-    public AverageResponseTime(String json) {
+    public TotalCost(String json) {
         super(json);
     }
 
@@ -30,7 +30,7 @@ public class AverageResponseTime extends AdaptationParameter{
     }
 
     @JsonCreator
-    public AverageResponseTime(
+    public TotalCost(
             @JsonProperty("value") Double value,
             @JsonProperty("weight") Double weight,
             @JsonProperty("priority") int priority,

@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,7 +39,7 @@ public class Service {
 
 
     /*public void addInstance(Instance instance) {
-        instances.put(instance.getInstanceId(), instance);
+        instances.put(instance.getInstance(), instance);
     }
 
     public boolean isReachable() {

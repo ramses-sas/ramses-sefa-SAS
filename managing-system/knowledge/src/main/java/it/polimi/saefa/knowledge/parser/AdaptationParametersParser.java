@@ -3,7 +3,7 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class AdaptationParametersParser {
             JsonArray adaptationParameters = serviceJson.get("adaptation_parameters").getAsJsonArray();
             adaptationParameters.forEach(param -> {
                 JsonObject parameter = param.getAsJsonObject();
-                String name = "it.polimi.saefa.knowledge.persistence.domain.adaptation." + snakeToCamel(parameter.get("name").getAsString());
+                String name = AdaptationParameter.class.getPackage().getName() + "." + snakeToCamel(parameter.get("name").getAsString());
                 Class<?> clazz;
                 AdaptationParameter adaptationParameter;
                 try {

@@ -37,11 +37,10 @@ public class MonitorApplication {
     private InstancesSupplier instancesSupplier;
     @Autowired
     private PrometheusParser prometheusParser;
-
     @Value("${INTERNET_CONNECTION_CHECK_HOST}")
     private String internetConnectionCheckHost;
 
-    private boolean loopIterationFinished = true;
+    private AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
     @Scheduled(fixedDelayString = "${SCHEDULING_PERIOD}") //delay in milliseconds
@@ -70,7 +69,7 @@ public class MonitorApplication {
                         metricsList.add(instanceMetrics);
                         try {
                             if (!InetAddress.getByName(internetConnectionCheckHost).isReachable(5000))
-                                invalidIteration.set(true);
+                                invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
                         } catch (Exception e1) {
                             log.error("Error checking internet connection");
                             log.error(e1.getMessage());
@@ -107,12 +106,12 @@ public class MonitorApplication {
         }
     }
 
-    public synchronized boolean getLoopIterationFinished() {
-        return loopIterationFinished;
+    public boolean getLoopIterationFinished() {
+        return loopIterationFinished.get();
     }
 
-    public synchronized void setLoopIterationFinished(boolean loopIterationFinished) {
-        this.loopIterationFinished = loopIterationFinished;
+    public void setLoopIterationFinished(boolean loopIterationFinished) {
+        this.loopIterationFinished.set(loopIterationFinished);
     }
 
     @GetMapping("/notifyFinishedIteration")
@@ -149,7 +148,7 @@ public class MonitorApplication {
                             //this check is done to avoid the case in which the instance is gracefully
                             // disconnected from eureka since the original services list is not updated.
                             // Still, it can happen between the check and the actual call to the service, so how to solve?
-                            InstanceMetrics instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
+                            InstanceMetrics instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstance());
                             instanceMetrics.setStatus(InstanceStatus.FAILED);
                             instanceMetrics.applyTimestamp();
                             knowledgeClient.addMetrics(instanceMetrics);

@@ -1,7 +1,7 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;

@@ -1,9 +1,8 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
