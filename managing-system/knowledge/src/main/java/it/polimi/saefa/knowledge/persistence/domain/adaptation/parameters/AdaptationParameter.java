@@ -17,7 +17,7 @@ import lombok.Data;
 public abstract class AdaptationParameter {
     private Double value = 0d;
     private Double weight;
-    private int priority;
+    //private int priority;
 
     public AdaptationParameter(String json) {
         parseFromJson(json);
@@ -31,7 +31,7 @@ public abstract class AdaptationParameter {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(value: " + value + ", weight: " + weight + ", priority: " + priority;
+        return this.getClass().getSimpleName() + "(value: " + value + ", weight: " + weight; //+ ", priority: " + priority;
     }
 
 

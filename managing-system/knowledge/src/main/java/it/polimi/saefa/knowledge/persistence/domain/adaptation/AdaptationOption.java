@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public class AdaptationOption {
 
-    private final Type type; //decidere se renderlo ENUM
+    private final Type type;
     private final String description;
     private final Service service;
     private final Instance instance;

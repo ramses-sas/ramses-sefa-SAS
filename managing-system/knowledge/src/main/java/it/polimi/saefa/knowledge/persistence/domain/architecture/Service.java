@@ -20,7 +20,6 @@ public class Service {
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
 
-    private AdaptationParameter[] adaptationParameters = {};
 
     public Service(String serviceId) {
         this.serviceId = serviceId;
@@ -87,6 +86,22 @@ public class Service {
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (adaptationParameters.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParameters));
+                (getCurrentImplementationObject().getAdaptationParameters().length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(getCurrentImplementationObject().getAdaptationParameters()));
     }
+
+    public void setAdaptationParameters(AdaptationParameter[] array) {
+        for(ServiceImplementation impl : possibleImplementations.values()){
+            impl.setAdaptationParameters(array);
+        }
+    }
+
+    public void setAdaptationParameter(Class<? extends AdaptationParameter> clazz, Double value) {
+        Optional<AdaptationParameter> adaptationParameter = Arrays.stream(getCurrentImplementationObject().getAdaptationParameters()).filter(p -> p.getClass().equals(clazz)).findFirst();
+        adaptationParameter.get().setValue(value);
+    }
+
+    public <T extends AdaptationParameter> T getAdaptationParameter  (Class<T> clazz) {
+        return (T) Arrays.stream(getCurrentImplementationObject().getAdaptationParameters()).filter(p -> p.getClass().equals(clazz)).findFirst().orElse(null);
+    }
+
 }

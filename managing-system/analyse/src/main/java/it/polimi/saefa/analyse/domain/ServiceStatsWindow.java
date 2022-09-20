@@ -17,4 +17,8 @@ public class ServiceStatsWindow extends LinkedList<List<ServiceStats>> {
         return super.add(e);
     }
 
+    public boolean isFull() {
+        return size() == capacity;
+    }
+
 }

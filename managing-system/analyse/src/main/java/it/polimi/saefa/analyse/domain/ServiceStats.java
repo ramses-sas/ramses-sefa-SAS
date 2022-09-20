@@ -79,6 +79,11 @@ public class ServiceStats {
             }
         }
 
+        if(emptyStats.size() == instancesStats.size()) {
+            instancesStats = new ArrayList<>();
+            return;
+        }
+
         averageAvailability = availabilityAccumulator / (instancesStats.size() - emptyStats.size());
         averageMaxResponseTime = maxResponseTimeAccumulator / (instancesStats.size() - emptyStats.size());
         averageResponseTime = averageResponseTimeAccumulator / (instancesStats.size() - emptyStats.size());

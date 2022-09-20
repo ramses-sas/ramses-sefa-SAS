@@ -1,6 +1,7 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,8 @@ public class ServiceImplementation {
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
+    private AdaptationParameter[] adaptationParameters = {};
+
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
     private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)
