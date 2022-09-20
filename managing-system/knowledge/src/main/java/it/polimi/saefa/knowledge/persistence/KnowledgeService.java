@@ -33,7 +33,7 @@ public class KnowledgeService {
     private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
 
     /*public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
-        if(metrics.isActive() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstanceId()).isActive()) {
+        if(metrics.isActive() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstance()).isActive()) {
             //if the instance is down, only save it if it's the first detection
             instance.getMetrics().add(metrics);
             //metricsRepository.save(metrics);
@@ -53,7 +53,7 @@ public class KnowledgeService {
     public Map<String,Service> getServicesMap() { return services; }
     
     public void addMetrics(Instance instance, InstanceMetrics metrics) {
-        //if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstanceId()).isActive()) {
+        //if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstance()).isActive()) {
         //se la metrica è unreachable io voglio che venga salvata
         metricsRepository.save(metrics);
         instance.setCurrentStatus(metrics.getStatus());
