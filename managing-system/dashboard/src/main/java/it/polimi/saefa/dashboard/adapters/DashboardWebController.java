@@ -1,7 +1,7 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
@@ -137,8 +137,8 @@ public class DashboardWebController {
 
 			// List <ParameterName, Value, Threshold, Weight, Priority>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter ap : s.getAdaptationParameters()) {
-				serviceAdaptationParametersTable.add(new String[]{ap.getClass().getSimpleName(), ap.getValue().toString(), ap.getThreshold().toString(), ap.getWeight().toString(), String.valueOf(ap.getPriority())});
+			for (AdaptationParameter ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
+				serviceAdaptationParametersTable.add(new String[]{ap.getClass().getSimpleName(), String.valueOf(ap.getLastValue()), ap.getSpecification().getConstraintDescription(), ap.getSpecification().getWeight().toString()});//, String.valueOf(ap.getPriority())});
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 

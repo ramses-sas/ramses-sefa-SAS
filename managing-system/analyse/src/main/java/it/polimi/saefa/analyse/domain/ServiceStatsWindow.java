@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.analyse.domain;
 
 import java.util.LinkedList;
@@ -22,3 +23,4 @@ public class ServiceStatsWindow extends LinkedList<List<ServiceStats>> {
     }
 
 }
+*/

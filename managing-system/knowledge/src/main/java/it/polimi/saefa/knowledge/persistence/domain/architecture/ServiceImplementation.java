@@ -1,7 +1,8 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParamCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,8 @@ public class ServiceImplementation {
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
-    private AdaptationParameter[] adaptationParameters = {};
+    private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
+
 
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
@@ -72,4 +74,11 @@ public class ServiceImplementation {
         this.penalty += penalty;
         return this.penalty;
     }
+
+    protected void setAdaptationParameterSpecifications(AdaptationParamSpecification[] array) {
+        for(AdaptationParamSpecification specification : array) {
+            adaptationParamCollection.createHistory(specification);
+        }
+    }
+
 }

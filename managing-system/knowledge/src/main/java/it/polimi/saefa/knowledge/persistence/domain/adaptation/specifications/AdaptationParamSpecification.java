@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -14,25 +14,29 @@ import lombok.Data;
         @JsonSubTypes.Type(value = MaxResponseTime.class),
         @JsonSubTypes.Type(value = TotalCost.class)
 })
-public abstract class AdaptationParameter {
-    private Double value = 0d;
+public abstract class AdaptationParamSpecification {
+
+
     private Double weight;
     //private int priority;
 
-    public AdaptationParameter(String json) {
+    public AdaptationParamSpecification(String json) {
         parseFromJson(json);
     }
 
-    public abstract boolean isSatisfied();
+    public abstract boolean isSatisfied(double value);
 
-    public abstract Double getThreshold();
+    public abstract String getConstraintDescription();
 
     public abstract void parseFromJson(String json);
 
+
+
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(value: " + value + ", weight: " + weight; //+ ", priority: " + priority;
+        return this.getClass().getSimpleName() + "(weight: " + weight; //+ ", priority: " + priority;
     }
+
 
 
 

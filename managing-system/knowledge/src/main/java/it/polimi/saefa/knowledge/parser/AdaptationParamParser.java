@@ -3,7 +3,7 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -11,37 +11,37 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class AdaptationParametersParser {
-    public static Map<String, List<AdaptationParameter>> parse(Reader json){
-        Map<String, List<AdaptationParameter>> serviceAdaptationParameters = new HashMap<>();
+public class AdaptationParamParser {
+    public static Map<String, List<AdaptationParamSpecification>> parse(Reader json){
+        Map<String, List<AdaptationParamSpecification>> servicesQos = new HashMap<>();
         Gson gson = new Gson();
         JsonArray services = gson.fromJson(json, JsonObject.class).getAsJsonArray("services");
         services.forEach(service -> {
-            List<AdaptationParameter> adaptationParameterList = new LinkedList<>();
+            List<AdaptationParamSpecification> adaptationParamSpecificationList = new LinkedList<>();
             JsonObject serviceJson = service.getAsJsonObject();
             String serviceId = serviceJson.get("service_id").getAsString();
             JsonArray adaptationParameters = serviceJson.get("adaptation_parameters").getAsJsonArray();
             adaptationParameters.forEach(param -> {
                 JsonObject parameter = param.getAsJsonObject();
-                String name = AdaptationParameter.class.getPackage().getName() + "." + snakeToCamel(parameter.get("name").getAsString());
+                String name = AdaptationParamSpecification.class.getPackage().getName() + "." + snakeToCamel(parameter.get("name").getAsString());
                 Class<?> clazz;
-                AdaptationParameter adaptationParameter;
+                AdaptationParamSpecification adaptationParamSpecification;
                 try {
                     clazz = Class.forName(name);
-                    if(!AdaptationParameter.class.isAssignableFrom(clazz))
+                    if(!AdaptationParamSpecification.class.isAssignableFrom(clazz))
                         throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the AdaptationParameter class.");
-                    adaptationParameter = (AdaptationParameter) clazz.getDeclaredConstructor(String.class).newInstance(parameter.toString());
+                    adaptationParamSpecification = (AdaptationParamSpecification) clazz.getDeclaredConstructor(String.class).newInstance(parameter.toString());
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException |
                         NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
-                adaptationParameterList.add(adaptationParameter);
+                adaptationParamSpecificationList.add(adaptationParamSpecification);
             });
-            if(adaptationParameterList.stream().map(AdaptationParameter::getWeight).reduce(0.0, Double::sum)!=1)
+            if(adaptationParamSpecificationList.stream().map(AdaptationParamSpecification::getWeight).reduce(0.0, Double::sum)!=1)
                 throw new RuntimeException("The sum of parameters weight for service " + serviceId + " should be equal to 1");
-            serviceAdaptationParameters.put(serviceId, adaptationParameterList);
+            servicesQos.put(serviceId, adaptationParamSpecificationList);
         });
-        return serviceAdaptationParameters;
+        return servicesQos;
     }
 
     private static String snakeToCamel(String str) {

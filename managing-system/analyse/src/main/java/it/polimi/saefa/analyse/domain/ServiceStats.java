@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.analyse.domain;
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
@@ -13,6 +14,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ServiceStats {
+
+
+
+
     private Service service;
     private List<InstanceStats> instancesStats = new ArrayList<>();
     private Double averageResponseTime;
@@ -22,9 +27,13 @@ public class ServiceStats {
     private Double averageAvailability;
     private Double averageMaxResponseTime; //TODO forse non serve, capire effettivamente se serve
 
-    public ServiceStats(Service service) {
+    */
+/*public ServiceStats(Service service) {
         this.service = service;
     }
+
+     *//*
+
 
     public String getServiceId() {
         return service.getServiceId();
@@ -95,3 +104,4 @@ public class ServiceStats {
         }
     }
 }
+*/

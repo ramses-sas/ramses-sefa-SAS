@@ -91,7 +91,7 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
-    @GetMapping("/service")
+    @GetMapping("/services")
     public List<Service> getServices() {
         return knowledgeService.getServices();
     }

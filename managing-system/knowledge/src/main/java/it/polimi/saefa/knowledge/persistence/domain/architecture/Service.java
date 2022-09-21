@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +19,9 @@ public class Service {
 
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
+
+    private AdaptationParamSpecification[] adaptationParamSpecifications;
+
 
 
     public Service(String serviceId) {
@@ -86,22 +89,34 @@ public class Service {
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (getCurrentImplementationObject().getAdaptationParameters().length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(getCurrentImplementationObject().getAdaptationParameters()));
+                (adaptationParamSpecifications.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParamSpecifications));
     }
 
-    public void setAdaptationParameters(AdaptationParameter[] array) {
-        for(ServiceImplementation impl : possibleImplementations.values()){
-            impl.setAdaptationParameters(array);
+    public void setAdaptationParameters(AdaptationParamSpecification[] array) {
+        if(adaptationParamSpecifications == null) {
+            for (ServiceImplementation impl : possibleImplementations.values()) {
+                impl.setAdaptationParameterSpecifications(array);
+            }
+            adaptationParamSpecifications = array;
         }
     }
 
-    public void setAdaptationParameter(Class<? extends AdaptationParameter> clazz, Double value) {
-        Optional<AdaptationParameter> adaptationParameter = Arrays.stream(getCurrentImplementationObject().getAdaptationParameters()).filter(p -> p.getClass().equals(clazz)).findFirst();
-        adaptationParameter.get().setValue(value);
+    //TODO delete and move into implementation
+    /*
+    public void setAdaptationParameter(Class<? extends AdaptationParamSpecification> clazz, Double value) {
+        Optional<AdaptationParamSpecification> adaptationParameter = Arrays.stream(getCurrentImplementationObject().getAdaptationParameterSpecifications()).filter(p -> p.getClass().equals(clazz)).findFirst();
+        adaptationParameter.get().addValue(value);
     }
 
-    public <T extends AdaptationParameter> T getAdaptationParameter  (Class<T> clazz) {
-        return (T) Arrays.stream(getCurrentImplementationObject().getAdaptationParameters()).filter(p -> p.getClass().equals(clazz)).findFirst().orElse(null);
+    public <T extends AdaptationParamSpecification> T getAdaptationParameter  (Class<T> clazz) {
+        return (T) Arrays.stream(getCurrentImplementationObject().getAdaptationParameterSpecifications()).filter(p -> p.getClass().equals(clazz)).findFirst().orElse(null);
     }
+
+    public AdaptationParamSpecification[] getAdaptationParameters() {
+        return getCurrentImplementationObject().getAdaptationParameterSpecifications();
+    }
+
+
+     */
 
 }

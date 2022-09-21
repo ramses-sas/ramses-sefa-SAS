@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation.parameters;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,15 +8,15 @@ import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Availability extends AdaptationParameter{
+public class Availability extends AdaptationParamSpecification {
     @JsonProperty("min_threshold")
     private double minThreshold;
     @JsonIgnore
     private Double averageAvailability;
 
     @Override
-    public boolean isSatisfied() {
-        return super.getValue()>=minThreshold;
+    public boolean isSatisfied(double value) {
+        return value>=minThreshold;
     }
 
     public Availability(String json) {
@@ -33,23 +33,24 @@ public class Availability extends AdaptationParameter{
     }
 
     @JsonCreator
-    public Availability(@JsonProperty("value") Double value,
+    public Availability(
                         @JsonProperty("weight") Double weight,
                         //@JsonProperty("priority") int priority,
                         @JsonProperty("min_threshold") Double min_threshold) {
         //super(value, weight, priority);
-        super(value, weight);
+        super(weight);
 
         this.minThreshold = min_threshold;
     }
 
-    public Double getThreshold() {
-        return minThreshold;
+    @Override
+    public String getConstraintDescription() {
+        return "value > "+minThreshold;
     }
 
     @Override
     public String toString() {
-        return super.toString() + ", Threshold: " + minThreshold + ")";
+        return super.toString() + ", Constraint: " + getConstraintDescription() + ")";
     }
 
     public Double getAverageAvailability() {

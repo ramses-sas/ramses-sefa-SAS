@@ -1,45 +1,6 @@
 {
 	"services"	: [
 		{
-			"service_id":"API-GATEWAY-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "api-gateway-service",
-					"cost_per_instance" : 0.1,
-					"cost_per_request" : 0.01,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.2,
-					"score" : 1
-				}
-			],
-			"dependencies" : [
-				{
-					"name" : "RESTAURANT-SERVICE"
-				},
-				{
-					"name" : "ORDERING-SERVICE"
-				}
-			]
-		},
-		{
-			"service_id":"WEB-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "web-service",
-					"cost_per_instance" : 0.2,
-					"cost_per_request" : 0.02,
-					"cost_per_second" : 0.02,
-					"cost_per_boot" : 0.3,
-					"score" : 1
-				}
-			],
-			"dependencies" : [
-				{
-					"name" : "API-GATEWAY-SERVICE"
-				}
-			]
-		},
-		{
 			"service_id":"RESTAURANT-SERVICE",
 			"implementations" : [
 				{
@@ -141,6 +102,47 @@
 				}
 			],
 			"dependencies" : []
+		}
+	],
+	"trash" : [
+		{
+			"service_id":"API-GATEWAY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "api-gateway-service",
+					"cost_per_instance" : 0.1,
+					"cost_per_request" : 0.01,
+					"cost_per_second" : 0.01,
+					"cost_per_boot" : 0.2,
+					"score" : 1
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "RESTAURANT-SERVICE"
+				},
+				{
+					"name" : "ORDERING-SERVICE"
+				}
+			]
+		},
+		{
+			"service_id":"WEB-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "web-service",
+					"cost_per_instance" : 0.2,
+					"cost_per_request" : 0.02,
+					"cost_per_second" : 0.02,
+					"cost_per_boot" : 0.3,
+					"score" : 1
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "API-GATEWAY-SERVICE"
+				}
+			]
 		}
 	]
 }

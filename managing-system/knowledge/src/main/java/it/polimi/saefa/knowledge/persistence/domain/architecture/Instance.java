@@ -1,9 +1,8 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParamCollection;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -12,7 +11,7 @@ public class Instance { //TODO controlla che ovunque ora usi il service implemen
     private String serviceId; //service name //todo aggiungi al costuttore
     private String serviceImplementationId; //service implementation name
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
-
+    private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
     //private List<InstanceMetrics> metrics = new LinkedList<>();
 
     public Instance(String instanceId, String serviceId) {
