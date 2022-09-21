@@ -1,10 +1,14 @@
 package it.polimi.saefa.analyse.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.LinkedList;
 import java.util.List;
 
 public class ServiceStatsWindow extends LinkedList<List<ServiceStats>> {
-    private final int capacity;
+    @Getter @Setter
+    private int capacity;
 
     public ServiceStatsWindow(int capacity) {
         this.capacity = capacity;

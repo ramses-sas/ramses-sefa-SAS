@@ -18,7 +18,7 @@ import java.util.*;
 public class AnalyseService {
     //private Date lastAnalysisTimestamp = Date.from(Instant.ofEpochMilli(0));
     //private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    private final ServiceStatsWindow serviceStatsHistory;
+    private ServiceStatsWindow serviceStatsHistory;
     private final List<AdaptationOption> adaptationOptions = new ArrayList<>();
 
     //Number of new metrics to analyse for each instance of each service
@@ -31,7 +31,7 @@ public class AnalyseService {
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
     private Integer newMetricsWindowSize;
-    private Integer newAnalysisWindowSize; // TODO react to a new value of the analysis window size as for the other variables
+    private Integer newAnalysisWindowSize;
     private Double newFailureRateThreshold;
     private Double newUnreachableRateThreshold;
 
@@ -215,6 +215,10 @@ public class AnalyseService {
         if (newUnreachableRateThreshold != null) {
             unreachableRateThreshold = newUnreachableRateThreshold;
             newUnreachableRateThreshold = null;
+        }
+        if (newAnalysisWindowSize != null) {
+            serviceStatsHistory.setCapacity(newAnalysisWindowSize);
+            newAnalysisWindowSize = null;
         }
     }
 
