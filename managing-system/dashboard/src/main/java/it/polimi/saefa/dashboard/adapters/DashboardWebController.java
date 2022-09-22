@@ -134,7 +134,12 @@ public class DashboardWebController {
 			// List <ParameterName, Value, Threshold, Weight>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
 			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
-				serviceAdaptationParametersTable.add(new String[]{ap.getSpecification().getClass().getSimpleName(), String.valueOf(ap.getLastValue()), ap.getSpecification().getConstraintDescription(), ap.getSpecification().getWeight().toString()});//, String.valueOf(ap.getPriority())});
+				serviceAdaptationParametersTable.add(new String[]{
+					ap.getSpecification().getClass().getSimpleName(),
+					ap.getLastValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", ap.getLastValue()),
+					ap.getSpecification().getConstraintDescription(),
+					ap.getSpecification().getWeight().toString()}
+				);
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
