@@ -21,11 +21,6 @@ public class Availability extends AdaptationParamSpecification {
     @JsonCreator
     public Availability() { super(); }
 
-    @Override
-    public boolean isSatisfied(double value) {
-        return value>=minThreshold;
-    }
-
     public Availability(String json) {
         super();
         fromJson(json);
@@ -41,12 +36,13 @@ public class Availability extends AdaptationParamSpecification {
 
     @Override
     public String getConstraintDescription() {
-        return "value > "+minThreshold;
+        return "value > "+ minThreshold;
     }
 
     @Override
-    public String toString() {
-        return super.toString() + ", Constraint: " + getConstraintDescription() + ")";
+    @JsonIgnore
+    public boolean isSatisfied(double value) {
+        return value >= minThreshold;
     }
 
     /*
