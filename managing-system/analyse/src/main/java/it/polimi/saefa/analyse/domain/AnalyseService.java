@@ -15,25 +15,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Slf4j
 @org.springframework.stereotype.Service
 public class AnalyseService { //todo forse le instanceStats non servono più
     //private Date lastAnalysisTimestamp = Date.from(Instant.ofEpochMilli(0));
-    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    //private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private ServiceStatsWindow serviceStatsHistory;
+    private final List<AdaptationOption> adaptationOptions = new ArrayList<>();
 
-    //private final ServiceStatsWindow serviceStatsHistory;
-
-    @Value("${ANALYSIS_WINDOW_SIZE}")
-    private int analysisWindowSize;
+    //Number of new metrics to analyse for each instance of each service
+    @Value("${METRICS_WINDOW_SIZE}")
+    private int metricsWindowSize;
     @Value("${FAILURE_RATE_THRESHOLD}")
     private double failureRateThreshold;
     @Value("${UNREACHABLE_RATE_THRESHOLD}")
     private double unreachableRateThreshold;
 
-    private Integer newWindowSize;
+    // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
+    private Integer newMetricsWindowSize;
+    private Integer newAnalysisWindowSize;
     private Double newFailureRateThreshold;
     private Double newUnreachableRateThreshold;
 
@@ -43,13 +45,14 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
     /*
     public AnalyseService(@Value("${ANALYSIS_WINDOW_SIZE}") int analysisWindowSize) {
-        this.analysisWindowSize = analysisWindowSize;
         //serviceStatsHistory = new ServiceStatsWindow(analysisWindowSize);
+        serviceStatsHistory = new ServiceStatsWindow(analysisWindowSize);
     }
      */
 
     public void startAnalysis() {
         log.warn("Starting analysis");
+        updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
         List<Service> currentArchitecture = knowledgeClient.getServices();
         //List<ServiceStats> currentArchitectureStats = new LinkedList<>();
         updateWindowAndThresholds();
@@ -58,22 +61,22 @@ public class AnalyseService { //todo forse le instanceStats non servono più
             List<InstanceStats> instancesStats = new ArrayList<>();
             // Analyze all the instances
             for (Instance instance : service.getInstances()) {
-                if(instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) {
+                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
                     continue;
-                }
                 List<InstanceMetrics> metrics = new LinkedList<>();
                 /*
                 int afterMetrics = analysisWindowStep;
-                metrics.addAll(knowledgeClient.getLatestNMetricsBeforeDate(instance.getInstance(), dateFormatter.format(lastAnalysisTimestamp), analysisWindowSize - analysisWindowStep));
-                if (metrics.size() != analysisWindowSize - analysisWindowStep) {
-                    afterMetrics = analysisWindowSize - metrics.size();
+                metrics.addAll(knowledgeClient.getLatestNMetricsBeforeDate(instance.getInstance(), dateFormatter.format(lastAnalysisTimestamp), metricsWindowSize - analysisWindowStep));
+                if (metrics.size() != metricsWindowSize - analysisWindowStep) {
+                    afterMetrics = metricsWindowSize - metrics.size();
                 }
                 metrics.addAll(knowledgeClient.getLatestNMetricsAfterDate(instance.getInstance(), dateFormatter.format(lastAnalysisTimestamp), afterMetrics));
                  */
-                metrics.addAll(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), analysisWindowSize));
+                metrics.addAll(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
                 // Not enough data to perform analysis
-                if (metrics.size() != analysisWindowSize) {
+                if (metrics.size() != metricsWindowSize) {
                     instancesStats.add(new InstanceStats(instance)); // Add empty instance stats that will be filled with the average valuesStackHistory computed over the other instances
+
                     continue;
                 }
                 //per ciascuna metrica, devo prendere tutti gli endpoint e contare le richieste fallite e le richieste andate a buon fine
@@ -102,7 +105,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
 
-                if(latestMetrics.isFailed() || unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate>=1) { //in ordine di probabilità
+                if (latestMetrics.isFailed() || unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate>=1) { //in ordine di probabilità
                     //TODO Prova a spegnere l'istanza forzatamente, non aspettarti una risposta.
                     // !!!C'è bisogno che l'istanza va marcata come shutdown!!!.
                     // Discorso dipendenze: provare ad approfondire
@@ -117,14 +120,16 @@ public class AnalyseService { //todo forse le instanceStats non servono più
                 }
 
                 List<InstanceMetrics> activeMetrics = metrics.stream().filter(InstanceMetrics::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
-
                 InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                 InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
 
                 if(oldestActiveMetrics == latestActiveMetrics){ //non ci sono abbastanza metriche per questa istanza
                     instancesStats.add(new InstanceStats(instance)); // Add empty instance stats that will be filled with the average valuesStackHistory computed over the other instances
+
                     continue;
                 }
+                InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
+                InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
 
                 // <endpoint, value>
                 Map<String, Double> endpointAvgRespTime = new HashMap<>();
@@ -156,6 +161,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
          */
 
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
+
 
         log.warn("Ending analysis");
         //serviceStatsHistory.clear();
@@ -215,7 +221,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
 
     public void changeWindow(int window) {
-        this.newWindowSize = window;
+        this.newMetricsWindowSize = window;
     }
 
     public void changeFailureRateThreshold(double failureRateThreshold) {
@@ -276,9 +282,9 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         //availability.setAverageAvailability(averageAvailability); TODO va aggiunta nelle adaptation options
     }
     private void updateWindowAndThresholds() {
-        if(newWindowSize != null) {
-            this.analysisWindowSize = newWindowSize;
-            newWindowSize = null;
+        if (newMetricsWindowSize != null) {
+            this.metricsWindowSize = newMetricsWindowSize;
+            newMetricsWindowSize = null;
         }
         if (newFailureRateThreshold != null) {
             failureRateThreshold = newFailureRateThreshold;
@@ -287,6 +293,10 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         if (newUnreachableRateThreshold != null) {
             unreachableRateThreshold = newUnreachableRateThreshold;
             newUnreachableRateThreshold = null;
+        }
+        if (newAnalysisWindowSize != null) {
+            serviceStatsHistory.setCapacity(newAnalysisWindowSize);
+            newAnalysisWindowSize = null;
         }
     }
 
