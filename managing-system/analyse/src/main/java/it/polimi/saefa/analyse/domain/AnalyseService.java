@@ -27,7 +27,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     private final List<AdaptationOption> adaptationOptions = new ArrayList<>();
     private final List<List<AdaptationOption>> adaptationOptionsWindow = new LinkedList<>();
 
-    @Value("${ADAPTATION_WINDOW_SIZE}")
+    @Value("${ANALYSIS_WINDOW_SIZE}")
     private int adaptationOptionsWindowSize;
     //Number of new metrics to analyse for each instance of each service
     @Value("${METRICS_WINDOW_SIZE}")
