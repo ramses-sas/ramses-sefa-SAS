@@ -22,9 +22,12 @@ import java.util.*;
 public class AnalyseService { //todo forse le instanceStats non servono più
     //private Date lastAnalysisTimestamp = Date.from(Instant.ofEpochMilli(0));
     //private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    private ServiceStatsWindow serviceStatsHistory;
-    private final List<AdaptationOption> adaptationOptions = new ArrayList<>();
 
+    private final List<AdaptationOption> adaptationOptions = new ArrayList<>();
+    private final List<List<AdaptationOption>> adaptationOptionsWindow = new LinkedList<>();
+
+    @Value("${ADAPTATION_WINDOW_SIZE}")
+    private int adaptationOptionsWindowSize;
     //Number of new metrics to analyse for each instance of each service
     @Value("${METRICS_WINDOW_SIZE}")
     private int metricsWindowSize;
@@ -35,7 +38,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
     private Integer newMetricsWindowSize;
-    private Integer newAnalysisWindowSize;
+    private Integer newAdaptationOptionsWindowSize;
     private Double newFailureRateThreshold;
     private Double newUnreachableRateThreshold;
 
@@ -44,11 +47,11 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     private KnowledgeClient knowledgeClient;
 
     /*
-    public AnalyseService(@Value("${ANALYSIS_WINDOW_SIZE}") int analysisWindowSize) {
-        //serviceStatsHistory = new ServiceStatsWindow(analysisWindowSize);
-        serviceStatsHistory = new ServiceStatsWindow(analysisWindowSize);
+    public AnalyseService(@Value("${ADAPTATION_WINDOW_SIZE}") int adaptationOptionsWindowSize) {
+        this.adaptationOptionsWindowSize = adaptationOptionsWindowSize;
+        adaptationOptionsWindow = new List[adaptationOptionsWindowSize];
     }
-     */
+    */
 
     public void startAnalysis() {
         log.warn("Starting analysis");
@@ -128,8 +131,6 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
                     continue;
                 }
-                InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
-                InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
 
                 // <endpoint, value>
                 Map<String, Double> endpointAvgRespTime = new HashMap<>();
@@ -160,7 +161,6 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
          */
 
-        List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
 
 
         log.warn("Ending analysis");
@@ -169,6 +169,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     }
 
     private void handleAvailabilityAnalysis() {
+
         /*
         for(List<ServiceStats> singleAnalysisIteration : serviceStatsHistory){ //map invece di window, con service id e lista di options
 
@@ -220,8 +221,12 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     }
 
 
-    public void changeWindow(int window) {
+    public void changeMetricsWindow(int window) {
         this.newMetricsWindowSize = window;
+    }
+
+    public void changeAdaptationWindow(int window) {
+        this.newAdaptationOptionsWindowSize = window;
     }
 
     public void changeFailureRateThreshold(double failureRateThreshold) {
@@ -281,6 +286,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
         //availability.setAverageAvailability(averageAvailability); TODO va aggiunta nelle adaptation options
     }
+
     private void updateWindowAndThresholds() {
         if (newMetricsWindowSize != null) {
             this.metricsWindowSize = newMetricsWindowSize;
@@ -294,11 +300,13 @@ public class AnalyseService { //todo forse le instanceStats non servono più
             unreachableRateThreshold = newUnreachableRateThreshold;
             newUnreachableRateThreshold = null;
         }
-        if (newAnalysisWindowSize != null) {
-            serviceStatsHistory.setCapacity(newAnalysisWindowSize);
-            newAnalysisWindowSize = null;
+        if (newAdaptationOptionsWindowSize != null) {
+            adaptationOptionsWindowSize = newAdaptationOptionsWindowSize;
+            newAdaptationOptionsWindowSize = null;
         }
     }
+
+
 
 
     /*
