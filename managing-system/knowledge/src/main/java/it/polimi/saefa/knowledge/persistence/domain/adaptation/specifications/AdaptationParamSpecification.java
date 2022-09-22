@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -14,30 +15,28 @@ import lombok.Data;
         @JsonSubTypes.Type(value = MaxResponseTime.class),
         @JsonSubTypes.Type(value = TotalCost.class)
 })
+@NoArgsConstructor
 public abstract class AdaptationParamSpecification {
-
 
     private Double weight;
     //private int priority;
 
+    /*
     public AdaptationParamSpecification(String json) {
-        parseFromJson(json);
+        fromJson(json);
     }
+     */
 
     public abstract boolean isSatisfied(double value);
 
     public abstract String getConstraintDescription();
 
-    public abstract void parseFromJson(String json);
-
+    abstract void fromJson(String json);
 
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(weight: " + weight; //+ ", priority: " + priority;
+        return this.getClass().getSimpleName() + "(Weight: " + weight + ", Constraint: " + getConstraintDescription() + ")"; //+ ", priority: " + priority;
     }
-
-
-
 
 }

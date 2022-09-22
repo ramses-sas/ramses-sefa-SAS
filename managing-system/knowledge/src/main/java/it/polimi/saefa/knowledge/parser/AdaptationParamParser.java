@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class AdaptationParamParser {
     public static Map<String, List<AdaptationParamSpecification>> parse(Reader json){
-        Map<String, List<AdaptationParamSpecification>> servicesQos = new HashMap<>();
+        Map<String, List<AdaptationParamSpecification>> servicesAdaptationParameters = new HashMap<>();
         Gson gson = new Gson();
         JsonArray services = gson.fromJson(json, JsonObject.class).getAsJsonArray("services");
         services.forEach(service -> {
@@ -28,20 +28,19 @@ public class AdaptationParamParser {
                 AdaptationParamSpecification adaptationParamSpecification;
                 try {
                     clazz = Class.forName(name);
-                    if(!AdaptationParamSpecification.class.isAssignableFrom(clazz))
+                    if (!AdaptationParamSpecification.class.isAssignableFrom(clazz))
                         throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the AdaptationParameter class.");
                     adaptationParamSpecification = (AdaptationParamSpecification) clazz.getDeclaredConstructor(String.class).newInstance(parameter.toString());
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException |
-                        NoSuchMethodException e) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
                 adaptationParamSpecificationList.add(adaptationParamSpecification);
             });
-            if(adaptationParamSpecificationList.stream().map(AdaptationParamSpecification::getWeight).reduce(0.0, Double::sum)!=1)
+            if (adaptationParamSpecificationList.stream().map(AdaptationParamSpecification::getWeight).reduce(0.0, Double::sum)!=1)
                 throw new RuntimeException("The sum of parameters weight for service " + serviceId + " should be equal to 1");
-            servicesQos.put(serviceId, adaptationParamSpecificationList);
+            servicesAdaptationParameters.put(serviceId, adaptationParamSpecificationList);
         });
-        return servicesQos;
+        return servicesAdaptationParameters;
     }
 
     private static String snakeToCamel(String str) {

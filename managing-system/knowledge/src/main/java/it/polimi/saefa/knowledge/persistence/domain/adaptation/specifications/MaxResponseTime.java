@@ -1,27 +1,55 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@Getter
+@Setter
 @Slf4j
 public class MaxResponseTime extends AdaptationParamSpecification {
     @JsonProperty("max_threshold")
     private double maxThreshold;
 
+    @JsonCreator
+    public MaxResponseTime() { super(); }
+
+    public MaxResponseTime(String json) {
+        super();
+        fromJson(json);
+    }
+
     @Override
+    void fromJson(String json) {
+        Gson gson = new Gson();
+        JsonObject parameter = gson.fromJson(json, JsonObject.class).getAsJsonObject();
+        super.setWeight(parameter.get("weight").getAsDouble());
+        maxThreshold = parameter.get("max_threshold").getAsDouble();
+    }
+
+    @Override
+    @JsonIgnore
     public boolean isSatisfied(double value) {
         return value <= maxThreshold;
     }
 
+    @Override
+    public String getConstraintDescription() {
+        return "value < " + maxThreshold;
+    }
+
+    /*
     public MaxResponseTime(String json) {
         super(json);
     }
 
     @Override
-    public void parseFromJson(String json) {
+    public void fromJson(String json) {
         Gson gson = new Gson();
         JsonObject parameter = gson.fromJson(json, JsonObject.class).getAsJsonObject();
         //super.setPriority(parameter.get("priority").getAsInt());
@@ -40,14 +68,7 @@ public class MaxResponseTime extends AdaptationParamSpecification {
         this.maxThreshold = max_threshold;
     }
 
-    @Override
-    public String getConstraintDescription() {
-        return "value < "+maxThreshold;
-    }
+     */
 
-    @Override
-    public String toString() {
-        return super.toString() + ", Constraint: " + getConstraintDescription() + ")";
-    }
 }
 
