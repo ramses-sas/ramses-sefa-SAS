@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
-git
+
 @Slf4j
 @org.springframework.stereotype.Service
 public class AnalyseService { //todo forse le instanceStats non servono più
@@ -28,7 +28,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     private final List<List<AdaptationOption>> adaptationOptionsWindow = new LinkedList<>();
 
     @Value("${ANALYSIS_WINDOW_SIZE}")
-    private int adaptationOptionsWindowSize;
+    private int analysisWindowSize;
     //Number of new metrics to analyse for each instance of each service
     @Value("${METRICS_WINDOW_SIZE}")
     private int metricsWindowSize;
@@ -39,7 +39,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
     private Integer newMetricsWindowSize;
-    private Integer newAdaptationOptionsWindowSize;
+    private Integer newAnalysisWindowSize;
     private Double newFailureRateThreshold;
     private Double newUnreachableRateThreshold;
 
@@ -227,8 +227,8 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         this.newMetricsWindowSize = window;
     }
 
-    public void changeAdaptationWindow(int window) {
-        this.newAdaptationOptionsWindowSize = window;
+    public void changeAnalysisWindow(int window) {
+        this.newAnalysisWindowSize = window;
     }
 
     public void changeFailureRateThreshold(double failureRateThreshold) {
@@ -313,9 +313,9 @@ public class AnalyseService { //todo forse le instanceStats non servono più
             unreachableRateThreshold = newUnreachableRateThreshold;
             newUnreachableRateThreshold = null;
         }
-        if (newAdaptationOptionsWindowSize != null) {
-            adaptationOptionsWindowSize = newAdaptationOptionsWindowSize;
-            newAdaptationOptionsWindowSize = null;
+        if (newAnalysisWindowSize != null) {
+            analysisWindowSize = newAnalysisWindowSize;
+            newAnalysisWindowSize = null;
         }
     }
 

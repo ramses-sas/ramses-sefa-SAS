@@ -24,9 +24,9 @@ public class AnalyseRestController {
         return "OK";
     }
 
-    @PostMapping("/changeAdaptationWindow")
-    public String changeAdaptationWindow(@RequestBody ChangeParameterRequest request) {
-        analyseService.changeAdaptationWindow((int) request.getValue());
+    @PostMapping("/changeAnalysisWindow")
+    public String changeAnalysisWindow(@RequestBody ChangeParameterRequest request) {
+        analyseService.changeAnalysisWindow((int) request.getValue());
         return "OK";
     }
 
