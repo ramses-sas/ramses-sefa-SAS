@@ -1,6 +1,7 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
@@ -28,19 +29,14 @@ public class DashboardWebController {
 	@GetMapping("/service/{serviceId}")
 	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
-		log.info("Service: " + service + " for serviceId: " + serviceId);
-		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
+		log.info("Service: " + service);
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
-		for (Instance instance : service.getInstances()) {
+		for (Instance instance : service.getInstances())
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
-		}
-		//model.addAttribute("service", service);
 		model.addAttribute("serviceId", serviceId);
-		//model.addAttribute("currentImplementationTable", currentImplementationTable);
-		model.addAttribute("possibleImplementations", possibleImplementations);
+		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
-		//model.addAttribute("currentImplementation", service.getPossibleImplementations().get(service.getCurrentImplementation()));
 
 		GraphData[] graphs = new GraphData[3];
 		GraphData data = new GraphData("Instant", "Availability");
@@ -72,24 +68,24 @@ public class DashboardWebController {
 		List<String[]> httpMetricsTable = new ArrayList<>();
 		List<String[]> circuitBreakersTable = new ArrayList<>();
 		if (latestMetrics != null) {
-			resourceTable.add(new String[]{"CPU Usage", "" + String.format("%.2f", latestMetrics.getCpuUsage()*100)+"%"});
-			resourceTable.add(new String[]{"Disk Free Space", String.format("%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
-			resourceTable.add(new String[]{"Disk Total Space", String.format("%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
+			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
 			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
 				for(String outcome : httpMetrics.getOutcomes())
 					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
-						outcome, httpMetrics.getAverageDurationByOutcome(outcome) == -1 ? "N/A" : String.format("%.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});
+						outcome, httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
 				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
 				double failureRate = cbMetrics.getFailureRate();
-				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format("%.1f", failureRate*100)+"%"});
+				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", failureRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
 				double slowCallRate = cbMetrics.getSlowCallRate();
-				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format("%.1f", slowCallRate*100)+"%"});
+				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", slowCallRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
 				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
 					Double avgDuration = cbMetrics.getAverageDuration(status);
-					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format("%.2f", avgDuration)+" s"});
+					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format(Locale.ROOT, "%.2f", avgDuration)+" s"});
 				}
 				circuitBreakersTable.add(new String[]{"", ""});
 			}
@@ -135,17 +131,16 @@ public class DashboardWebController {
 			table.remove(table.size() - 1);
 			servicesConfigurationTable.put(s.getServiceId(), table);
 
-			// List <ParameterName, Value, Threshold, Weight, Priority>
+			// List <ParameterName, Value, Threshold, Weight>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
-				serviceAdaptationParametersTable.add(new String[]{ap.getClass().getSimpleName(), String.valueOf(ap.getLastValue()), ap.getSpecification().getConstraintDescription(), ap.getSpecification().getWeight().toString()});//, String.valueOf(ap.getPriority())});
+			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
+				serviceAdaptationParametersTable.add(new String[]{ap.getSpecification().getClass().getSimpleName(), String.valueOf(ap.getLastValue()), ap.getSpecification().getConstraintDescription(), ap.getSpecification().getWeight().toString()});//, String.valueOf(ap.getPriority())});
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
-			ServiceImplementation currentImplementation = s.getPossibleImplementations().get(s.getCurrentImplementation());
+			ServiceImplementation currentImplementation = s.getCurrentImplementationObject();
 			// [[ImplementationName, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
-			log.info(Arrays.toString(currentImplementation.getClass().getDeclaredFields()));
 			currentImplementationTable.add(new String[]{"Implementation Name", currentImplementation.getImplementationId()});
 			currentImplementationTable.add(new String[]{"Cost Per Boot", currentImplementation.getCostPerBoot()+"€"});
 			currentImplementationTable.add(new String[]{"Cost Per Instance", currentImplementation.getCostPerInstance()+"€"});

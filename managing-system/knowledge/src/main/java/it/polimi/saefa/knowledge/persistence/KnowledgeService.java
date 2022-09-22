@@ -66,7 +66,7 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
-            if(instance!=null) {
+            if (instance != null) {
                 metricsRepository.save(metrics);
                 instance.setCurrentStatus(metrics.getStatus());
                 if (metrics.isActive())

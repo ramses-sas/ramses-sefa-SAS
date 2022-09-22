@@ -20,18 +20,21 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     }
 
     public void addValue(double value) {
-        Value v = new Value(value, new Date());
-        valuesStack.add(0, v);
+        valuesStack.add(0, new Value(value, new Date()));
     }
 
     @JsonIgnore
-    public double getLastValue() {
-        return valuesStack.get(0).getValue();
+    public Double getLastValue() {
+        if (valuesStack.size() > 0)
+            return valuesStack.get(0).getValue();
+        return null;
     }
 
     @JsonIgnore
     public Value getLastValueObject() {
-        return valuesStack.get(0);
+        if (valuesStack.size() > 0)
+            return valuesStack.get(0);
+        return null;
     }
 
     @JsonIgnore

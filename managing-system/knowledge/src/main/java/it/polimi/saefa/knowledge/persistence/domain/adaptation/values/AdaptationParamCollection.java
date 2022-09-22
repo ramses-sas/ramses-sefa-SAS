@@ -23,17 +23,19 @@ public class AdaptationParamCollection {
         AdaptationParameter<T> adaptationParameter = (AdaptationParameter<T>) adaptationParamValueHistories.get(adaptationParamClass);
         adaptationParameter.addValue(value);
     }
+
     @JsonIgnore
     public <T extends AdaptationParamSpecification> AdaptationParameter.Value getLatestAdaptationParamValue(Class<T> adaptationParamClass) {
         return adaptationParamValueHistories.get(adaptationParamClass).getLastValueObject();
     }
 
     public <T extends AdaptationParamSpecification> void createHistory(T adaptationParam){
-        if(!adaptationParamValueHistories.containsKey(adaptationParam.getClass())) {
+        if (!adaptationParamValueHistories.containsKey(adaptationParam.getClass())) {
             AdaptationParameter<T> history = new AdaptationParameter<>(adaptationParam);
             adaptationParamValueHistories.put(adaptationParam.getClass(), history);
         }
     }
+
     @JsonIgnore
     public Collection<AdaptationParameter<? extends AdaptationParamSpecification>> getAdaptationParamHistories() {
         return adaptationParamValueHistories.values();

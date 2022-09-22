@@ -34,46 +34,18 @@ public class Service {
         possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setServiceId(getServiceId());});
     }
 
+    public List<Instance> getInstances() {
+        return new LinkedList<>(getCurrentImplementationObject().getInstances().values());
+    }
+
+    public Instance getOrCreateInstance(String instanceId) {
+        return getCurrentImplementationObject().getOrCreateInstance(instanceId);
+    }
+
     @JsonIgnore
-    public ServiceImplementation getCurrentImplementationObject(){
+    public ServiceImplementation getCurrentImplementationObject() {
         return possibleImplementations.get(currentImplementation);
     }
-
-
-    /*public void addInstance(Instance instance) {
-        instances.put(instance.getInstance(), instance);
-    }
-
-    public boolean isReachable() {
-        for (String instanceAddress : instances.keySet()) {
-            if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
-                return true;
-        }
-        return false;
-    }
-
-    public boolean hasInstance(String instanceId){
-        return instances.containsKey(instanceId);
-    }
-    */
-
-    public List<Instance> getInstances(){
-        return new LinkedList<>(possibleImplementations.get(currentImplementation).getInstances().values());
-    }
-    public Instance getOrCreateInstance(String instanceId) {
-        return possibleImplementations.get(currentImplementation).getOrCreateInstance(instanceId);
-    }
-
-    /*
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Service service = (Service) o;
-
-        return serviceId.equals(service.serviceId);
-    }*/
 
     @Override
     public String toString() {
@@ -84,16 +56,17 @@ public class Service {
             possibleImplementations.append(implId);
         }
 
-        return "\nService '" + serviceId + "'" + "\n" +
-                "\tImplemented by: '" + currentImplementation + "'" + "\n" +
+        return "\nService '" + serviceId + "'\n" +
+                "\tImplemented by: '" + currentImplementation + "'\n" +
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
-                "\tPossible Implementations: [" + possibleImplementations + "]\n" +
+                "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (adaptationParamSpecifications.length == 0 ? "" : "\tadaptationParameters: " + Arrays.toString(adaptationParamSpecifications));
+                (adaptationParamSpecifications.length == 0 ? "" : "\tAdaptationParameters: " + Arrays.toString(adaptationParamSpecifications) + "\n" +
+                "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 
     public void setAdaptationParameters(AdaptationParamSpecification[] array) {
-        if(adaptationParamSpecifications == null) {
+        if (adaptationParamSpecifications == null) {
             for (ServiceImplementation impl : possibleImplementations.values()) {
                 impl.setAdaptationParameterSpecifications(array);
             }
@@ -116,6 +89,32 @@ public class Service {
         return getCurrentImplementationObject().getAdaptationParameterSpecifications();
     }
 
+
+    public void addInstance(Instance instance) {
+        instances.put(instance.getInstance(), instance);
+    }
+
+    public boolean isReachable() {
+        for (String instanceAddress : instances.keySet()) {
+            if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
+                return true;
+        }
+        return false;
+    }
+
+    public boolean hasInstance(String instanceId){
+        return instances.containsKey(instanceId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Service service = (Service) o;
+
+        return serviceId.equals(service.serviceId);
+    }
 
      */
 

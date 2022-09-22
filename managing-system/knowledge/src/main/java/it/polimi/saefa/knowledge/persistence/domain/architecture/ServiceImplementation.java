@@ -38,7 +38,7 @@ public class ServiceImplementation {
     }
 
     public boolean addInstance(Instance instance) {
-        if(instance.getServiceImplementationId().equals(implementationId)) {
+        if (instance.getServiceImplementationId().equals(implementationId)) {
             instances.put(instance.getInstanceId(), instance);
             return true;
         }
@@ -61,7 +61,7 @@ public class ServiceImplementation {
     public Instance getOrCreateInstance(String instanceId) {
         Instance instance = instances.get(instanceId);
         if (instance == null) {
-            if(instanceId.split("@")[0].equals(implementationId)) {
+            if (instanceId.split("@")[0].equalsIgnoreCase(implementationId)) {
                 instance = new Instance(instanceId, serviceId);
                 instances.put(instanceId, instance);
             }
@@ -75,7 +75,7 @@ public class ServiceImplementation {
     }
 
     protected void setAdaptationParameterSpecifications(AdaptationParamSpecification[] array) {
-        for(AdaptationParamSpecification specification : array) {
+        for (AdaptationParamSpecification specification : array) {
             adaptationParamCollection.createHistory(specification);
         }
     }
