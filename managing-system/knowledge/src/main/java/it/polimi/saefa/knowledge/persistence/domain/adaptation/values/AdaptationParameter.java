@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.values;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Data;
 import lombok.Getter;
@@ -23,20 +24,23 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         valuesStack.add(0, v);
     }
 
+    @JsonIgnore
     public double getLastValue() {
         return valuesStack.get(0).getValue();
     }
 
+    @JsonIgnore
     public Value getLastValueObject() {
         return valuesStack.get(0);
     }
 
+    @JsonIgnore
     public boolean isCurrentlySatisfied() {
         return specification.isSatisfied(getLastValue());
     }
 
     @Data
-    public static class Value{
+    public static class Value {
         private double value;
         private Date timestamp;
 
