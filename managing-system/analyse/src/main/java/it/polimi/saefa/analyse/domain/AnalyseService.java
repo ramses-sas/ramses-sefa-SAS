@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
-
+git
 @Slf4j
 @org.springframework.stereotype.Service
 public class AnalyseService { //todo forse le instanceStats non servono più
@@ -186,13 +186,13 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         //TODO
     }
 
-    private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) { //todo controllo se successfulRequests è 0 fai che ritorna null e non aggiorni il valore
+    private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) {
         double successfulRequests = 0;
         double failedRequests = 0;
 
         for(HttpRequestMetrics httpMetric : lastMetrics.getHttpMetrics().values()){
             for(HttpRequestMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()){
-                if(outcomeMetric.getOutcome().equalsIgnoreCase("success")){ //todo controllare gli endpoint che ritornano 100 o 300
+                if(outcomeMetric.getOutcome().equalsIgnoreCase("success")){ //todo controllare gli endpoint che ritornano 100 o 300. O MEGLIO, fare solo server error e non anche client error (400)
                     successfulRequests += outcomeMetric.getCount();
                 } else {
                     failedRequests += outcomeMetric.getCount();
@@ -210,7 +210,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
             }
         }
 
-        return successfulRequests / (successfulRequests + failedRequests);
+        return successfulRequests == 0 ? null : successfulRequests / (successfulRequests + failedRequests);
     }
 
     private Double computeInstanceMaxResponseTime(Map<String, Double> endpointMaxRespTime) {
@@ -218,7 +218,8 @@ public class AnalyseService { //todo forse le instanceStats non servono più
     }
 
     private Double computeInstanceAvgResponseTime(Map<String, Double> endpointAvgRespTime) {
-        return endpointAvgRespTime.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        double toReturn =  endpointAvgRespTime.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        return toReturn == 0.0 ? null : toReturn;
     }
 
 

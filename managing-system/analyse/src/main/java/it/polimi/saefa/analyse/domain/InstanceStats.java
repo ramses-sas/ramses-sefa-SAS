@@ -30,4 +30,8 @@ public class InstanceStats {
     public String getInstanceId() {
         return instance.getInstanceId();
     }
+
+    public boolean isDataUnavailable() {
+        return dataUnavailable || averageResponseTime == null || maxResponseTime == null || availability == null;
+    }
 }
