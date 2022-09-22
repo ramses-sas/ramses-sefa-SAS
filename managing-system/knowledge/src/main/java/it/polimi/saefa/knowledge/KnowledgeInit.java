@@ -9,6 +9,7 @@ import it.polimi.saefa.knowledge.persistence.KnowledgeService;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class KnowledgeInit implements CommandLineRunner {
+public class KnowledgeInit implements InitializingBean {
     @Autowired
     private KnowledgeService knowledgeService;
     @Autowired
@@ -28,7 +29,7 @@ public class KnowledgeInit implements CommandLineRunner {
     private EurekaClient discoveryClient;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void afterPropertiesSet() throws Exception {
         FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
         FileReader adaptationParametersReader = new FileReader(ResourceUtils.getFile("classpath:adaptation_parameters_specification.json"));

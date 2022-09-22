@@ -21,7 +21,6 @@ public class ServiceImplementation {
     private Map<String, Instance> instances = new HashMap<>();
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
 
-
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
     private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)

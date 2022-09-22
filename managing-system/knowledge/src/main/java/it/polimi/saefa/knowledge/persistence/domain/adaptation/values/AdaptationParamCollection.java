@@ -1,14 +1,17 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.values;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AdaptationParamCollection{
+@Data
+public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamValueHistories = new HashMap<>();
 
     @JsonIgnore
@@ -21,7 +24,7 @@ public class AdaptationParamCollection{
         adaptationParameter.addValue(value);
     }
     @JsonIgnore
-    public  <T extends AdaptationParamSpecification> AdaptationParameter.Value getLatestAdaptationParamValue(Class<T> adaptationParamClass) {
+    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getLatestAdaptationParamValue(Class<T> adaptationParamClass) {
         return adaptationParamValueHistories.get(adaptationParamClass).getLastValueObject();
     }
 
