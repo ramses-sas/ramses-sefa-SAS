@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.values;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import com.fasterxml.jackson.annotation.*;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.*;
 import lombok.Data;
 import lombok.Getter;
 
@@ -11,11 +11,11 @@ import java.util.List;
 
 @Getter
 public class AdaptationParameter<T extends AdaptationParamSpecification> {
-
     private final T specification;
     private final List<Value> valuesStack = new LinkedList<>();
 
-    public AdaptationParameter(T specification) {
+    @JsonCreator
+    public AdaptationParameter(@JsonProperty T specification) {
         this.specification = specification;
     }
 
