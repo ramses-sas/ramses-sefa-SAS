@@ -4,18 +4,20 @@ import com.fasterxml.jackson.annotation.*;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-@Getter
+@Data
+@NoArgsConstructor
 public class AdaptationParameter<T extends AdaptationParamSpecification> {
-    private final T specification;
-    private final List<Value> valuesStack = new LinkedList<>();
+    private T specification;
+    private List<Value> valuesStack = new LinkedList<>();
 
-    @JsonCreator
-    public AdaptationParameter(@JsonProperty T specification) {
+    //@JsonCreator
+    public AdaptationParameter(/*@JsonProperty*/ T specification) {
         this.specification = specification;
     }
 

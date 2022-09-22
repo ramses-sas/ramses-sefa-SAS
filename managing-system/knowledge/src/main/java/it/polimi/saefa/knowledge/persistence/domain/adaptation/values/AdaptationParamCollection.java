@@ -5,14 +5,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Data;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamValueHistories = new HashMap<>();
+
+    public List<AdaptationParamSpecification> getAdaptationParameterSpecification(){
+        List<AdaptationParamSpecification> toReturn = new LinkedList<>();
+        adaptationParamValueHistories.values().forEach(
+                adaptationParameter -> toReturn.add(adaptationParameter.getSpecification())
+        );
+        return toReturn;
+    }
 
     @JsonIgnore
     public  <T extends AdaptationParamSpecification> AdaptationParameter<T> getAdaptationParam(Class<T> adaptationParamClass) {

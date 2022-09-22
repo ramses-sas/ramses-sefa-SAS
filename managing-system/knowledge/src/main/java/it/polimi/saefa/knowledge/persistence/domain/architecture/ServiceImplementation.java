@@ -58,11 +58,14 @@ public class ServiceImplementation {
         return instances.containsKey(instanceId);
     }
 
-    public Instance getOrCreateInstance(String instanceId) {
+    public Instance getOrCreateInstance(String instanceId, AdaptationParamSpecification[] adaptationParamSpecifications) {
         Instance instance = instances.get(instanceId);
         if (instance == null) {
             if (instanceId.split("@")[0].equalsIgnoreCase(implementationId)) {
                 instance = new Instance(instanceId, serviceId);
+                for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
+                    instance.getAdaptationParamCollection().createHistory(specification);
+                }
                 instances.put(instanceId, instance);
             }
         }

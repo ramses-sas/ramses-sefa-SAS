@@ -39,7 +39,7 @@ public class Service {
     }
 
     public Instance getOrCreateInstance(String instanceId) {
-        return getCurrentImplementationObject().getOrCreateInstance(instanceId);
+        return getCurrentImplementationObject().getOrCreateInstance(instanceId, adaptationParamSpecifications);
     }
 
     @JsonIgnore

@@ -11,6 +11,7 @@ import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.HttpRequestMetrics;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -185,7 +186,7 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         //TODO
     }
 
-    private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) {
+    private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) { //todo controllo se successfulRequests è 0 fai che ritorna null e non aggiorni il valore
         double successfulRequests = 0;
         double failedRequests = 0;
 
@@ -275,6 +276,9 @@ public class AnalyseService { //todo forse le instanceStats non servono più
             instanceStats.getInstance().getAdaptationParamCollection().addNewAdaptationParamValue(Availability.class, instanceStats.getAvailability());
             instanceStats.getInstance().getAdaptationParamCollection().addNewAdaptationParamValue(MaxResponseTime.class, instanceStats.getMaxResponseTime());
             instanceStats.getInstance().getAdaptationParamCollection().addNewAdaptationParamValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
+            knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createInstanceRequest(instanceStats.getInstance().getServiceId(), instanceStats.getInstance().getInstanceId(), Availability.class, instanceStats.getAvailability()));
+            knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createInstanceRequest(instanceStats.getInstance().getServiceId(), instanceStats.getInstance().getInstanceId(), MaxResponseTime.class, instanceStats.getMaxResponseTime()));
+            knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createInstanceRequest(instanceStats.getInstance().getServiceId(), instanceStats.getInstance().getInstanceId(), AverageResponseTime.class, instanceStats.getAverageResponseTime()));
         }
 
         AdaptationParamCollection currentImplementationParamCollection = service.getCurrentImplementationObject().getAdaptationParamCollection();
@@ -282,6 +286,14 @@ public class AnalyseService { //todo forse le instanceStats non servono più
         currentImplementationParamCollection.addNewAdaptationParamValue(AverageResponseTime.class, averageResponseTime);
         currentImplementationParamCollection.addNewAdaptationParamValue(MaxResponseTime.class,instancesStats.stream().mapToDouble(InstanceStats::getMaxResponseTime).max().orElseThrow());
         currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, (1 - instancesStats.stream().mapToDouble(InstanceStats::getAvailability).reduce(1.0, (accumulator, val) -> accumulator * (1 - val))));
+
+        knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), AverageResponseTime.class, averageResponseTime));
+        knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), MaxResponseTime.class,instancesStats.stream().mapToDouble(InstanceStats::getMaxResponseTime).max().orElseThrow()));
+        knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), Availability.class, (1 - instancesStats.stream().mapToDouble(InstanceStats::getAvailability).reduce(1.0, (accumulator, val) -> accumulator * (1 - val)))));
+
+
+
+        log.warn("Param collection : " + currentImplementationParamCollection.getAdaptationParamHistories());
 
 
         //availability.setAverageAvailability(averageAvailability); TODO va aggiunta nelle adaptation options

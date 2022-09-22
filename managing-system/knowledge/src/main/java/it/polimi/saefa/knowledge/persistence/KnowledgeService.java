@@ -1,10 +1,12 @@
 package it.polimi.saefa.knowledge.persistence;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,10 @@ public class KnowledgeService {
         //se la metrica è unreachable io voglio che venga salvata
         metricsRepository.save(metrics);
         instance.setCurrentStatus(metrics.getStatus());
+    }
+
+    public void breakpoint(){
+        log.info("breakpoint");
     }
 
     public void addMetrics(List<InstanceMetrics> metricsList) {
@@ -189,7 +195,16 @@ public class KnowledgeService {
     public Service getService(String serviceId) {
         return services.get(serviceId);
     }
+
+    public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
+    services.get(serviceId).getOrCreateInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+    }
+
+    public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
+    services.get(serviceId).getCurrentImplementationObject().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+    }
 }
+
 
 
 /*

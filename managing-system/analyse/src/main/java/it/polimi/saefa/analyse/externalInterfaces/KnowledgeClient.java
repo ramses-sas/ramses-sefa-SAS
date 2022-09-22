@@ -2,7 +2,9 @@ package it.polimi.saefa.analyse.externalInterfaces;
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,4 +59,6 @@ public interface KnowledgeClient {
             @RequestParam int n
     );
 
+    @PostMapping("/rest/addNewAdaptationParameterValue")
+    ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
 }
