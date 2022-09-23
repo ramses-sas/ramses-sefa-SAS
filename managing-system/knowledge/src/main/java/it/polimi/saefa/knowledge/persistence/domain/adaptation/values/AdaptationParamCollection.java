@@ -13,7 +13,7 @@ public class AdaptationParamCollection {
     public List<AdaptationParamSpecification> getAdaptationParameterSpecification(){
         List<AdaptationParamSpecification> toReturn = new LinkedList<>();
         adaptationParamValueHistories.values().forEach(
-                adaptationParameter -> toReturn.add(adaptationParameter.getSpecification())
+            adaptationParameter -> toReturn.add(adaptationParameter.getSpecification())
         );
         return toReturn;
     }
