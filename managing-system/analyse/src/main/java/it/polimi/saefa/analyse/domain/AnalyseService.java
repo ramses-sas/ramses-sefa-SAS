@@ -27,10 +27,6 @@ import java.util.*;
 @Slf4j
 @org.springframework.stereotype.Service
 public class AnalyseService {
-
-    //<serviceId, AnalysisWindow>
-    //private final Map<String, AnalysisWindow> servicesAnalysisWindowMap = new HashMap<>();
-
     //Number of analysis iterations to do before choosing the best adaptation options
     @Value("${ANALYSIS_WINDOW_SIZE}")
     private int analysisWindowSize;
@@ -42,7 +38,7 @@ public class AnalyseService {
     @Value("${UNREACHABLE_RATE_THRESHOLD}")
     private double unreachableRateThreshold;
     @Value("${PARAMETERS_SATISFACTION_RATE}")
-    private int parametersSatisfactionRate;
+    private double parametersSatisfactionRate;
 
     private int analysisIterationCounter = 0;
 
@@ -61,12 +57,7 @@ public class AnalyseService {
     @Autowired
     private KnowledgeClient knowledgeClient;
 
-    /*
-    public AnalyseService(@Value("${ADAPTATION_WINDOW_SIZE}") int adaptationOptionsWindowSize) {
-        this.adaptationOptionsWindowSize = adaptationOptionsWindowSize;
-        adaptationOptionsWindow = new List[adaptationOptionsWindowSize];
-    }
-    */
+
 
     public void startAnalysis() {
         log.warn("Starting analysis");
@@ -173,36 +164,6 @@ public class AnalyseService {
             // Update the stats of the service and of its instances both locally and remotely
             updateServiceAndInstancesWithStats(service, serviceStats, instancesStats);
             servicesStatsMap.put(service.getServiceId(), serviceStats);
-
-            // TODO
-            // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS
-
-            /*
-            List<AdaptationOption> adaptationOptions = new LinkedList<>();
-            adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceStats.getAverageAvailability()));
-
-            AnalysisWindow analysisWindow = servicesAnalysisWindowMap.get(service.getServiceId());
-            if (analysisWindow == null) {
-                analysisWindow = new AnalysisWindow(analysisWindowSize);
-                servicesAnalysisWindowMap.put(service.getServiceId(), analysisWindow);
-            }
-            analysisWindow.add(adaptationOptions);
-
-            if (analysisWindow.isFull()) {
-
-            }
-
-            */
-
-
-            // TODO
-            // HERE THE LOGIC FOR CHOOSING THE BEST ADAPTATION OPTION
-            // AND SEND IT TO KNOWLEDGE FOR THE PLAN
-            //AdaptationOption bestAdaptationOption = chooseBestAdaptationOption(analysisWindow);
-            //analysisWindow.clear();
-
-
-
         }
 
 
@@ -214,6 +175,9 @@ public class AnalyseService {
             for (Service service : currentArchitecture) {
                 adaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
             }
+            log.debug("Adaptation options: {}", adaptationOptions);
+            // TODO
+            // HERE THE LOGIC TO SEND THE OPTIONS TO KNOWLEDGE FOR THE PLAN
         } else {
             analysisIterationCounter++;
         }
@@ -239,6 +203,8 @@ public class AnalyseService {
             return adaptationOptions;
 
         // Analisi del servizio corrente, se non ha dipendenze con problemi
+        // TODO
+        // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS
         adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceStats.getAverageAvailability()));
 
         return adaptationOptions;
@@ -246,29 +212,29 @@ public class AnalyseService {
 
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, double averageAvailability) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
-        List<Double> serviceAvailabilities = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestNAdaptationParamValue(Availability.class, analysisWindowSize);
+        List<Double> serviceAvailabilities = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestNAdaptationParamValues(Availability.class, analysisWindowSize);
         if (serviceAvailabilities != null && !service.getAdaptationParamSpecifications().get(Availability.class).isSatisfied(serviceAvailabilities, parametersSatisfactionRate)) {
-            List<Instance> instancesOrderedByAvailability = service.getInstances();//.stream().sorted(Comparator.comparingDouble(i -> i.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue())).toList();
-
-            Instance worstInstance = instancesOrderedByAvailability.get(0);
+            // Order the instances by average availability (ascending)
+            List<Instance> instances = service.getInstances().stream()
+                    .sorted(Comparator.comparingDouble(i -> i.getAdaptationParamCollection().getLatestNAdaptationParamValues(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow())).toList();
+            Instance worstInstance = instances.get(0);
             // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
             adaptationOptions.add(new AddInstances(service, averageAvailability));
             adaptationOptions.add(new RemoveInstance(service, worstInstance));
+            // TODO mancano le considerazioni sul cambio di implementazione
         }
         return adaptationOptions;
     }
 
-    private void handleMaxResponseTime() {
-        //TODO
-    }
 
     private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) {
         double successfulRequests = 0;
         double failedRequests = 0;
 
-        for(HttpRequestMetrics httpMetric : lastMetrics.getHttpMetrics().values()){
+        for (HttpRequestMetrics httpMetric : lastMetrics.getHttpMetrics().values()) {
             for (HttpRequestMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
-                if (outcomeMetric.getOutcome().equalsIgnoreCase("success")) { //todo controllare gli endpoint che ritornano 100 o 300. O MEGLIO, fare solo server error e non anche client error (400)
+                // We consider "successful" requests every request with a response code not in the 5xx range
+                if (outcomeMetric.getStatus() < 500) {
                     successfulRequests += outcomeMetric.getCount();
                 } else {
                     failedRequests += outcomeMetric.getCount();
@@ -278,7 +244,8 @@ public class AnalyseService {
 
         for (HttpRequestMetrics httpMetric : firstMetrics.getHttpMetrics().values()) {
             for (HttpRequestMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
-                if (outcomeMetric.getOutcome().equalsIgnoreCase("success")) { //todo vedi sopra
+                // We consider "successful" requests every request with a response code not in the 5xx range
+                if (outcomeMetric.getStatus() < 500) {
                     successfulRequests -= outcomeMetric.getCount();
                 } else {
                     failedRequests -= outcomeMetric.getCount();
@@ -353,8 +320,6 @@ public class AnalyseService {
         knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), AverageResponseTime.class, serviceStats.getAverageResponseTime()));
         knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), MaxResponseTime.class, serviceStats.getMaxResponseTime()));
         knowledgeClient.addNewAdaptationParameterValue(AddAdaptationParameterValueRequest.createServiceRequest(service.getServiceId(), Availability.class, serviceStats.getAvailability()));
-
-        //availability.setAverageAvailability(averageAvailability); TODO va aggiunta nelle adaptation options
     }
 
     private void updateWindowAndThresholds() {

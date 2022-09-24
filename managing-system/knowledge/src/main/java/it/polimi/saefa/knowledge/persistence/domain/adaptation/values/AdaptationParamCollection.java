@@ -34,7 +34,7 @@ public class AdaptationParamCollection {
     }
 
     @JsonIgnore
-    public <T extends AdaptationParamSpecification> List<Double> getLatestNAdaptationParamValue(Class<T> adaptationParamClass, int n) {
+    public <T extends AdaptationParamSpecification> List<Double> getLatestNAdaptationParamValues(Class<T> adaptationParamClass, int n) {
         return adaptationParamValueHistories.get(adaptationParamClass).getLastNValues(n);
     }
 

@@ -6,13 +6,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class Instance { //TODO controlla che ovunque ora usi il service implementation
+public class Instance {
     private String instanceId; //service implementation name @ ip : port
-    private String serviceId; //service name //todo aggiungi al costuttore
+    private String serviceId; //serviceId
     private String serviceImplementationId; //service implementation name
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
-    //private List<InstanceMetrics> metrics = new LinkedList<>();
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;
@@ -27,24 +26,8 @@ public class Instance { //TODO controlla che ovunque ora usi il service implemen
         this.currentStatus = currentStatus;
     }
 
-
-
     public String getAddress(){
         return instanceId.split("@")[1];
     }
 
-    /*public void addMetric(InstanceMetrics metric){
-        metrics.add(metric);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Instance instance = (Instance) o;
-        return Objects.equals(instanceId, instance.instanceId);
-    }
-
-     */
 }

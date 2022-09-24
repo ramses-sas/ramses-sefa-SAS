@@ -74,49 +74,4 @@ public class Service {
             adaptationParamSpecifications.put(spec.getClass(), spec);
         }
     }
-
-    //TODO delete and move into implementation
-    /*
-    public void setAdaptationParameter(Class<? extends AdaptationParamSpecification> clazz, Double value) {
-        Optional<AdaptationParamSpecification> adaptationParameter = Arrays.stream(getCurrentImplementationObject().getAdaptationParameterSpecifications()).filter(p -> p.getClass().equals(clazz)).findFirst();
-        adaptationParameter.get().addValue(value);
-    }
-
-    public <T extends AdaptationParamSpecification> T getAdaptationParameter  (Class<T> clazz) {
-        return (T) Arrays.stream(getCurrentImplementationObject().getAdaptationParameterSpecifications()).filter(p -> p.getClass().equals(clazz)).findFirst().orElse(null);
-    }
-
-    public AdaptationParamSpecification[] getAdaptationParameters() {
-        return getCurrentImplementationObject().getAdaptationParameterSpecifications();
-    }
-
-
-    public void addInstance(Instance instance) {
-        instances.put(instance.getInstance(), instance);
-    }
-
-    public boolean isReachable() {
-        for (String instanceAddress : instances.keySet()) {
-            if (instances.get(instanceAddress).getCurrentStatus() == InstanceStatus.ACTIVE)
-                return true;
-        }
-        return false;
-    }
-
-    public boolean hasInstance(String instanceId){
-        return instances.containsKey(instanceId);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Service service = (Service) o;
-
-        return serviceId.equals(service.serviceId);
-    }
-
-     */
-
 }

@@ -53,7 +53,7 @@ public class MonitorService {
         AtomicBoolean invalidIteration = new AtomicBoolean(false);
 
         services.forEach((serviceId, serviceInstances) -> {
-            if(managedServices.contains(serviceId)) {
+            if (managedServices.contains(serviceId)) {
                 serviceInstances.forEach(instance -> {
                     Thread thread = new Thread(() -> {
                         InstanceMetrics instanceMetrics;
@@ -64,7 +64,7 @@ public class MonitorService {
                             metricsList.add(instanceMetrics);
                         } catch (Exception e) {
                             log.error("Error adding metrics for {}. Considering it as unreachable", instance.getInstanceId());
-                            log.error(e.getMessage());
+                            log.error("The exception is: " + e.getMessage());
                             instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
                             instanceMetrics.setStatus(InstanceStatus.UNREACHABLE);
                             instanceMetrics.applyTimestamp();

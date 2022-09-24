@@ -21,10 +21,7 @@ public class ConfigurationParser {
     @Autowired
     private EurekaClient discoveryClient;
 
-    // <serviceId, configuration>
-    //private final Map<String, ServiceConfiguration> serviceConfigurations = new HashMap<>();
 
-    @GetMapping("/testParsing/{serviceId}") // TODO: remove annotation after test
     public ServiceConfiguration parseProperties(@PathVariable String serviceId) {
         InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId + ".properties";
@@ -52,7 +49,7 @@ public class ConfigurationParser {
         return serviceConfiguration;
     }
 
-    @GetMapping("/testGlobalParsing") // TODO: remove annotation after test
+
     public void parseGlobalProperties(Map<String, Service> services) {
         InstanceInfo configInstance = getConfigServerInstance();
         String url = configInstance.getHomePageUrl() + "config-server/default/main/application.properties";

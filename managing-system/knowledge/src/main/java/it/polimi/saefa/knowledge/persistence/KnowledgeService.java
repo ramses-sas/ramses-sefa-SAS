@@ -53,13 +53,6 @@ public class KnowledgeService {
     }
 
     public Map<String,Service> getServicesMap() { return services; }
-    
-    public void addMetrics(Instance instance, InstanceMetrics metrics) {
-        //if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstance()).isActive()) {
-        //se la metrica è unreachable io voglio che venga salvata
-        metricsRepository.save(metrics);
-        instance.setCurrentStatus(metrics.getStatus());
-    }
 
     public void breakpoint(){
         log.info("breakpoint");
@@ -94,7 +87,6 @@ public class KnowledgeService {
                     InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
-                    // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
                     //shutdownInstance.addMetric(metrics);
                     metricsRepository.save(metrics);
                 }
@@ -139,10 +131,6 @@ public class KnowledgeService {
     public void changeServicesConfigurations(Map<String, ServiceConfiguration> newConfigurations){
         for (String serviceId : newConfigurations.keySet()){
             Service service = services.get(serviceId);
-            /*if(service == null) { //TODO Non necessario se i servizi vengono inizializzati all'avvio.
-                service = new Service();
-                services.put(serviceId, service);
-            }*/
             service.setConfiguration(newConfigurations.get(serviceId));
             configurationRepository.save(newConfigurations.get(serviceId));
         }
