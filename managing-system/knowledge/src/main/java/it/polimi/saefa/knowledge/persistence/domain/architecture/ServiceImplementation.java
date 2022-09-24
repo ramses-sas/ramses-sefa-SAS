@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @NoArgsConstructor
@@ -58,7 +59,7 @@ public class ServiceImplementation {
         return instances.containsKey(instanceId);
     }
 
-    public Instance getOrCreateInstance(String instanceId, AdaptationParamSpecification[] adaptationParamSpecifications) {
+    public Instance getOrCreateInstance(String instanceId, List<AdaptationParamSpecification> adaptationParamSpecifications) {
         Instance instance = instances.get(instanceId);
         if (instance == null) {
             if (instanceId.split("@")[0].equalsIgnoreCase(implementationId)) {
@@ -77,8 +78,8 @@ public class ServiceImplementation {
         return this.penalty;
     }
 
-    protected void setAdaptationParameterSpecifications(AdaptationParamSpecification[] array) {
-        for (AdaptationParamSpecification specification : array) {
+    protected void setAdaptationParameterSpecifications(List<AdaptationParamSpecification> specs) {
+        for (AdaptationParamSpecification specification : specs) {
             adaptationParamCollection.createHistory(specification);
         }
     }

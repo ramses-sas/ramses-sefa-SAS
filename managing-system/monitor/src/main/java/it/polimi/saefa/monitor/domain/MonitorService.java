@@ -42,6 +42,8 @@ public class MonitorService {
         knowledgeClient.getServices().forEach(service -> managedServices.add(service.getServiceId()));
     }
 
+    // ASSUNZIONE: IL PERIODO DEVE ESSERE "ABBASTANZA" MINORE DEL PERIODO DI AGGIORNAMENTO DEL DISCOVERY SERVICE (PER EUREKA DI DEFAULT 90SEC)
+    // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)
     @Scheduled(fixedDelayString = "${SCHEDULING_PERIOD}") //delay in milliseconds
     public void scheduleFixedDelayTask() {
         Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();

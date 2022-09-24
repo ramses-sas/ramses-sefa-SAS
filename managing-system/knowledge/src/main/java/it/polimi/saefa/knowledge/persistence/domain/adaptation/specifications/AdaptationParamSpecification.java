@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
@@ -28,6 +30,18 @@ public abstract class AdaptationParamSpecification {
      */
 
     public abstract boolean isSatisfied(double value);
+
+    // True if in the list of values the ones that satisfy the constraint are above a certain percentage
+    public boolean isSatisfied(List<Double> values, double percentage) {
+        if (values.size() == 0)
+            return false;
+        int count = 0;
+        for (Double d : values) {
+            if (isSatisfied(d))
+                count++;
+        }
+        return (double)(count / values.size()) >= percentage;
+    }
 
     public abstract String getConstraintDescription();
 

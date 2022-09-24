@@ -37,7 +37,7 @@ public class KnowledgeInit implements InitializingBean {
 
         serviceList.forEach(service -> {
             service.setConfiguration(configurationParser.parseProperties(service.getServiceId()));
-            service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()).toArray(AdaptationParamSpecification[]::new));
+            service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
             knowledgeService.addService(service);
         });
         configurationParser.parseGlobalProperties(knowledgeService.getServicesMap());

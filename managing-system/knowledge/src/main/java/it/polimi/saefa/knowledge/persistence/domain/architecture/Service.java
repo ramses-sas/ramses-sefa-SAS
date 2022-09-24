@@ -20,7 +20,8 @@ public class Service {
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
 
-    private AdaptationParamSpecification[] adaptationParamSpecifications;
+    private Map<Class<? extends AdaptationParamSpecification>, AdaptationParamSpecification> adaptationParamSpecifications = new HashMap<>();
+    //private AdaptationParamSpecification[] adaptationParamSpecifications;
 
 
 
@@ -39,7 +40,7 @@ public class Service {
     }
 
     public Instance getOrCreateInstance(String instanceId) {
-        return getCurrentImplementationObject().getOrCreateInstance(instanceId, adaptationParamSpecifications);
+        return getCurrentImplementationObject().getOrCreateInstance(instanceId, adaptationParamSpecifications.values().stream().toList());
     }
 
     @JsonIgnore
@@ -61,16 +62,16 @@ public class Service {
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (adaptationParamSpecifications.length == 0 ? "" : "\tAdaptationParameters: " + Arrays.toString(adaptationParamSpecifications) + "\n" +
+                (adaptationParamSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + adaptationParamSpecifications.values() + "\n" +
                 "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 
-    public void setAdaptationParameters(AdaptationParamSpecification[] array) {
-        if (adaptationParamSpecifications == null) {
-            for (ServiceImplementation impl : possibleImplementations.values()) {
-                impl.setAdaptationParameterSpecifications(array);
-            }
-            adaptationParamSpecifications = array;
+    public void setAdaptationParameters(List<AdaptationParamSpecification> specs) {
+        for (ServiceImplementation impl : possibleImplementations.values()) {
+            impl.setAdaptationParameterSpecifications(specs);
+        }
+        for (AdaptationParamSpecification spec : specs) {
+            adaptationParamSpecifications.put(spec.getClass(), spec);
         }
     }
 

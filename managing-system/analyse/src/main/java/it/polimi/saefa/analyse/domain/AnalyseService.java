@@ -2,6 +2,8 @@ package it.polimi.saefa.analyse.domain;
 
 import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.MaxResponseTime;
@@ -27,7 +29,7 @@ import java.util.*;
 public class AnalyseService {
 
     //<serviceId, AnalysisWindow>
-    private final Map<String, AnalysisWindow> servicesAnalysisWindowMap = new HashMap<>();
+    //private final Map<String, AnalysisWindow> servicesAnalysisWindowMap = new HashMap<>();
 
     //Number of analysis iterations to do before choosing the best adaptation options
     @Value("${ANALYSIS_WINDOW_SIZE}")
@@ -39,12 +41,21 @@ public class AnalyseService {
     private double failureRateThreshold;
     @Value("${UNREACHABLE_RATE_THRESHOLD}")
     private double unreachableRateThreshold;
+    @Value("${PARAMETERS_SATISFACTION_RATE}")
+    private int parametersSatisfactionRate;
+
+    private int analysisIterationCounter = 0;
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
     private Integer newMetricsWindowSize;
     private Integer newAnalysisWindowSize;
     private Double newFailureRateThreshold;
     private Double newUnreachableRateThreshold;
+
+    // <serviceId, Service>
+    private Map<String, Service> currentArchitectureMap;
+    // <serviceId, ServiceStats>
+    private Map<String, ServiceStats> servicesStatsMap;
 
 
     @Autowired
@@ -60,7 +71,9 @@ public class AnalyseService {
     public void startAnalysis() {
         log.warn("Starting analysis");
         updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
-        List<Service> currentArchitecture = knowledgeClient.getServices();
+        currentArchitectureMap = knowledgeClient.getServices().stream().collect(HashMap::new, (m, v) -> m.put(v.getServiceId(), v), HashMap::putAll);
+        servicesStatsMap = new HashMap<>();
+        final Collection<Service> currentArchitecture = currentArchitectureMap.values();
         for (Service service : currentArchitecture) {
             List<InstanceStats> instancesStats = new ArrayList<>();
             // Analyze all the instances
@@ -79,7 +92,7 @@ public class AnalyseService {
                 metrics.addAll(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
                 // Not enough data to perform analysis
                 if (metrics.size() != metricsWindowSize) {
-                    instancesStats.add(new InstanceStats(instance)); // Add empty instance stats that will be filled with the average valuesStackHistory computed over the other instances
+                    instancesStats.add(new InstanceStats(instance)); // Add unavailable instance stats that will be filled with the average valuesStackHistory computed over the other instances
                     continue;
                 }
                 //per ciascuna metrica, devo prendere tutti gli endpoint e contare le richieste fallite e le richieste andate a buon fine
@@ -121,8 +134,8 @@ public class AnalyseService {
                 }
 
                 List<InstanceMetrics> activeMetrics = metrics.stream().filter(InstanceMetrics::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
-                if (activeMetrics.size() < 2) { //non ci sono abbastanza metriche per questa istanza
-                    instancesStats.add(new InstanceStats(instance)); // Add empty instance stats that will be filled with the average valuesStackHistory computed over the other instances
+                if (activeMetrics.size() < 2) { //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come istanza attiva (con parametri medi). Al massimo prima o poi verrà punita.
+                    instancesStats.add(new InstanceStats(instance)); // Add unavailable instance stats that will be filled with the average valuesStackHistory computed over the other instances
                     continue;
                 }
                 InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
@@ -153,17 +166,20 @@ public class AnalyseService {
             }
             // Given the adaptation parameters of each service instance, compute the adaptation parameters for the service
             ServiceStats serviceStats = createServiceStats(instancesStats);
-            // The serviceStats are not available if all the instances of the service have empty stats.
+            // The serviceStats are not available if all the instances of the service have unavailable stats.
             // In this case none of the instances have enough metrics to perform the analysis.
             if (serviceStats == null)
                 continue;
             // Update the stats of the service and of its instances both locally and remotely
             updateServiceAndInstancesWithStats(service, serviceStats, instancesStats);
-
-            List<AdaptationOption> adaptationOptions = new LinkedList<>();
+            servicesStatsMap.put(service.getServiceId(), serviceStats);
 
             // TODO
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS
+
+            /*
+            List<AdaptationOption> adaptationOptions = new LinkedList<>();
+            adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceStats.getAverageAvailability()));
 
             AnalysisWindow analysisWindow = servicesAnalysisWindowMap.get(service.getServiceId());
             if (analysisWindow == null) {
@@ -173,31 +189,73 @@ public class AnalyseService {
             analysisWindow.add(adaptationOptions);
 
             if (analysisWindow.isFull()) {
-                // TODO
-                // HERE THE LOGIC FOR CHOOSING THE BEST ADAPTATION OPTION
-                // AND SEND IT TO KNOWLEDGE FOR THE PLAN
-                analysisWindow.clear();
+
             }
+
+            */
+
+
+            // TODO
+            // HERE THE LOGIC FOR CHOOSING THE BEST ADAPTATION OPTION
+            // AND SEND IT TO KNOWLEDGE FOR THE PLAN
+            //AdaptationOption bestAdaptationOption = chooseBestAdaptationOption(analysisWindow);
+            //analysisWindow.clear();
+
 
 
         }
 
+
+        if (analysisIterationCounter == analysisWindowSize) {
+            analysisIterationCounter = 0;
+            // <serviceId>
+            Set<String> analysedServices = new HashSet<>();
+            List<AdaptationOption> adaptationOptions = new LinkedList<>();
+            for (Service service : currentArchitecture) {
+                adaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
+            }
+        } else {
+            analysisIterationCounter++;
+        }
         log.warn("Ending analysis");
-        //serviceStatsHistory.clear();
-        //creare set di possibili istruzioni da mandare al Plan
     }
 
-    private void handleAvailabilityAnalysis() {
-
-        /*
-        for(List<ServiceStats> singleAnalysisIteration : serviceStatsHistory){ //map invece di window, con service id e lista di options
-
-            for(ServiceStats serviceStats : singleAnalysisIteration){
-            }
+    private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
+        List<AdaptationOption> adaptationOptions = new LinkedList<>();
+        if (service == null)
+            return adaptationOptions;
+        ServiceStats serviceStats = servicesStatsMap.get(service.getServiceId());
+        if (serviceStats == null || analysedServices.contains(service.getServiceId()))
+            return adaptationOptions;
+        analysedServices.add(service.getServiceId());
+        List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
+        for (Service s : serviceDependencies) {
+            adaptationOptions.addAll(computeAdaptationOptions(s, analysedServices));
         }
 
-        */
+        // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
+        // ergo la lista di adaptation option non contiene adaptation option riguardanti il servizio corrente
+        if (!adaptationOptions.isEmpty())
+            return adaptationOptions;
 
+        // Analisi del servizio corrente, se non ha dipendenze con problemi
+        adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceStats.getAverageAvailability()));
+
+        return adaptationOptions;
+    }
+
+    private List<AdaptationOption> handleAvailabilityAnalysis(Service service, double averageAvailability) {
+        List<AdaptationOption> adaptationOptions = new LinkedList<>();
+        List<Double> serviceAvailabilities = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestNAdaptationParamValue(Availability.class, analysisWindowSize);
+        if (serviceAvailabilities != null && !service.getAdaptationParamSpecifications().get(Availability.class).isSatisfied(serviceAvailabilities, parametersSatisfactionRate)) {
+            List<Instance> instancesOrderedByAvailability = service.getInstances();//.stream().sorted(Comparator.comparingDouble(i -> i.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue())).toList();
+
+            Instance worstInstance = instancesOrderedByAvailability.get(0);
+            // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
+            adaptationOptions.add(new AddInstances(service, averageAvailability));
+            adaptationOptions.add(new RemoveInstance(service, worstInstance));
+        }
+        return adaptationOptions;
     }
 
     private void handleMaxResponseTime() {
@@ -240,17 +298,17 @@ public class AnalyseService {
         return toReturn == 0.0 ? null : toReturn;
     }
 
-    // Fill the empty stats with the average of the other instances stats and create the stats for the service.
-    // Return null if all the instances have empty stats
+    // Fill the unavailable stats with the average of the other instances stats and create the stats for the service.
+    // Return null if all the instances have unavailable stats
     private ServiceStats createServiceStats(List<InstanceStats> instancesStats) {
         Double averageAvailability, averageMaxResponseTime, averageResponseTime;
-        List<InstanceStats> emptyStats = new LinkedList<>();
+        List<InstanceStats> unavailableStats = new LinkedList<>();
         double availabilityAccumulator = 0;
         double maxResponseTimeAccumulator = 0;
         double averageResponseTimeAccumulator = 0;
         for (InstanceStats instanceStats : instancesStats) {
             if (instanceStats.isDataUnavailable()) {
-                emptyStats.add(instanceStats);
+                unavailableStats.add(instanceStats);
             } else {
                 availabilityAccumulator += instanceStats.getAvailability();
                 maxResponseTimeAccumulator += instanceStats.getMaxResponseTime();
@@ -258,15 +316,15 @@ public class AnalyseService {
             }
         }
 
-        // All the instances have empty stats. So no adaptation is performed
-        if (emptyStats.size() == instancesStats.size())
+        // All the instances have unavailable stats. So no adaptation is performed
+        if (unavailableStats.size() == instancesStats.size())
             return null;
 
-        averageAvailability = availabilityAccumulator / (instancesStats.size() - emptyStats.size());
-        averageMaxResponseTime = maxResponseTimeAccumulator / (instancesStats.size() - emptyStats.size());
-        averageResponseTime = averageResponseTimeAccumulator / (instancesStats.size() - emptyStats.size());
+        averageAvailability = availabilityAccumulator / (instancesStats.size() - unavailableStats.size());
+        averageMaxResponseTime = maxResponseTimeAccumulator / (instancesStats.size() - unavailableStats.size());
+        averageResponseTime = averageResponseTimeAccumulator / (instancesStats.size() - unavailableStats.size());
 
-        for (InstanceStats instanceStats : emptyStats) {
+        for (InstanceStats instanceStats : unavailableStats) {
             instanceStats.setAvailability(averageAvailability);
             instanceStats.setMaxResponseTime(averageMaxResponseTime);
             instanceStats.setAverageResponseTime(averageResponseTime);

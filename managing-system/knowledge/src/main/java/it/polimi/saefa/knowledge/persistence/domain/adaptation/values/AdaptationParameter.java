@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,17 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         if (valuesStack.size() > 0)
             return valuesStack.get(0).getValue();
         return null;
+    }
+
+    @JsonIgnore
+    public List<Double> getLastNValues(int n) {
+        List<Double> values = null;
+        if (valuesStack.size() >= n) {
+            values = new ArrayList<>(n);
+            for (int i = 0; i < n; i++)
+                values.add(valuesStack.get(i).getValue());
+        }
+        return values;
     }
 
     @JsonIgnore

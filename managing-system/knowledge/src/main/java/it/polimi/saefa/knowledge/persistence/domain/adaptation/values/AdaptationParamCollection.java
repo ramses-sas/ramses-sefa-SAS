@@ -33,6 +33,11 @@ public class AdaptationParamCollection {
         return adaptationParamValueHistories.get(adaptationParamClass).getLastValueObject();
     }
 
+    @JsonIgnore
+    public <T extends AdaptationParamSpecification> List<Double> getLatestNAdaptationParamValue(Class<T> adaptationParamClass, int n) {
+        return adaptationParamValueHistories.get(adaptationParamClass).getLastNValues(n);
+    }
+
     public <T extends AdaptationParamSpecification> void createHistory(T adaptationParam) {
         if (!adaptationParamValueHistories.containsKey(adaptationParam.getClass())) {
             AdaptationParameter<T> history = new AdaptationParameter<>(adaptationParam);
