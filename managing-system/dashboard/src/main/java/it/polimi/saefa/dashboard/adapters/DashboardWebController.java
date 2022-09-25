@@ -109,7 +109,7 @@ public class DashboardWebController {
 		Map<String, List<String[]>> servicesCurrentImplementationTable = new HashMap<>();
 		for (Service s : services) {
 			ServiceConfiguration conf = s.getConfiguration();
-			// List <ConfigPropertyName, Value>
+			// List <CustomPropertyName, Value>
 			List<String[]> table = new ArrayList<>();
 			table.add(new String[]{"Time Of Snapshot", sdf.format(conf.getTimestamp())+" UTC"});
 			table.add(new String[]{"", ""});

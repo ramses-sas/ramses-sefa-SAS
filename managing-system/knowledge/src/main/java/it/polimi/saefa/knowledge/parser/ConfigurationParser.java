@@ -2,7 +2,7 @@ package it.polimi.saefa.knowledge.parser;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
-import it.polimi.saefa.configparser.ConfigProperty;
+import it.polimi.saefa.configparser.CustomProperty;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
@@ -62,19 +62,19 @@ public class ConfigurationParser {
                 String value = keyValue[1];
                 // se è una proprietà dei load balancer
                 if (key.startsWith("loadbalancing.")) {
-                    ConfigProperty configProperty = new ConfigProperty(key, value);
-                    if (configProperty.getPropertyElements().length == 1) {
-                        String propertyName = configProperty.getPropertyElements()[0];
-                        if (configProperty.isServiceGlobal() && propertyName.equals("type")) {
+                    CustomProperty customProperty = new CustomProperty(key, value);
+                    if (customProperty.getPropertyElements().length == 1) {
+                        String propertyName = customProperty.getPropertyElements()[0];
+                        if (customProperty.isServiceGlobal() && propertyName.equals("type")) {
                             for (Service service : services.values())
-                                service.getConfiguration().setLoadBalancerType(configProperty.getValue());
-                        } else if (services.containsKey(configProperty.getServiceId())) {
-                            ServiceConfiguration serviceToBalanceConfiguration = services.get(configProperty.getServiceId()).getConfiguration();
+                                service.getConfiguration().setLoadBalancerType(customProperty.getValue());
+                        } else if (services.containsKey(customProperty.getServiceId())) {
+                            ServiceConfiguration serviceToBalanceConfiguration = services.get(customProperty.getServiceId()).getConfiguration();
                             switch (propertyName) {
                                 case "type" ->
-                                    serviceToBalanceConfiguration.setLoadBalancerType(configProperty.getValue());
+                                    serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue());
                                 case "weight" ->
-                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(configProperty.getAddress(), Integer.valueOf(configProperty.getValue()));
+                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(customProperty.getAddress(), Integer.valueOf(customProperty.getValue()));
                             }
                         }
                     }
