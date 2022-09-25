@@ -1,7 +1,16 @@
 #!/bin/bash
-############################################################
-# Help                                                     #
-############################################################
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+PrintError() {
+  echo -e "${RED}$1${NC}"
+}
+
+PrintSuccess() {
+  echo -e "${GREEN}$1${NC}"
+}
+
 Help()
 {
    # Display Help
@@ -13,10 +22,14 @@ Help()
 }
 
 
-SERVICE_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
-if [ "$SERVICE_NAME" = "" ]; then
-    echo "UNKNOWN SERVICE NAME. Make sure that spring.application.name is set in application.properties"
+SERVICE_IMPLEMENTATION_NAME=`awk -v FS="IMPLEMENTATION_NAME=" 'NF>1{print $2}' ./src/main/resources/application.properties`
+if [ "$SERVICE_IMPLEMENTATION_NAME" = "" ]; then
+  PrintError "UNKNOWN SERVICE IMPLEMENTATION NAME. Make sure that IMPLEMENTATION_NAME is set in application.properties. Using spring.application.name property"
+  SERVICE_IMPLEMENTATION_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
+  if [ "$SERVICE_IMPLEMENTATION_NAME" = "" ]; then
+    PrintError "UNKNOWN SERVICE IMPLEMENTATION NAME. Make sure that IMPLEMENTATION_NAME is set in application.properties"
     exit 1
+  fi
 fi
 
 DEFOPT=""
@@ -29,10 +42,10 @@ while getopts ":ih:" option; do
       i) # Interactive
          DEFOPT="-a -i";;
      \?) # Run in BG
-         echo "UNKNOWN OPTION $option"
+         PrintError "UNKNOWN OPTION $option"
          exit;;
    esac
 done
 
-docker start $DEFOPT $SERVICE_NAME
-echo "Container $SERVICE_NAME running."
+docker start $DEFOPT $SERVICE_IMPLEMENTATION_NAME
+PrintSuccess "Container $SERVICE_IMPLEMENTATION_NAME running."

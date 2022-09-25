@@ -88,6 +88,7 @@ public class MonitorApplication {
 
     @GetMapping("/notifyFinishedIteration")
     public void notifyFinishedIteration() {
+
         setLoopIterationFinished(true);
     }
 

@@ -7,6 +7,7 @@ import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfigur
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -28,7 +29,6 @@ public class KnowledgeService {
     // Scelta progettuale: una volta che un servizio è stato creato non viene mai rimosso, ma solo le sue istanze
     // (altrimenti è come il cambio di un functional requirement)
 
-    private final Map<String, ServiceConfiguration> serviceConfigurationSet = new ConcurrentHashMap<>();
     private Set<Instance> previouslyActiveInstances = new HashSet<>();
     private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
 
@@ -46,7 +46,7 @@ public class KnowledgeService {
         services.put(service.getServiceId(), service);
     }
 
-    public synchronized List<Service> getServices(){
+    public List<Service> getServices(){
         return services.values().stream().toList();
     }
 
@@ -155,6 +155,16 @@ public class KnowledgeService {
         return metricsRepository.findAllByTimestampBetween(startDate, endDate).stream().toList();
     }
 
+    public List<InstanceMetrics> getNMetricsBefore(String instanceId, String timestampStr, int n) {
+        Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
+    }
+
+    public List<InstanceMetrics> getNMetricsAfter(String instanceId, String timestampStr, int n) {
+        Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
+        return metricsRepository.findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
+    }
+
     public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
         Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
         Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
@@ -173,10 +183,7 @@ public class KnowledgeService {
         return metricsRepository.findLatestByServiceId(serviceId).stream().toList();
     }
 
-    public boolean addInstanceConfigurationProperty(String serviceId, String property, String value) {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
-        return serviceConfigurationSet.put(serviceId,serviceConfiguration)!=null;
-    }
+
 
     public Service getService(String serviceId) {
         return services.get(serviceId);
