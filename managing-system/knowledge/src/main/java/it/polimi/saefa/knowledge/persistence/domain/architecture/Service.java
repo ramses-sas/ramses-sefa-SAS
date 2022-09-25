@@ -35,6 +35,7 @@ public class Service {
         possibleImplementations.forEach(impl -> {this.possibleImplementations.put(impl.getImplementationId(), impl); impl.setServiceId(getServiceId());});
     }
 
+    @JsonIgnore
     public List<Instance> getInstances() {
         return new LinkedList<>(getCurrentImplementationObject().getInstances().values());
     }

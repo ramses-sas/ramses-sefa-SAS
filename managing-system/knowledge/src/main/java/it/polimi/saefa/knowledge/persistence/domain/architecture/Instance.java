@@ -1,6 +1,7 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ public class Instance {
     private String serviceImplementationId; //service implementation name
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
+    private InstanceMetrics lastMetrics;
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;

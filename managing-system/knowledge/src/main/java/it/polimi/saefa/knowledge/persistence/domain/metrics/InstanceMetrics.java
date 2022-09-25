@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.persistence.domain.metrics;
 
+import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,6 +43,34 @@ public class InstanceMetrics {
         this.serviceId = serviceId;
         this.instanceId = instanceId;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        InstanceMetrics that = (InstanceMetrics) o;
+
+        if (!serviceId.equals(that.serviceId)) return false;
+        if (!instanceId.equals(that.instanceId)) return false;
+        if (status != that.status) return false;
+        if (!Objects.equals(circuitBreakerMetrics, that.circuitBreakerMetrics))
+            return false;
+        return Objects.equals(httpMetrics, that.httpMetrics);
+    }
+
+    /*
+    @Override
+    public int hashCode() {
+        int result = serviceId.hashCode();
+        result = 31 * result + instanceId.hashCode();
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (circuitBreakerMetrics != null ? circuitBreakerMetrics.hashCode() : 0);
+        result = 31 * result + (httpMetrics != null ? httpMetrics.hashCode() : 0);
+        return result;
+    }
+
+     */
 
     public String getServiceImplementationName(){
         return instanceId.split("@")[0];
@@ -171,7 +200,9 @@ public class InstanceMetrics {
 
     @Override
     public String toString() {
-        return "Metric id: " + timestamp;
+        return "Metric id: " + timestamp + " - " + instanceId + " - " + status + "\n" +
+                "Http metrics count: " + httpMetrics.values().stream().mapToInt(HttpRequestMetrics::getTotalCount).reduce(0, Integer::sum)+ "\n" +
+                "CircuitBreaker metrics: {\n" + circuitBreakerMetrics.get("payment") + "\n}";
         /*
         return "\nMetrics for instance " + instanceId + " {\n" +
                 "  date = " + timestamp + "\n" +

@@ -50,6 +50,27 @@ public class HttpRequestMetrics {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        HttpRequestMetrics that = (HttpRequestMetrics) o;
+
+        if (!endpoint.equals(that.endpoint)) return false;
+        return httpMethod.equals(that.httpMethod) && getTotalCount() == that.getTotalCount();
+    }
+
+    /*
+    @Override
+    public int hashCode() {
+        int result = endpoint.hashCode();
+        result = 31 * result + httpMethod.hashCode();
+        result = 31 * result + getTotalCount();
+        return result;
+    }
+     */
+
     @JsonIgnore
     public double getAverageDuration(){
         double totalDuration = 0;
