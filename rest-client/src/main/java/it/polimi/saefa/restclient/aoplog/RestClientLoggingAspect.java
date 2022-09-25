@@ -12,10 +12,10 @@ import java.util.Arrays;
 @Slf4j
 public class RestClientLoggingAspect {
 
-    @Pointcut("execution(public * it.polimi.saefa.restclient.domain.customer.CustomerWebService.*(..))")
+    @Pointcut("execution(public * it.polimi.saefa.restclient.domain.RequestGeneratorService.*(..))")
     public void restClientMethods() {}
 
-    @Pointcut("execution(public void it.polimi.saefa.restclient.domain.customer.CustomerWebService.*(..))")
+    @Pointcut("execution(public void it.polimi.saefa.restclient.domain.RequestGeneratorService.*(..))")
     public void restClientVoidMethods() {}
 
 	/* metodi di log */ 

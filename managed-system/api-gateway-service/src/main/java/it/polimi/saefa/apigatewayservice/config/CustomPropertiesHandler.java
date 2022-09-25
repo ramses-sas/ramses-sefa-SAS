@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
-import it.polimi.saefa.configparser.ConfigParser;
-import it.polimi.saefa.configparser.ConfigProperty;
+import it.polimi.saefa.configparser.CustomPropertiesReader;
+import it.polimi.saefa.configparser.CustomProperty;
 import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.Objects;
 
 @Slf4j
 @Configuration
-public class ConfigParserConfig {
+public class CustomPropertiesHandler {
 
     @Autowired
     Environment env;
@@ -30,8 +30,8 @@ public class ConfigParserConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public ConfigParser<Environment> configParser() {
-        return new ConfigParser<>(env);
+    public CustomPropertiesReader<Environment> customPropertiesReader() {
+        return new CustomPropertiesReader<>(env);
     }
 
     @EventListener(EnvironmentChangeEvent.class)
@@ -42,20 +42,20 @@ public class ConfigParserConfig {
                 .map(key -> key.startsWith("loadbalancing.") ? key : null).filter(Objects::nonNull).toList();
         lbKeys.forEach(key -> {
             log.info("Parsing key: " + key);
-            ConfigProperty changedProperty = configParser().parse(key);
+            CustomProperty changedProperty = customPropertiesReader().parse(key);
             handleLBTypeChange(changedProperty);
             handleLBWeightChange(changedProperty);
         });
     }
 
 
-    private void handleLBTypeChange(ConfigProperty changedProperty) {
+    private void handleLBTypeChange(CustomProperty changedProperty) {
         if (changedProperty.getPropertyElements().length == 1 && changedProperty.getPropertyElements()[0].equals("type")) {
             loadBalancerClientFactory.destroy();
         }
     }
 
-    private void handleLBWeightChange(ConfigProperty changedProperty) {
+    private void handleLBWeightChange(CustomProperty changedProperty) {
         if (!changedProperty.isServiceGlobal() && !changedProperty.isInstanceGlobal()) {
             if (changedProperty.getPropertyElements().length == 1 && changedProperty.getPropertyElements()[0].equals("weight")) {
                 int weight = Integer.parseInt(changedProperty.getValue());

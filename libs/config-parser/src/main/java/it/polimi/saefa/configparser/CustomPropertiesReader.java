@@ -1,13 +1,10 @@
 package it.polimi.saefa.configparser;
 
-
-import java.lang.reflect.InvocationTargetException;
-
-public class ConfigParser<T> {
+public class CustomPropertiesReader<T> {
     private final String LBPREFIX = "loadbalancing.";
     private final T env;
 
-    public ConfigParser(T env) {
+    public CustomPropertiesReader(T env) {
         this.env = env;
     }
 
@@ -33,14 +30,14 @@ public class ConfigParser<T> {
         return getProperty(prop, getProperty(LBPREFIX+".global.type", "ROUND_ROBIN"));
     }
 
-    public ConfigProperty parse(String propertyKey) {
-        return new ConfigProperty(propertyKey, getProperty(propertyKey));
+    public CustomProperty parse(String propertyKey) {
+        return new CustomProperty(propertyKey, getProperty(propertyKey));
     }
 
     String getProperty(String key, String defaultValue) {
         try {
             return (String) env.getClass().getMethod("getProperty", String.class, String.class).invoke(env, key, defaultValue);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -48,7 +45,7 @@ public class ConfigParser<T> {
     String getProperty(String key) {
         try {
             return (String) env.getClass().getMethod("getProperty", String.class).invoke(env, key);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

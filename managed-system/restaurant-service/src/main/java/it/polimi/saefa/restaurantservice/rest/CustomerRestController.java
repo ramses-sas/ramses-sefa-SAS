@@ -1,5 +1,6 @@
 package it.polimi.saefa.restaurantservice.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,20 +11,17 @@ import java.util.*;
 import java.util.stream.*;
 import java.util.logging.Logger;
 
+@Slf4j
 @RestController
 @RequestMapping(path="/rest/customer")
 public class CustomerRestController {
-
 	@Autowired 
 	private RestaurantService restaurantService;
-
-    private final Logger logger = Logger.getLogger(CustomerRestController.class.toString());
-
 
 	/* Trova il ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}")
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
-		logger.info("REST CALL: getRestaurant " + restaurantId); 
+		log.info("REST CALL: getRestaurant " + restaurantId);
 		Restaurant restaurant = restaurantService.getRestaurant(restaurantId);
 		return restaurantToGetRestaurantResponse(restaurant);
 	}
@@ -31,7 +29,7 @@ public class CustomerRestController {
 	/* Trova tutti i ristoranti. */ 
 	@GetMapping("/restaurants")
 	public GetRestaurantsResponse getRestaurants() {
-		logger.info("REST CALL: getAllRestaurants"); 
+		log.info("REST CALL: getAllRestaurants");
 		Collection<Restaurant> restaurants = restaurantService.getAllRestaurants();
 		Collection<GetRestaurantResponse> restaurantResponses = 
 			restaurants
@@ -44,7 +42,7 @@ public class CustomerRestController {
 	/* Trova il menu del ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}/menu")
 	public GetRestaurantMenuResponse getRestaurantMenu(@PathVariable Long restaurantId) {
-		logger.info("REST CALL: getRestaurantMenu " + restaurantId); 
+		log.info("REST CALL: getRestaurantMenu " + restaurantId);
 		RestaurantMenu menu = restaurantService.getRestaurantMenu(restaurantId);
 		List<MenuItemElement> menuItemElements =
 			menu.getMenuItems() 
@@ -57,10 +55,10 @@ public class CustomerRestController {
 	/* Ottiene il prezzo del prodotto specificato dal menù del ristorante selezionato. */
 	@GetMapping("/restaurants/{restaurantId}/item/{itemId}")
 	public GetMenuItemDetailsResponse getMenuItemDetails(@PathVariable Long restaurantId, @PathVariable String itemId) {
-		logger.info("REST CALL: getMenuItemPrice restaurant: " + restaurantId + " item: " + itemId);
+		log.info("REST CALL: getMenuItemPrice restaurant: " + restaurantId + " item: " + itemId);
 		RestaurantMenu menu = restaurantService.getRestaurantMenu(restaurantId);
-		for (MenuItem item:menu.getMenuItems()){
-			if(item.getId().equals(itemId))
+		for (MenuItem item: menu.getMenuItems()) {
+			if (item.getId().equals(itemId))
 				return new GetMenuItemDetailsResponse(item.getId(), item.getName(), item.getPrice());
 		}
 		return new GetMenuItemDetailsResponse();
@@ -68,7 +66,7 @@ public class CustomerRestController {
 
 	@PostMapping("/restaurants/{restaurantId}/notify")
 	public NotifyRestaurantResponse notifyRestaurant(@PathVariable Long restaurantId, @RequestBody NotifyRestaurantRequest request) {
-		logger.info("REST CALL: notifyRestaurant " + restaurantId + " order " + request.getOrderNumber());
+		log.info("REST CALL: notifyRestaurant " + restaurantId + " order " + request.getOrderNumber());
 		//Dumb method to simulate restaurant functionality
 		return new NotifyRestaurantResponse(true);
 	}

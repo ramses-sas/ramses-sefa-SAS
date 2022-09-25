@@ -1,4 +1,4 @@
-package it.polimi.saefa.restclient.domain.customer;
+package it.polimi.saefa.restclient.domain;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -12,11 +12,11 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 @Service
-public class CustomerWebService {
+public class RequestGeneratorService {
 	@Value("${API_GATEWAY_IP_PORT}")
 	private String apiGatewayUri;
 
-	Logger logger = Logger.getLogger(CustomerWebService.class.toString());
+	Logger logger = Logger.getLogger(RequestGeneratorService.class.toString());
 
 	private String getApiGatewayUrl() {
 		return "http://"+apiGatewayUri;

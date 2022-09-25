@@ -26,11 +26,8 @@ public class OrderingRestController {
 
 	@PostMapping(path = "/{cartId}/addItem")
 	public AddItemToCartResponse addItemToCart(@PathVariable Long cartId, @RequestBody AddItemToCartRequest request){
-
 		logger.info("REST CALL: addItem to cart " + cartId + " for restaurant " + request.getRestaurantId() + " item " + request.getItemId() + " * " + request.getQuantity());
-
 		Cart cart = orderingService.addItemToCart(cartId, request.getRestaurantId(), request.getItemId(), request.getQuantity());
-
 		List<CartItemElement> cartItemElements =
 				cart.getItemList()
 						.stream()
@@ -40,11 +37,8 @@ public class OrderingRestController {
 
 	@PostMapping(path = "/{cartId}/removeItem")
 	public RemoveItemFromCartResponse removeItemFromCart(@PathVariable Long cartId, @RequestBody RemoveItemFromCartRequest request) {
-
 		logger.info("REST CALL: removeItem to cart " + cartId + " for restaurant " + request.getRestaurantId() + " item " + request.getItemId() + " * " + request.getItemId());
-
 		Cart cart = orderingService.removeItemFromCart(cartId, request.getRestaurantId(), request.getItemId(), request.getQuantity());
-
 		List<CartItemElement> cartItemElements =
 				cart.getItemList()
 						.stream()
@@ -56,10 +50,8 @@ public class OrderingRestController {
 	@PostMapping(path = "/{cartId}/confirmOrder")
 	public ConfirmOrderResponse confirmOrder(@PathVariable Long cartId, @RequestBody ConfirmOrderRequest request) {
 		logger.info("REST CALL: confirmOrder to cart " + cartId);
-
 		PaymentInfo paymentInfo = new PaymentInfo(request.getCardNumber(), request.getExpMonth(), request.getExpYear(), request.getCvv());
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
-
 		if (orderingService.processPayment(cartId, paymentInfo) && orderingService.processDelivery(cartId, deliveryInfo))
 			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, false));
 		else
@@ -69,9 +61,7 @@ public class OrderingRestController {
 	@PostMapping(path = "/{cartId}/confirmCashPayment")
 	public ConfirmOrderResponse confirmCashPayment(@PathVariable Long cartId, @RequestBody ConfirmCashPaymentRequest request) {
 		logger.info("REST CALL: confirmCashPayment to cart " + cartId);
-
 		DeliveryInfo deliveryInfo = new DeliveryInfo(request.getAddress(), request.getCity(), request.getNumber(), request.getZipcode(), request.getTelephoneNumber(), request.getScheduledTime());
-
 		if (orderingService.confirmCashPayment(cartId) && orderingService.processDelivery(cartId, deliveryInfo))
 			return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, false), true, false);
 		else
@@ -82,15 +72,13 @@ public class OrderingRestController {
 	public ConfirmOrderResponse confirmTakeAway(@PathVariable Long cartId) {
 		logger.info("REST CALL: confirmTakeAway to cart " + cartId);
 		return new ConfirmOrderResponse(orderingService.notifyRestaurant(cartId, true), orderingService.orderRequiresCashPayment(cartId), orderingService.orderRequiresTakeaway(cartId));
-
 	}
+
 	@PostMapping(path = "/{cartId}/rejectTakeAway")
 	public ConfirmOrderResponse rejectTakeAway(@PathVariable Long cartId) {
 		logger.info("REST CALL: rejectTakeAway to cart " + cartId);
 		return new ConfirmOrderResponse(false);
-		// TODO dummy just for doing it
 	}
-
 
 	@GetMapping (path = "/{cartId}")
 	public GetCartResponse getCart(@PathVariable Long cartId) {
