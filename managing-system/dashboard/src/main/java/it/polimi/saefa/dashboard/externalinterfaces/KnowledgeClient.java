@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// TODO: add the correct url from application.properties
-@FeignClient(name = "KNOWLEDGE", url = "http://localhost:58005")
+
+@FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
     @PostMapping("/rest/metrics/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
@@ -34,7 +34,7 @@ public interface KnowledgeClient {
             @RequestParam(required = false) String instanceId
     );
 
-    @GetMapping("/rest/service")
+    @GetMapping("/rest/services")
     List<Service> getServices();
 
     @GetMapping("/rest/service/{serviceId}")

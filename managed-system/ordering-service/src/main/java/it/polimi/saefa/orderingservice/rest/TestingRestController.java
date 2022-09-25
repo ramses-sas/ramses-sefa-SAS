@@ -18,9 +18,4 @@ public class TestingRestController {
         return echovar;
     }
 
-    @GetMapping("/testFeign")
-    public String testFeign() {
-        orderingService.testPaymentLB();
-        return "OK";
-    }
 }

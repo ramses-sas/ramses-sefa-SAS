@@ -18,21 +18,27 @@ public class AnalyseRestController {
         return "OK";
     }
 
-    @PostMapping("/changeWindow")
-    public String changeWindow(@RequestBody ChangeParameterRequest request) {
-        analyseService.changeWindow((int) request.getValue());
+    @PostMapping("/changeMetricsWindow")
+    public String changeMetricsWindow(@RequestBody ChangeParameterRequest request) {
+        analyseService.setNewMetricsWindowSize((int) request.getValue());
+        return "OK";
+    }
+
+    @PostMapping("/changeAnalysisWindowSize")
+    public String changeAnalysisWindowSize(@RequestBody ChangeParameterRequest request) {
+        analyseService.setNewAnalysisWindowSize((int) request.getValue());
         return "OK";
     }
 
     @PostMapping("/changeFailureThreshold")
     public String changeFailureThreshold(@RequestBody ChangeParameterRequest request) {
-        analyseService.changeFailureRateThreshold(request.getValue());
+        analyseService.setNewFailureRateThreshold(request.getValue());
         return "OK";
     }
 
     @PostMapping("/changeUnreachableThreshold")
     public String changeUnreachableThreshold(@RequestBody ChangeParameterRequest request) {
-        analyseService.changeUnreachableRateThreshold(request.getValue());
+        analyseService.setNewUnreachableRateThreshold(request.getValue());
         return "OK";
     }
 

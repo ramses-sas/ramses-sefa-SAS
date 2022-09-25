@@ -1,21 +1,30 @@
-package it.polimi.saefa.knowledge.persistence.domain.adaptation;
+package it.polimi.saefa.knowledge.persistence.domain.adaptation.options;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
-public class AdaptationOption {
+public abstract class AdaptationOption {
 
-    private final Type type;
-    private final String description;
     private final Service service;
+    private final ServiceImplementation serviceImplementation;
+    @Setter
+    private Map<Class<? extends AdaptationParamSpecification>, Double> requiredValueMap = new HashMap<>();
+    /*
     private final Instance instance;
     private final List<ServiceImplementation> serviceImplementationList;
-
-    public enum Type {
+    private Double improvement; //TODO se non si pensa a una soluzione diversa, rendere questa una classe astratta che va implementata dalle diverse opzioni di adattamento
+     */
+    /*public enum Type {
         ADD_INSTANCES,
         REMOVE_INSTANCE,
         CHANGE_SERVICE_IMPLEMENTATION,
@@ -23,15 +32,31 @@ public class AdaptationOption {
         CHANGE_CIRCUITBREAKER_PARAMETERS
     }
 
+     */
 
-    private AdaptationOption(Type type, String description, Service service, Instance instance, List<ServiceImplementation> serviceImplementationList) {
-        this.type = type;
-        this.description = description;
+    public abstract String getDescription();
+
+
+    public AdaptationOption(Service service) {
         this.service = service;
-        this.instance = instance;
-        this.serviceImplementationList = serviceImplementationList;
+        this.serviceImplementation = service.getCurrentImplementationObject();
     }
 
+    public AdaptationOption(Service service, ServiceImplementation serviceImplementation) {
+        this.service = service;
+        this.serviceImplementation = serviceImplementation;
+    }
+
+    public Double getRequiredValue(Class<? extends AdaptationParamSpecification> adaptationParamClass) {
+        return requiredValueMap.get(adaptationParamClass);
+    }
+
+    public void addRequiredValue(Class<? extends AdaptationParamSpecification> adaptationParamClass, Double value) {
+        requiredValueMap.put(adaptationParamClass, value);
+    }
+
+
+    /*
     public static AdaptationOption addNewInstances(Service service) {
         return new AdaptationOption(Type.ADD_INSTANCES, "Add new instances of service " + service.getServiceId(), service, null, null);
     }
@@ -59,4 +84,6 @@ public class AdaptationOption {
                 "description='" + description + '\'' +
                 '}';
     }
+
+     */
 }

@@ -2,7 +2,6 @@ package it.polimi.saefa.analyse.domain;
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,5 +28,9 @@ public class InstanceStats {
 
     public String getInstanceId() {
         return instance.getInstanceId();
+    }
+
+    public boolean isDataUnavailable() {
+        return dataUnavailable || averageResponseTime == null || maxResponseTime == null || availability == null;
     }
 }

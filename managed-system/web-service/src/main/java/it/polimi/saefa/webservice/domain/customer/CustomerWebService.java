@@ -16,8 +16,6 @@ public class CustomerWebService {
 	@Value("${API_GATEWAY_IP_PORT}")
 	private String apiGatewayUri;
 
-	Logger logger = Logger.getLogger(CustomerWebService.class.toString());
-
 	private String getApiGatewayUrl() {
 		return "http://"+apiGatewayUri;
 	}
@@ -43,14 +41,12 @@ public class CustomerWebService {
 		return response.getBody();
 	}
 
-
 	public CreateCartResponse createCart(Long restaurantId) {
 		String url = getApiGatewayUrl()+"/customer/cart/";
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<CreateCartResponse> response = restTemplate.postForEntity(url, new CreateCartRequest(restaurantId), CreateCartResponse.class);
 		return response.getBody();
 	}
-
 
 	public AddItemToCartResponse addItemToCart(Long cartId, Long restaurantId, String itemId, int quantity) {
 		String url = getApiGatewayUrl()+"/customer/cart/"+cartId+"/addItem";

@@ -2,6 +2,7 @@ package it.polimi.saefa.orderingservice.domain;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import it.polimi.saefa.restaurantservice.restapi.common.*;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-
+@Slf4j
 @Service
 @Transactional
 public class OrderingService {
@@ -28,15 +29,8 @@ public class OrderingService {
 	private DeliveryProxyClient deliveryProxyClient;
 	@Autowired
 	private PaymentProxyClient paymentProxyClient;
-	private final CircuitBreakerRegistry circuitBreakerRegistry;
-
-
-	private final Logger logger = Logger.getLogger(OrderingRestController.class.toString());
-
-	public OrderingService(CircuitBreakerRegistry circuitBreakerRegistry) {
-		this.circuitBreakerRegistry = circuitBreakerRegistry;
-	}
-
+	@Autowired
+	private CircuitBreakerRegistry circuitBreakerRegistry;
 
 	public Cart getCart(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
@@ -51,7 +45,6 @@ public class OrderingService {
 
 	public Cart addItemToCart(Long cartId, Long restaurantId, String item, int quantity) {
 		 Cart cart = orderingRepository.findById(cartId).orElse(new Cart(restaurantId));
-
 		 if (cart.addItem(item, restaurantId, quantity)) {
 			 cart = updateCartDetails(cart);
 		 }
@@ -60,7 +53,6 @@ public class OrderingService {
 
 	public Cart removeItemFromCart(Long cartId, Long restaurantId, String item, int quantity) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-
 		if (cart.isPresent())
 			if (cart.get().removeItem(item, restaurantId, quantity))
 				return updateCartDetails(cart.get());
@@ -92,7 +84,7 @@ public class OrderingService {
 	}
 
 	public boolean paymentFallback(Long cartId, PaymentInfo paymentInfo, RuntimeException e) {
-		logger.warning("Payment fallback method called from gateway");
+		log.warn("Payment fallback method called from gateway");
 
 		if(circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
@@ -120,7 +112,7 @@ public class OrderingService {
 
 
 	public boolean deliveryFallback(Long cartId, DeliveryInfo deliveryInfo, RuntimeException e) {
-		logger.warning("Delivery fallback method called from gateway");
+		log.warn("Delivery fallback method called from gateway");
 		if(circuitBreakerRegistry.circuitBreaker("delivery").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
 		throw new DeliveryNotAvailableException("Delivery service is not available: " + e.getMessage(), cartId);
@@ -133,7 +125,7 @@ public class OrderingService {
 			 item.setPrice(response.getPrice());
 			 item.setName(response.getName());
 			 totalPrice += item.getPrice() * item.getQuantity();
-			 if (item.getName()==null)
+			 if (item.getName() == null)
 				 throw new MenuItemNotFoundException("Item with id " + item.getId() + " not found");
 		 }
 		 cart.setTotalPrice(totalPrice);
@@ -141,22 +133,16 @@ public class OrderingService {
 		 return cart;
 	}
 
-	// TODO remove after testing
-	public void testPaymentLB() {
-		paymentProxyClient.processPayment(new ProcessPaymentRequest("1111222233334444", 12, 12, "001", 12.5));
-	}
-
-
-	public boolean orderRequiresCashPayment(Long cartId){
+	public boolean orderRequiresCashPayment(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-		if (cart.isPresent()){
+		if (cart.isPresent()) {
 			return cart.get().isRequiresCashPayment();
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	public boolean orderRequiresTakeaway(Long cartId){
+	public boolean orderRequiresTakeaway(Long cartId) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-		if (cart.isPresent()){
+		if (cart.isPresent()) {
 			return cart.get().isRequiresTakeaway();
 		} else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}

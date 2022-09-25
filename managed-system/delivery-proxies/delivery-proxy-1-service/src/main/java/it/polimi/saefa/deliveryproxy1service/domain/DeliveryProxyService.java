@@ -23,7 +23,6 @@ public class DeliveryProxyService {
 	) {
 		String url = deliveryServiceUri+"/deliver/";
 		RestTemplate restTemplate = new RestTemplate();
-		//TODO
 		ResponseEntity<String> response = restTemplate.postForEntity(url, new DeliverRequest(address, city, number, zipcode, telephoneNumber, scheduledTime), String.class);
 		return response.getStatusCode().is2xxSuccessful();
 	}

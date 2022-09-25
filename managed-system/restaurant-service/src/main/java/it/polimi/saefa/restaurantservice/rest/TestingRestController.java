@@ -1,16 +1,23 @@
 package it.polimi.saefa.restaurantservice.rest;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping(path="/rest/test")
 public class TestingRestController {
 
-    @GetMapping("/{echovar}")
-    public String dummy(@PathVariable String echovar) {
-        return echovar;
+    @GetMapping("/")
+    public String dummy() {
+        return "echovar";
     }
+
+    @GetMapping("/sleep")
+    public String dummy2() throws InterruptedException {
+        Thread.sleep(10000);
+        return "echovar";
+    }
+
+
 }

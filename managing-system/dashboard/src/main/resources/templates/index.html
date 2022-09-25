@@ -39,18 +39,17 @@
                         <tr>
                             <th></th>
                             <th>Value</th>
-                            <th>Threshold</th>
+                            <th>Condition</th>
                             <th>Weight</th>
-                            <th>Priority</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="entry : ${servicesAdaptationParametersTable.get(serviceId)}">
                             <td th:text="${entry[0]}">Key goes here</td>
                             <td th:text="${entry[1]}">Value goes here</td>
-                            <td th:text="${entry[2]}">Threshold goes here</td>
+                            <td th:text="${entry[2]}">Condition goes here</td>
                             <td th:text="${entry[3]}">Weight goes here</td>
-                            <td th:text="${entry[4]}">Priority goes here</td>
+                            <!--td th:text="${entry[4]}">Priority goes here</td-->
                         </tr>
                     </tbody>
                 </table>

@@ -2,12 +2,14 @@ package it.polimi.saefa.analyse.externalInterfaces;
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// TODO: add the correct url from application.properties
+
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
     @PostMapping("/rest/metrics/addMetrics")
@@ -34,7 +36,7 @@ public interface KnowledgeClient {
             @RequestParam(required = false) String instanceId
     );
 
-    @GetMapping("/rest/service")
+    @GetMapping("/rest/services")
     List<Service> getServices();
 
     @GetMapping("/rest/metrics/getLatestNBefore")
@@ -57,4 +59,6 @@ public interface KnowledgeClient {
             @RequestParam int n
     );
 
+    @PostMapping("/rest/addNewAdaptationParameterValue")
+    ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
 }

@@ -91,7 +91,7 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
-    @GetMapping("/service")
+    @GetMapping("/services")
     public List<Service> getServices() {
         return knowledgeService.getServices();
     }
@@ -128,8 +128,20 @@ public class KnowledgeRestController {
         return ResponseEntity.ok("Configuration changed");
     }
 
+    @PostMapping("/addNewAdaptationParameterValue")
+    public ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request){
+        if(request.getInstanceId() == null){
+            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
+        } else if (request.getInstanceId() != null){
+            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
+
+        }
+        return ResponseEntity.ok().body("Adaptation parameter value added");
+    }
+
     @GetMapping("/")
     public String hello() {
+        knowledgeService.breakpoint();
         return "Hello from Knowledge Service";
     }
 }

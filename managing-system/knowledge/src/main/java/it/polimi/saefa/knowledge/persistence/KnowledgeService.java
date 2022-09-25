@@ -1,10 +1,12 @@
 package it.polimi.saefa.knowledge.persistence;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -51,12 +53,9 @@ public class KnowledgeService {
     }
 
     public Map<String,Service> getServicesMap() { return services; }
-    
-    public void addMetrics(Instance instance, InstanceMetrics metrics) {
-        //if(metrics.isActive() || metrics.isShutdown() || getLatestByInstanceId(metrics.getInstance()).isActive()) {
-        //se la metrica è unreachable io voglio che venga salvata
-        metricsRepository.save(metrics);
-        instance.setCurrentStatus(metrics.getStatus());
+
+    public void breakpoint(){
+        log.info("breakpoint");
     }
 
     public void addMetrics(List<InstanceMetrics> metricsList) {
@@ -66,9 +65,13 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
-            if(instance!=null) {
-                metricsRepository.save(metrics);
-                instance.setCurrentStatus(metrics.getStatus());
+            if (instance != null) {
+                if(!(instance.getLastMetrics() != null && instance.getLastMetrics().equals(metrics))) {
+                    metricsRepository.save(metrics);
+                    instance.setLastMetrics(metrics);
+                    instance.setCurrentStatus(metrics.getStatus());
+                } else
+                    log.warn("Metrics already saved: " + metrics);
                 if (metrics.isActive())
                     currentlyActiveInstances.add(instance);
             }
@@ -88,7 +91,6 @@ public class KnowledgeService {
                     InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
-                    // TODO: questione metriche nell'oggetto istanza che diventa un oggettone. Soluzione: usare sempre e solo la repository
                     //shutdownInstance.addMetric(metrics);
                     metricsRepository.save(metrics);
                 }
@@ -133,10 +135,6 @@ public class KnowledgeService {
     public void changeServicesConfigurations(Map<String, ServiceConfiguration> newConfigurations){
         for (String serviceId : newConfigurations.keySet()){
             Service service = services.get(serviceId);
-            /*if(service == null) { //TODO Non necessario se i servizi vengono inizializzati all'avvio.
-                service = new Service();
-                services.put(serviceId, service);
-            }*/
             service.setConfiguration(newConfigurations.get(serviceId));
             configurationRepository.save(newConfigurations.get(serviceId));
         }
@@ -189,7 +187,16 @@ public class KnowledgeService {
     public Service getService(String serviceId) {
         return services.get(serviceId);
     }
+
+    public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
+    services.get(serviceId).getOrCreateInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+    }
+
+    public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
+    services.get(serviceId).getCurrentImplementationObject().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+    }
 }
+
 
 
 /*
