@@ -25,6 +25,7 @@ public class InstrumentationAspect {
         this.sleepMean = sleepMean == null ? null : Double.parseDouble(sleepMean);
         this.sleepVariance = sleepVariance == null ? null : Double.parseDouble(sleepVariance);
         this.exceptionProbability = exceptionProbability == null ? null : Double.parseDouble(exceptionProbability);
+        log.debug("InstrumentationAspect: sleepMean={}, sleepVariance={}, exceptionProbability={}", sleepMean, sleepVariance, exceptionProbability);
     }
 
 

@@ -1,16 +1,32 @@
-package it.polimi.saefa.orderingservice.aoplog;
+package it.polimi.saefa.orderingservice.aop;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Random;
 
 @Component
 @Aspect
 @Slf4j
-public class OrderingServiceLoggingAspect {
+public class InstrumentationAspect {
+    private final Double sleepMean;
+    private final Double sleepVariance;
+    private final Double exceptionProbability;
+
+    public InstrumentationAspect(Environment env) {
+        String sleepMean, sleepVariance, exceptionProbability;
+        sleepMean = env.getProperty("SLEEP_MEAN");
+        sleepVariance = env.getProperty("SLEEP_VARIANCE");
+        exceptionProbability = env.getProperty("EXCEPTION_PROBABILITY");
+        this.sleepMean = sleepMean == null ? null : Double.parseDouble(sleepMean);
+        this.sleepVariance = sleepVariance == null ? null : Double.parseDouble(sleepVariance);
+        this.exceptionProbability = exceptionProbability == null ? null : Double.parseDouble(exceptionProbability);
+        log.debug("InstrumentationAspect: sleepMean={}, sleepVariance={}, exceptionProbability={}", sleepMean, sleepVariance, exceptionProbability);
+    }
 
     /* Pointcut per il servizio dei ristoranti */
     @Pointcut("execution(public * it.polimi.saefa.orderingservice.domain.OrderingService.*(..))")
@@ -47,18 +63,27 @@ public class OrderingServiceLoggingAspect {
     /* Eseguito prima dell'esecuzione del metodo */
     @Before("orderingServiceMethods()")
     public void logBeforeExecuteMethod(JoinPoint joinPoint) {
+        try {
+            long sleepTime = generateSleep();
+            log.debug("Sleep duration: "+sleepTime);
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {}
         logInvocation(joinPoint);
     }
 
     /* Eseguito quando il metodo è terminato (con successo) */
     @AfterReturning(value="orderingServiceMethods() &&! orderingServiceVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
+        // Throw an exception with a certain probability
+        shouldThrowException();
         logTermination(joinPoint, retValue);
     }
 
     /* Eseguito quando il metodo (void) è terminato (con successo) */
     @AfterReturning("orderingServiceVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
+        // Throw an exception with a certain probability
+        shouldThrowException();
         logVoidTermination(joinPoint);
     }
 
@@ -66,6 +91,17 @@ public class OrderingServiceLoggingAspect {
     @AfterThrowing(value="orderingServiceMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
+    }
+
+    private long generateSleep() {
+        if (sleepMean == null || sleepVariance == null)
+            return 0;
+        return Math.max((long)((new Random()).nextGaussian()*sleepVariance + sleepMean), 0);
+    }
+
+    private void shouldThrowException() throws RuntimeException {
+        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
+            throw new RuntimeException("An artificial exception has been thrown!");
     }
 
 }
