@@ -66,7 +66,7 @@ public class InstrumentationAspect {
     public void logBeforeExecuteMethod(JoinPoint joinPoint) {
         try {
             long sleepTime = generateSleep();
-            log.debug(""+sleepTime);
+            log.debug("Sleep duration: "+sleepTime);
             Thread.sleep(sleepTime);
         } catch (InterruptedException e) {}
         logInvocation(joinPoint);
