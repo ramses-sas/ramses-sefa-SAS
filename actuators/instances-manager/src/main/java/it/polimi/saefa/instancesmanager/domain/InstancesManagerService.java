@@ -39,13 +39,11 @@ public class InstancesManagerService {
                 .build();
         log.warn("Docker host: {}", config.getDockerHost());
         dockerClient = DockerClientBuilder.getInstance(config).build();
-        List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+        List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            log.warn("Container: {}", container);
-            log.warn("Container name: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"));
-            log.warn("Container: {}", Arrays.toString(container.getPorts()));
+            //log.warn("Container: {}", container);
+            log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
-
     }
 
 
@@ -57,14 +55,15 @@ public class InstancesManagerService {
             ExposedPort serverPort = ExposedPort.tcp(randomPort);
             Ports portBindings = new Ports();
             portBindings.bind(serverPort, Ports.Binding.bindIpAndPort("0.0.0.0", randomPort));
+            List<String> envVars = buildContainerEnvVariables(randomPort);
             String newContainerId = dockerClient.createContainerCmd(imageName)
                     .withName(imageName + "_" + randomPort)
-                    .withEnv(buildContainerEnvVariables(randomPort))
+                    .withEnv(envVars)
                     .withExposedPorts(serverPort)
                     .withHostConfig(newHostConfig().withPortBindings(portBindings))
                     .exec().getId();
             dockerClient.startContainerCmd(newContainerId).exec();
-            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "_" + randomPort, dockerIp, randomPort));
+            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "_" + randomPort, dockerIp, randomPort, envVars));
         }
         return serviceContainerInfos;
     }
@@ -93,6 +92,16 @@ public class InstancesManagerService {
             envVars.add("MYSQL_IP_PORT="+mySqlIpPort);
         envVars.add("SERVER_PORT="+serverPort);
         envVars.add("HOST="+dockerIp);
+
+        // TO SIMULATE SOME SCENARIOS
+        double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
+        double sleepMean = sleepMeanSecondsPool[new Random().nextInt(sleepMeanSecondsPool.length)]*1000;
+        double sleepVariance = 1500;
+        envVars.add("SLEEP_MEAN="+sleepMean);
+        envVars.add("SLEEP_VARIANCE="+sleepVariance);
+        double[] exceptionProbabilitiesPool = new double[]{0, 0.2, 0.65, 0.9};
+        double exceptionProbability = exceptionProbabilitiesPool[new Random().nextInt(exceptionProbabilitiesPool.length)];
+        envVars.add("EXCEPTION_PROBABILITY="+exceptionProbability);
         return envVars;
     }
 

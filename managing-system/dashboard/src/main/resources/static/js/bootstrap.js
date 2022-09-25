@@ -1510,7 +1510,7 @@ if (typeof jQuery === 'undefined') {
     offset.top  += marginTop
     offset.left += marginLeft
 
-    // $.fn.offset doesn't round pixel values
+    // $.fn.offset doesn't round pixel valuesStackHistory
     // so we use setOffset directly with our own function B-0
     $.offset.setOffset($tip[0], $.extend({
       using: function (props) {

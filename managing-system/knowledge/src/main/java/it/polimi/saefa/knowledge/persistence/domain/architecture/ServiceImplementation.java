@@ -1,11 +1,14 @@
 package it.polimi.saefa.knowledge.persistence.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParamCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @NoArgsConstructor
@@ -17,11 +20,14 @@ public class ServiceImplementation {
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
+    private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
+
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
     private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)
     private double costPerBoot; //costo per avvio di un'istanza
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
+    private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
 
     public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score) {
         this.implementationId = implementationId;
@@ -33,7 +39,7 @@ public class ServiceImplementation {
     }
 
     public boolean addInstance(Instance instance) {
-        if(instance.getServiceImplementationId().equals(implementationId)) {
+        if (instance.getServiceImplementationId().equals(implementationId)) {
             instances.put(instance.getInstanceId(), instance);
             return true;
         }
@@ -53,14 +59,29 @@ public class ServiceImplementation {
         return instances.containsKey(instanceId);
     }
 
-    public Instance getOrCreateInstance(String instanceId) {
+    public Instance getOrCreateInstance(String instanceId, List<AdaptationParamSpecification> adaptationParamSpecifications) {
         Instance instance = instances.get(instanceId);
         if (instance == null) {
-            if(instanceId.split("@")[0].equals(implementationId)) {
+            if (instanceId.split("@")[0].equalsIgnoreCase(implementationId)) {
                 instance = new Instance(instanceId, serviceId);
+                for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
+                    instance.getAdaptationParamCollection().createHistory(specification);
+                }
                 instances.put(instanceId, instance);
             }
         }
         return instance;
     }
+
+    public double addPenalty(double penalty) {
+        this.penalty += penalty;
+        return this.penalty;
+    }
+
+    protected void setAdaptationParameterSpecifications(List<AdaptationParamSpecification> specs) {
+        for (AdaptationParamSpecification specification : specs) {
+            adaptationParamCollection.createHistory(specification);
+        }
+    }
+
 }

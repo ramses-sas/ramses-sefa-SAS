@@ -28,14 +28,18 @@ while getopts "hl" option; do
    esac
 done
 
+KILL_COMMAND="kill"
 RunJar() {
-  java -jar ./build/libs/*-latest.jar &
+  java -jar ./build/libs/*-latest.jar > /dev/null 2>&1 &
+  KILL_COMMAND="$KILL_COMMAND $!"
 }
 
 cd "servers/eureka-registry-server/" || return
+PrintSuccess "Starting Eureka Server..."
 RunJar
 cd ../..
 cd "servers/config-server/" || return
+PrintSuccess "Starting Config Server..."
 RunJar
 cd ../..
 echo; echo
@@ -50,29 +54,25 @@ echo
 
 for d in */; do
   if [ "${d: -8}" = "service/" ] ; then
-    echo; echo
     PrintSuccess "Starting $d"
     cd "$d" || return
     RunJar
     cd ..
-    echo; echo
   else
     if [ "${d: -8}" = "proxies/" ]; then
-      echo; echo
-      PrintSuccess "Starting proxies..."
-      echo
       cd "$d" || return
       for dd in */; do
         if [ "${dd: -10}" = "1-service/" ]; then
-          echo; echo
           PrintSuccess "Starting $dd"
           cd "$dd" || return
           RunJar
           cd ..
-          echo; echo
         fi
       done
       cd ..
     fi
   fi
 done
+
+PrintSuccess "All services started"
+echo "$KILL_COMMAND; rm killAll.sh" > killAll.sh

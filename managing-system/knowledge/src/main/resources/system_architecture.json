@@ -1,32 +1,6 @@
 {
 	"services"	: [
 		{
-			"service_id":"API-GATEWAY-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "api-gateway-service",
-					"cost_per_instance" : 0.1,
-					"cost_per_request" : 0.01,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.2,
-					"score" : 1
-				}
-			]
-		},
-		{
-			"service_id":"WEB-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "web-service",
-					"cost_per_instance" : 0.2,
-					"cost_per_request" : 0.02,
-					"cost_per_second" : 0.02,
-					"cost_per_boot" : 0.3,
-					"score" : 1
-				}
-			]
-		},
-		{
 			"service_id":"RESTAURANT-SERVICE",
 			"implementations" : [
 				{
@@ -37,6 +11,12 @@
 					"cost_per_boot" : 0.1,
 					"score" : 1
 				}
+			],
+			"dependencies" : [
+				{
+					"name" : "ORDERING-SERVICE"
+				}
+
 			]
 		},
 		{
@@ -49,6 +29,17 @@
 					"cost_per_second" : 0.03,
 					"cost_per_boot" : 0.08,
 					"score" : 1
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "RESTAURANT-SERVICE"
+				},
+				{
+					"name" : "PAYMENT-PROXY-SERVICE"
+				},
+				{
+					"name" : "DELIVERY-PROXY-SERVICE"
 				}
 			]
 		},
@@ -79,7 +70,8 @@
 					"cost_per_boot" : 0.1,
 					"score" : 0.3
 				}
-			]
+			],
+			"dependencies" : []
 		},
 		{
 			"service_id":"DELIVERY-PROXY-SERVICE",
@@ -107,6 +99,48 @@
 					"cost_per_second" : 0.01,
 					"cost_per_boot" : 0.1,
 					"score" : 0.3
+				}
+			],
+			"dependencies" : []
+		}
+	],
+	"trash" : [
+		{
+			"service_id":"API-GATEWAY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "api-gateway-service",
+					"cost_per_instance" : 0.1,
+					"cost_per_request" : 0.01,
+					"cost_per_second" : 0.01,
+					"cost_per_boot" : 0.2,
+					"score" : 1
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "RESTAURANT-SERVICE"
+				},
+				{
+					"name" : "ORDERING-SERVICE"
+				}
+			]
+		},
+		{
+			"service_id":"WEB-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "web-service",
+					"cost_per_instance" : 0.2,
+					"cost_per_request" : 0.02,
+					"cost_per_second" : 0.02,
+					"cost_per_boot" : 0.3,
+					"score" : 1
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "API-GATEWAY-SERVICE"
 				}
 			]
 		}

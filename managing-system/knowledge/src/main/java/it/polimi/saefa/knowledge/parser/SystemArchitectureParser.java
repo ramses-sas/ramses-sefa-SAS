@@ -34,7 +34,14 @@ public class SystemArchitectureParser {
             if (totalScore != 1.0) {
                 throw new RuntimeException("Total score of service " + serviceId + " is not 1.0");
             }
-            Service s = new Service(serviceId, serviceImplementations);
+            JsonArray dependencies = serviceJson.get("dependencies").getAsJsonArray();
+            List<String> serviceDependencies = new LinkedList<>();
+            dependencies.forEach(dep -> {
+                JsonObject dependency = dep.getAsJsonObject();
+                String dependencyName = dependency.get("name").getAsString();
+                serviceDependencies.add(dependencyName);
+            });
+            Service s = new Service(serviceId, serviceImplementations, serviceDependencies);
             serviceList.add(s);
         });
         return serviceList;

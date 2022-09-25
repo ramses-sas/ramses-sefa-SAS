@@ -7,10 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 
+
 public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long> {
+    Timestamp MIN_TIMESTAMP = new Timestamp(0);
+    String SHUTDOWNSTATUS = "it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus.SHUTDOWN";
 
     Collection<InstanceMetrics> findAllByInstanceId(String instanceId);
 
@@ -19,6 +23,11 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     Collection<InstanceMetrics> findAllByInstanceIdAndTimestampBetween(String instanceId, Date start, Date end);
 
     // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
+
+    @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND " +
+            "m.timestamp > ISNULL((SELECT MAX(m1.timestamp) FROM InstanceMetrics m1 WHERE m1.instanceId = :instanceId AND m.status="+SHUTDOWNSTATUS+"), it.polimi.saefa.knowledge.persistence.MetricsRepository.MIN_TIMESTAMP) " +
+            "ORDER BY m.timestamp DESC")
+    Page<InstanceMetrics> findLatestOfCurrentInstanceOrderByTimestampDesc(String instanceId, Pageable pageable);
 
     Page<InstanceMetrics> findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);
 

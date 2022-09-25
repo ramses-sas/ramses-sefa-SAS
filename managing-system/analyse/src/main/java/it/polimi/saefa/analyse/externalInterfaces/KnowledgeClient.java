@@ -2,13 +2,15 @@ package it.polimi.saefa.analyse.externalInterfaces;
 
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// TODO: add the correct url from application.properties
-@FeignClient(name = "KNOWLEDGE", url = "http://localhost:58005")
+
+@FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
     @PostMapping("/rest/metrics/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
@@ -34,21 +36,29 @@ public interface KnowledgeClient {
             @RequestParam(required = false) String instanceId
     );
 
-    @GetMapping("/service")
+    @GetMapping("/rest/services")
     List<Service> getServices();
 
-    @GetMapping("/metrics/getLatestNBefore")
+    @GetMapping("/rest/metrics/getLatestNBefore")
     List<InstanceMetrics> getLatestNMetricsBeforeDate(
             @RequestParam String instanceId,
             @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
             @RequestParam int n
     );
 
-    @GetMapping("/metrics/getLatestNAfter")
+    @GetMapping("/rest/metrics/getLatestNAfter")
     List<InstanceMetrics> getLatestNMetricsAfterDate(
             @RequestParam String instanceId,
             @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss
             @RequestParam int n
     );
 
+    @GetMapping("/rest/metrics/getLatestNOfCurrentInstance")
+    List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(
+            @RequestParam String instanceId,
+            @RequestParam int n
+    );
+
+    @PostMapping("/rest/addNewAdaptationParameterValue")
+    ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
 }

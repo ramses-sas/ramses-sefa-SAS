@@ -11,7 +11,7 @@
             <div class="card">
                 <h5 class="cardElementTitle">Service</h5>
                 <h6 class="cardElementContent" th:text="${serviceId}">Service name goes here</h6>
-                <h6><a th:href="@{'/'+${serviceId}}">Show details and active instances</a></h6>
+                <h6><a th:href="@{'/service/'+${serviceId}}">Show details and active instances</a></h6>
                 <br>
                 <h5 class="cardElementTitle">Current Implementation</h5>
                 <table class="configTable">
@@ -39,18 +39,17 @@
                         <tr>
                             <th></th>
                             <th>Value</th>
-                            <th>Threshold</th>
+                            <th>Condition</th>
                             <th>Weight</th>
-                            <th>Priority</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="entry : ${servicesAdaptationParametersTable.get(serviceId)}">
                             <td th:text="${entry[0]}">Key goes here</td>
                             <td th:text="${entry[1]}">Value goes here</td>
-                            <td th:text="${entry[2]}">Threshold goes here</td>
+                            <td th:text="${entry[2]}">Condition goes here</td>
                             <td th:text="${entry[3]}">Weight goes here</td>
-                            <td th:text="${entry[4]}">Priority goes here</td>
+                            <!--td th:text="${entry[4]}">Priority goes here</td-->
                         </tr>
                     </tbody>
                 </table>

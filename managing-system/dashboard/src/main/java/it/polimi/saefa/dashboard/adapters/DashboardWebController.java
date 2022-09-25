@@ -1,7 +1,8 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.AdaptationParameter;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
@@ -25,23 +26,17 @@ public class DashboardWebController {
 	@Autowired 
 	private DashboardWebService dashboardWebService;
 
-	/* Mostra home page */
-	@GetMapping("/{serviceId}")
+	@GetMapping("/service/{serviceId}")
 	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
 		log.info("Service: " + service);
-		Set<String> possibleImplementations = service.getPossibleImplementations().keySet();
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
-		for (Instance instance : service.getInstances()) {
+		for (Instance instance : service.getInstances())
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
-		}
-		//model.addAttribute("service", service);
 		model.addAttribute("serviceId", serviceId);
-		//model.addAttribute("currentImplementationTable", currentImplementationTable);
-		model.addAttribute("possibleImplementations", possibleImplementations);
+		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
-		//model.addAttribute("currentImplementation", service.getPossibleImplementations().get(service.getCurrentImplementation()));
 
 		GraphData[] graphs = new GraphData[3];
 		GraphData data = new GraphData("Instant", "Availability");
@@ -65,7 +60,7 @@ public class DashboardWebController {
 		return "webpages/serviceDetails";
 	}
 
-	@GetMapping("/{serviceId}/{instanceId}/metrics")
+	@GetMapping("/service/{serviceId}/{instanceId}/metrics")
 	public String instanceMetrics(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
 		InstanceMetrics latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
 		log.debug("Latest metrics: " + latestMetrics);
@@ -73,23 +68,24 @@ public class DashboardWebController {
 		List<String[]> httpMetricsTable = new ArrayList<>();
 		List<String[]> circuitBreakersTable = new ArrayList<>();
 		if (latestMetrics != null) {
-			resourceTable.add(new String[]{"CPU Usage", "" + String.format("%,.2f", latestMetrics.getCpuUsage()*100)+"%"});
-			resourceTable.add(new String[]{"Disk Free Space", String.format("%,.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
-			resourceTable.add(new String[]{"Disk Total Space", String.format("%,.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
+			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
 			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
-				httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
-						httpMetrics.getOutcome(), String.format("%,.2f", httpMetrics.getAverageDuration())+" ms"});
+				for(String outcome : httpMetrics.getOutcomes())
+					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
+						outcome, httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
 				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
 				double failureRate = cbMetrics.getFailureRate();
-				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format("%,.1f", failureRate*100)+"%"});
+				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", failureRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
 				double slowCallRate = cbMetrics.getSlowCallRate();
-				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format("%,.1f", slowCallRate*100)+"%"});
+				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", slowCallRate*100)+"%"});
 				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
 				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
 					Double avgDuration = cbMetrics.getAverageDuration(status);
-					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format("%,.2f", avgDuration)+" ms"});
+					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format(Locale.ROOT, "%.2f", avgDuration)+" s"});
 				}
 				circuitBreakersTable.add(new String[]{"", ""});
 			}
@@ -113,7 +109,7 @@ public class DashboardWebController {
 		Map<String, List<String[]>> servicesCurrentImplementationTable = new HashMap<>();
 		for (Service s : services) {
 			ServiceConfiguration conf = s.getConfiguration();
-			// List <ConfigPropertyName, Value>
+			// List <CustomPropertyName, Value>
 			List<String[]> table = new ArrayList<>();
 			table.add(new String[]{"Time Of Snapshot", sdf.format(conf.getTimestamp())+" UTC"});
 			table.add(new String[]{"", ""});
@@ -135,17 +131,21 @@ public class DashboardWebController {
 			table.remove(table.size() - 1);
 			servicesConfigurationTable.put(s.getServiceId(), table);
 
-			// List <ParameterName, Value, Threshold, Weight, Priority>
+			// List <ParameterName, Value, Threshold, Weight>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter ap : s.getAdaptationParameters()) {
-				serviceAdaptationParametersTable.add(new String[]{ap.getClass().getSimpleName(), ap.getValue().toString(), ap.getThreshold().toString(), ap.getWeight().toString(), String.valueOf(ap.getPriority())});
+			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
+				serviceAdaptationParametersTable.add(new String[]{
+					ap.getSpecification().getClass().getSimpleName(),
+					ap.getLastValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", ap.getLastValue()),
+					ap.getSpecification().getConstraintDescription(),
+					ap.getSpecification().getWeight().toString()}
+				);
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
-			ServiceImplementation currentImplementation = s.getPossibleImplementations().get(s.getCurrentImplementation());
+			ServiceImplementation currentImplementation = s.getCurrentImplementationObject();
 			// [[ImplementationName, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
-			log.info(Arrays.toString(currentImplementation.getClass().getDeclaredFields()));
 			currentImplementationTable.add(new String[]{"Implementation Name", currentImplementation.getImplementationId()});
 			currentImplementationTable.add(new String[]{"Cost Per Boot", currentImplementation.getCostPerBoot()+"€"});
 			currentImplementationTable.add(new String[]{"Cost Per Instance", currentImplementation.getCostPerInstance()+"€"});

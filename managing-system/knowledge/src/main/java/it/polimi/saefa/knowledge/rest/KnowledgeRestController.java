@@ -49,6 +49,14 @@ public class KnowledgeRestController {
         return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
     }
 
+    @GetMapping("/metrics/getLatestNOfCurrentInstance")
+    public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(
+            @RequestParam String instanceId,
+            @RequestParam int n
+    ) {
+        return knowledgeService.getLatestNMetricsOfCurrentInstance(instanceId, n);
+    }
+
     @GetMapping("/metrics/get")
     public List<InstanceMetrics> getMetrics(
             //@RequestParam(required = false) String serviceId,
@@ -83,7 +91,7 @@ public class KnowledgeRestController {
         // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
-    @GetMapping("/service")
+    @GetMapping("/services")
     public List<Service> getServices() {
         return knowledgeService.getServices();
     }
@@ -120,8 +128,20 @@ public class KnowledgeRestController {
         return ResponseEntity.ok("Configuration changed");
     }
 
+    @PostMapping("/addNewAdaptationParameterValue")
+    public ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request){
+        if(request.getInstanceId() == null){
+            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
+        } else if (request.getInstanceId() != null){
+            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
+
+        }
+        return ResponseEntity.ok().body("Adaptation parameter value added");
+    }
+
     @GetMapping("/")
     public String hello() {
+        knowledgeService.breakpoint();
         return "Hello from Knowledge Service";
     }
 }

@@ -11,7 +11,7 @@ import prometheus.types.MetricFamily;
 import prometheus.types.Summary;
 
 /**
- * This implementation simply logs the metric values.
+ * This implementation simply logs the metric valuesStackHistory.
  */
 public class LoggingPrometheusMetricsWalker implements PrometheusMetricsWalker {
     private static final Logger log = Logger.getLogger(LoggingPrometheusMetricsWalker.class);
