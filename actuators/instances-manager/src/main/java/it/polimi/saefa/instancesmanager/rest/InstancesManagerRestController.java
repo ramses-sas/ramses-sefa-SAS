@@ -25,7 +25,7 @@ public class InstancesManagerRestController implements InstancesManagerRestInter
 	public AddInstancesResponse addInstances(@RequestBody AddInstancesRequest request) {
 		AddInstancesResponse response = new AddInstancesResponse();
 		List<ServiceContainerInfo> di = instancesManagerService.addInstances(request.getServiceImplementationName(), request.getNumberOfInstances());
-		di.forEach(info -> response.addContainerInfo(info.getImageName(), info.getContainerId(), info.getContainerName(), info.getAddress(), info.getPort()));
+		di.forEach(info -> response.addContainerInfo(info.getImageName(), info.getContainerId(), info.getContainerName(), info.getAddress(), info.getPort(), info.getEnvVars()));
 		return response;
 	}
 

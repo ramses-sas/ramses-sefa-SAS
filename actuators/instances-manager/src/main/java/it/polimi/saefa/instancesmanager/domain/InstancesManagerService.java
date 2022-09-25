@@ -39,11 +39,10 @@ public class InstancesManagerService {
                 .build();
         log.warn("Docker host: {}", config.getDockerHost());
         dockerClient = DockerClientBuilder.getInstance(config).build();
-        List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+        List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            log.warn("Container: {}", container);
-            log.warn("Container name: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"));
-            log.warn("Container: {}", Arrays.toString(container.getPorts()));
+            //log.warn("Container: {}", container);
+            log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
     }
 
