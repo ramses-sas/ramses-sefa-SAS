@@ -7,6 +7,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -42,6 +43,47 @@ public class CircuitBreakerMetrics {
         this.callCount = new HashMap<>();
         this.slowCallCount = new HashMap<>();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CircuitBreakerMetrics that = (CircuitBreakerMetrics) o;
+
+        if (!name.equals(that.name)) return false;
+        if (state != that.state) return false;
+        if (notPermittedCallsCount != that.notPermittedCallsCount) return false;
+        if (Double.compare(that.failureRate, failureRate) != 0) return false;
+        if (Double.compare(that.slowCallRate, slowCallRate) != 0) return false;
+        if (!bufferedCallsCount.equals(that.bufferedCallsCount)) return false;
+        if (!callDuration.equals(that.callDuration)) return false;
+        if (!callMaxDuration.equals(that.callMaxDuration)) return false;
+        if (!callCount.equals(that.callCount)) return false;
+        return slowCallCount.equals(that.slowCallCount);
+    }
+
+    /*
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = 31 + name.hashCode();
+        result = 31 * result + state.hashCode();
+        result = 31 * result + bufferedCallsCount.hashCode();
+        result = 31 * result + callDuration.hashCode();
+        result = 31 * result + callMaxDuration.hashCode();
+        result = 31 * result + callCount.hashCode();
+        result = 31 * result + slowCallCount.hashCode();
+        result = 31 * result + notPermittedCallsCount;
+        temp = Double.doubleToLongBits(failureRate);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(slowCallRate);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+     */
 
     public void setId(Long id) {
         this.id = id;
