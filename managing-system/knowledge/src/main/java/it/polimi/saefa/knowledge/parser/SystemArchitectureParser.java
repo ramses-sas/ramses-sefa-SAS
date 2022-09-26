@@ -28,7 +28,8 @@ public class SystemArchitectureParser {
                 double costPerSecond = implementation.get("cost_per_second").getAsDouble();
                 double costPerBoot = implementation.get("cost_per_boot").getAsDouble();
                 double score = implementation.get("score").getAsDouble();
-                serviceImplementations.add(new ServiceImplementation(implementationId, costPerInstance, costPerRequest, costPerSecond, costPerBoot, score));
+                double riskFactor = implementation.get("risk_factor").getAsDouble();
+                serviceImplementations.add(new ServiceImplementation(implementationId, costPerInstance, costPerRequest, costPerSecond, costPerBoot, score, riskFactor));
             });
             double totalScore = serviceImplementations.stream().map(ServiceImplementation::getScore).reduce(0.0, Double::sum);
             if (totalScore != 1.0) {

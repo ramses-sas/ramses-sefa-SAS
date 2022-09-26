@@ -28,14 +28,16 @@ public class ServiceImplementation {
     private double costPerBoot; //costo per avvio di un'istanza
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
+    private double riskFactor = 0; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
 
-    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score) {
+    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor) {
         this.implementationId = implementationId;
         this.costPerInstance = costPerInstance;
         this.costPerRequest = costPerRequest;
         this.costPerSecond = costPerSecond;
         this.costPerBoot = costPerBoot;
         this.score = score;
+        this.riskFactor = riskFactor;
     }
 
     public boolean addInstance(Instance instance) {
