@@ -219,8 +219,8 @@ public class AnalyseService {
                     .sorted(Comparator.comparingDouble(i -> i.getAdaptationParamCollection().getLatestNAdaptationParamValues(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow())).toList();
             Instance worstInstance = instances.get(0);
             // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
-            adaptationOptions.add(new AddInstances(service, averageAvailability));
-            adaptationOptions.add(new RemoveInstance(service, worstInstance));
+            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), averageAvailability));
+            adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId()));
             // TODO mancano le considerazioni sul cambio di implementazione
         }
         return adaptationOptions;

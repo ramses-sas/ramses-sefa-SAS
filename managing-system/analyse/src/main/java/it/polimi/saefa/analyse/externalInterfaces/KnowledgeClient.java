@@ -1,5 +1,6 @@
 package it.polimi.saefa.analyse.externalInterfaces;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
@@ -16,7 +17,7 @@ public interface KnowledgeClient {
     void addMetrics(@RequestBody InstanceMetrics metrics);
 
     @PostMapping("/rest/metrics/addMetricsList")
-    public void addMetrics(@RequestBody List<InstanceMetrics> metrics);
+    void addMetrics(@RequestBody List<InstanceMetrics> metrics);
 
     @GetMapping("/rest/metrics/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);
@@ -61,4 +62,11 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/addNewAdaptationParameterValue")
     ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
+
+    @PostMapping("/rest/proposeAdaptationOptions")
+    ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+
+    // TODO remove after test
+    @PostMapping("/rest/chooseAdaptationOptions")
+    ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
 }

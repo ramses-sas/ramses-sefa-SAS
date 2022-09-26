@@ -1,24 +1,28 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.options;
 
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@DiscriminatorValue("REMOVE_INSTANCE")
 public class RemoveInstance extends AdaptationOption {
+    private String instanceId;
 
-    private final Instance instance;
-
-    public RemoveInstance(Service service, Instance instance) {
-        super(service);
-        this.instance = instance;
-    }
-
-    public Instance getInstance() {
-        return instance;
+    public RemoveInstance(String serviceId, String implementationId, String instanceId) {
+        super(serviceId, implementationId);
+        this.instanceId = instanceId;
     }
 
     @Override
     public String getDescription() {
-        return "Remove instance " + instance.getInstanceId() + " of service " + super.getService().getServiceId();
+        return "Remove instance " + instanceId + " of service " + super.getServiceId();
     }
 }
 

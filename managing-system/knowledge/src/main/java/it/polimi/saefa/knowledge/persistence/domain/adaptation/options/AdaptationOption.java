@@ -1,52 +1,59 @@
 package it.polimi.saefa.knowledge.persistence.domain.adaptation.options;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.*;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.*;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "DISCRIMINATOR", discriminatorType = DiscriminatorType.STRING)
 @Getter
+@Setter
+@NoArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = AddInstances.class),
+        @JsonSubTypes.Type(value = RemoveInstance.class)
+})
 public abstract class AdaptationOption {
+    @Id
+    @GeneratedValue
+    private long id;
 
-    private final Service service;
-    private final ServiceImplementation serviceImplementation;
-    @Setter
-    private Map<Class<? extends AdaptationParamSpecification>, Double> requiredValueMap = new HashMap<>();
-    /*
-    private final Instance instance;
-    private final List<ServiceImplementation> serviceImplementationList;
-    private Double improvement; //TODO se non si pensa a una soluzione diversa, rendere questa una classe astratta che va implementata dalle diverse opzioni di adattamento
-     */
-    /*public enum Type {
-        ADD_INSTANCES,
-        REMOVE_INSTANCE,
-        CHANGE_SERVICE_IMPLEMENTATION,
-        CHANGE_LOADBALANCER_WEIGHTS,
-        CHANGE_CIRCUITBREAKER_PARAMETERS
-    }
+    private String serviceId;
+    private String serviceImplementationId;
 
-     */
+    // Introdotta per astrarre il Plan
+    // TODO: verifica se va messa (ora le variabili nelle singole adapt options)
+    //@ElementCollection
+    //private Map<Class<? extends AdaptationParamSpecification>, Double> requiredValueMap = new HashMap<>();
+
+    // Timestamp of acceptance (it is null if the adaptation option has not been accepted by the Plan)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
 
     public abstract String getDescription();
 
-
-    public AdaptationOption(Service service) {
-        this.service = service;
-        this.serviceImplementation = service.getCurrentImplementationObject();
+    public void applyTimestamp() {
+        this.timestamp = new Date();
     }
 
-    public AdaptationOption(Service service, ServiceImplementation serviceImplementation) {
-        this.service = service;
-        this.serviceImplementation = serviceImplementation;
+    public AdaptationOption(String serviceId, String serviceImplementationId) {
+        this.serviceId = serviceId;
+        this.serviceImplementationId = serviceImplementationId;
     }
 
+    /*
     public Double getRequiredValue(Class<? extends AdaptationParamSpecification> adaptationParamClass) {
         return requiredValueMap.get(adaptationParamClass);
     }
@@ -55,8 +62,6 @@ public abstract class AdaptationOption {
         requiredValueMap.put(adaptationParamClass, value);
     }
 
-
-    /*
     public static AdaptationOption addNewInstances(Service service) {
         return new AdaptationOption(Type.ADD_INSTANCES, "Add new instances of service " + service.getServiceId(), service, null, null);
     }
