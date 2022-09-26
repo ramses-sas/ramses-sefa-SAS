@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Instance {
-    private String instanceId; //service implementation name @ ip : port
+    private String instanceId; //service implementation id @ ip : port
     private String serviceId; //serviceId
-    private String serviceImplementationId; //service implementation name
+    private String serviceImplementationId; //service implementation id
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
     private InstanceMetrics lastMetrics;

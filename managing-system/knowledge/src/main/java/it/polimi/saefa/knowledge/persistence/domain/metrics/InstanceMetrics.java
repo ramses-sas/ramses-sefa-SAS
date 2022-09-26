@@ -1,6 +1,5 @@
 package it.polimi.saefa.knowledge.persistence.domain.metrics;
 
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,7 @@ public class InstanceMetrics {
     private Long id;
 
     private String serviceId; //service name
-    private String instanceId; //service implementation name @ip : port
+    private String instanceId; //service implementation id @ip : port
 
     @Enumerated(EnumType.STRING)
     private InstanceStatus status = InstanceStatus.ACTIVE;
@@ -72,7 +71,7 @@ public class InstanceMetrics {
 
      */
 
-    public String getServiceImplementationName(){
+    public String getServiceImplementationId(){
         return instanceId.split("@")[0];
     }
     public void addHttpMetrics(HttpRequestMetrics metrics) {

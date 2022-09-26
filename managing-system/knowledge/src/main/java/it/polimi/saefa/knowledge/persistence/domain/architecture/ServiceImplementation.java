@@ -16,7 +16,7 @@ import java.util.Map;
 @Data
 public class ServiceImplementation {
     private String serviceId; //implemented service name
-    private String implementationId; //specific implementation name
+    private String implementationId; //specific implementation id
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
