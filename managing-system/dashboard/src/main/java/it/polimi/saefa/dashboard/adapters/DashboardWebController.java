@@ -144,9 +144,9 @@ public class DashboardWebController {
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
 			ServiceImplementation currentImplementation = s.getCurrentImplementationObject();
-			// [[ImplementationName, CostPerBoot, CostPerInstance, ...]]
+			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
-			currentImplementationTable.add(new String[]{"Implementation Name", currentImplementation.getImplementationId()});
+			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
 			currentImplementationTable.add(new String[]{"Cost Per Boot", currentImplementation.getCostPerBoot()+"€"});
 			currentImplementationTable.add(new String[]{"Cost Per Instance", currentImplementation.getCostPerInstance()+"€"});
 			currentImplementationTable.add(new String[]{"Cost Per Second Of Execution", currentImplementation.getCostPerSecond()+"€/s"});
