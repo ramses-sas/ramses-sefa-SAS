@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.rest;
 
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
 import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -139,6 +142,39 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation parameter value added");
     }
 
+    @GetMapping("/proposedAdaptationOptions")
+    public Map<String, List<AdaptationOption>> getProposedAdaptationOptions() {
+        return knowledgeService.getProposedAdaptationOptions();
+    }
+
+    @PostMapping("/proposeAdaptationOptions")
+    public ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
+        Map<String, List<AdaptationOption>> servicesAdaptOptions = new HashMap<>();
+        adaptationOptions.forEach(adaptationOption -> {
+            if (servicesAdaptOptions.containsKey(adaptationOption.getServiceId())){
+                servicesAdaptOptions.get(adaptationOption.getServiceId()).add(adaptationOption);
+            } else {
+                List<AdaptationOption> adaptationOptionsList = new LinkedList<>();
+                adaptationOptionsList.add(adaptationOption);
+                servicesAdaptOptions.put(adaptationOption.getServiceId(), adaptationOptionsList);
+            }
+        });
+        knowledgeService.setProposedAdaptationOptions(servicesAdaptOptions);
+        return ResponseEntity.ok().body("Adaptation options correctly proposed");
+    }
+
+    @GetMapping("/chosenAdaptationOptions")
+    public List<AdaptationOption> getChosenAdaptationOptions(@RequestParam String serviceId, @RequestParam(defaultValue = "1") String n) {
+        return knowledgeService.getAdaptationOptions(serviceId, Integer.parseInt(n));
+    }
+
+    @PostMapping("/chooseAdaptationOptions")
+    public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
+        knowledgeService.addAdaptationOptions(adaptationOptions);
+        return ResponseEntity.ok().body("Adaptation options correctly chosen");
+    }
+
+    // TODO remove after test
     @GetMapping("/")
     public String hello() {
         knowledgeService.breakpoint();

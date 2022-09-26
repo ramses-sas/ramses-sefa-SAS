@@ -1,16 +1,23 @@
 package it.polimi.saefa.analyse.rest;
 
 import it.polimi.saefa.analyse.domain.AnalyseService;
+import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
+@RequestMapping("/rest")
 public class AnalyseRestController {
     @Autowired
     private AnalyseService analyseService;
+
+    @Autowired
+    private KnowledgeClient knowledgeClient;
 
     @GetMapping("/beginAnalysis")
     public String beginAnalysis() {
@@ -42,4 +49,12 @@ public class AnalyseRestController {
         return "OK";
     }
 
+    // TODO remove after test
+    @GetMapping("/test")
+    public String test() {
+        List<AdaptationOption> opt = List.of(new AddInstances("restaurant-service", "restaurant-service", 1), new RemoveInstance("restaurant-service", "restaurant-service", "restaurant-service@localhost:58085"));
+        knowledgeClient.proposeAdaptationOptions(opt);
+        knowledgeClient.chooseAdaptationOptions(opt);
+        return "OK";
+    }
 }
