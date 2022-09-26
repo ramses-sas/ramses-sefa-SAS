@@ -1,3 +1,4 @@
 rootProject.name = 'managing-system'
 include('monitor', 'analyse', 'knowledge', 'dashboard')
+include 'plan'
 
