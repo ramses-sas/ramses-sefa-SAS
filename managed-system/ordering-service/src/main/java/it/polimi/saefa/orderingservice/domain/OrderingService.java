@@ -2,6 +2,7 @@ package it.polimi.saefa.orderingservice.domain;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,13 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import it.polimi.saefa.orderingservice.exceptions.*;
 import it.polimi.saefa.orderingservice.externalInterfaces.*;
-import it.polimi.saefa.orderingservice.rest.OrderingRestController;
 import it.polimi.saefa.paymentproxyservice.restapi.*;
 import it.polimi.saefa.deliveryproxyservice.restapi.*;
 import it.polimi.saefa.restaurantservice.restapi.common.*;
 
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Slf4j
 @Service
@@ -59,7 +58,8 @@ public class OrderingService {
 			else throw new ItemRemovalException("Impossible to remove the selected item from cart " + cartId);
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
-	
+
+	@Retry(name = "restaurant")
 	public boolean notifyRestaurant(Long cartId, boolean isTakeaway) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if(cart.isPresent() && (cart.get().isPaid()|| cart.get().isRequiresCashPayment())) {
@@ -70,6 +70,7 @@ public class OrderingService {
 	}
 
 	@CircuitBreaker(name = "payment", fallbackMethod = "paymentFallback")
+	@Retry(name = "payment")
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -84,9 +85,8 @@ public class OrderingService {
 	}
 
 	public boolean paymentFallback(Long cartId, PaymentInfo paymentInfo, RuntimeException e) {
-		log.warn("Payment fallback method called from gateway");
-
-		if(circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
+		log.warn("Payment fallback method called!");
+		if (circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
 		throw new PaymentNotAvailableException("Payment service is not available: " + e.getMessage(), cartId);
 	}
@@ -101,9 +101,10 @@ public class OrderingService {
 	}
 
 	@CircuitBreaker(name = "delivery", fallbackMethod = "deliveryFallback")
+	@Retry(name = "delivery")
 	public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
-		if(cart.isPresent()) {
+		if (cart.isPresent()) {
 			if(cart.get().isPaid() || cart.get().isRequiresCashPayment())
 				return deliveryProxyClient.deliverOrder(new DeliverOrderRequest(deliveryInfo.getAddress(), deliveryInfo.getCity(), deliveryInfo.getNumber(), deliveryInfo.getZipcode(), deliveryInfo.getTelephoneNumber(), deliveryInfo.getScheduledTime(), cart.get().getRestaurantId(), cart.get().getId(), cart.get().getTotalPrice())).isAccepted();
 			else return false;
@@ -112,12 +113,13 @@ public class OrderingService {
 
 
 	public boolean deliveryFallback(Long cartId, DeliveryInfo deliveryInfo, RuntimeException e) {
-		log.warn("Delivery fallback method called from gateway");
-		if(circuitBreakerRegistry.circuitBreaker("delivery").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
+		log.warn("Delivery fallback method called!");
+		if (circuitBreakerRegistry.circuitBreaker("delivery").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
 		throw new DeliveryNotAvailableException("Delivery service is not available: " + e.getMessage(), cartId);
 	}
 
+	@Retry(name = "restaurant")
 	public Cart updateCartDetails(Cart cart) {
 		 double totalPrice = 0;
 		 for (CartItem item : cart.getItemList()) {
