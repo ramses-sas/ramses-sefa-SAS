@@ -5,6 +5,7 @@ import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.parser.AdaptationParamParser;
 import it.polimi.saefa.knowledge.parser.ConfigurationParser;
 import it.polimi.saefa.knowledge.parser.SystemArchitectureParser;
+import it.polimi.saefa.knowledge.parser.SystemBenchmarkParser;
 import it.polimi.saefa.knowledge.persistence.KnowledgeService;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
@@ -34,11 +35,20 @@ public class KnowledgeInit implements InitializingBean {
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
         FileReader adaptationParametersReader = new FileReader(ResourceUtils.getFile("classpath:adaptation_parameters_specification.json"));
         Map<String, List<AdaptationParamSpecification>> servicesAdaptationParameters = AdaptationParamParser.parse(adaptationParametersReader);
+        FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
+        Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
 
         serviceList.forEach(service -> {
             service.setConfiguration(configurationParser.parseProperties(service.getServiceId()));
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
             knowledgeService.addService(service);
+            servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
+                serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
+                        service.getPossibleImplementations()
+                                .get(serviceImplementationBenchmarks.getServiceImplementationId())
+                                .getAdaptationParamCollection()
+                                .setBootBenchmark(adaptationClass, value));
+            });
         });
         configurationParser.parseGlobalProperties(knowledgeService.getServicesMap());
 

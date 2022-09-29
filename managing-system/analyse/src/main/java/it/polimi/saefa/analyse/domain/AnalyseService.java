@@ -137,8 +137,8 @@ public class AnalyseService {
                 Map<String, Double> endpointMaxRespTime = new HashMap<>();
 
                 for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-                    double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDuration() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDuration();
-                    double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
+                    double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+                    double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
                     if (requestDifference != 0)
                         endpointAvgRespTime.put(endpoint, durationDifference / requestDifference);
                     endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
@@ -176,8 +176,8 @@ public class AnalyseService {
                 adaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
             }
             log.debug("Adaptation options: {}", adaptationOptions);
-            // TODO
-            // HERE THE LOGIC TO SEND THE OPTIONS TO KNOWLEDGE FOR THE PLAN
+            // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
+            knowledgeClient.proposeAdaptationOptions(adaptationOptions);
         } else {
             analysisIterationCounter++;
         }
@@ -220,6 +220,8 @@ public class AnalyseService {
             Instance worstInstance = instances.get(0);
             // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
             adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), averageAvailability));
+            // Ha il senso di "proponi di rimuovere l'istanza con l'availability peggiore. Se il constraint sull'avail continua a essere soddisfatto, hai risparmiato un'istanza"
+            // TODO non va qui, perché questa proposta l'analisi deve valutarla se il constraint è soddisfatto, non se non lo è
             adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId()));
             // TODO mancano le considerazioni sul cambio di implementazione
         }

@@ -15,7 +15,8 @@ import java.util.List;
         @JsonSubTypes.Type(value = Availability.class),
         @JsonSubTypes.Type(value = AverageResponseTime.class),
         @JsonSubTypes.Type(value = MaxResponseTime.class),
-        @JsonSubTypes.Type(value = TotalCost.class)
+        @JsonSubTypes.Type(value = TotalCost.class),
+        @JsonSubTypes.Type(value = RelativePerformance.class),
 })
 @NoArgsConstructor
 public abstract class AdaptationParamSpecification {

@@ -97,10 +97,30 @@ public class HttpRequestMetrics {
     }
 
     @JsonIgnore
+    public double getTotalDurationOfSuccessful(){
+        double total = 0;
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            if(outcomeMetrics.status<400)
+                total += outcomeMetrics.getTotalDuration();
+        }
+        return total;
+    }
+
+    @JsonIgnore
     public int getTotalCount(){
         int total = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
             total += outcomeMetrics.getCount();
+        }
+        return total;
+    }
+
+    @JsonIgnore
+    public int getTotalCountOfSuccessful(){
+        int total = 0;
+        for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
+            if(outcomeMetrics.status<400)
+                total += outcomeMetrics.getCount();
         }
         return total;
     }

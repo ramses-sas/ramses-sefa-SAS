@@ -14,7 +14,7 @@ import java.util.Map;
 public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
 
     // The weights of the services. Key is the instanceAddress, value is the weight.
-    protected Map<String,Integer> weightPerAddress;
+    protected Map<String, Integer> weightPerAddress;
 
     private int defaultWeight;
 
@@ -24,8 +24,11 @@ public class WeightedRoundRobinLoadBalancer extends RoundRobinLoadBalancer {
         this.defaultWeight = defaultWeight;
     }
 
-    public void setWeightForInstanceAtAddress(String instanceAddress, int weight) {
-        weightPerAddress.put(instanceAddress, weight);
+    public void setWeightForInstanceAtAddress(String instanceAddress, Integer weight) {
+        if (weight == null || weight <= 0)
+            weightPerAddress.remove(instanceAddress);
+        else
+            weightPerAddress.put(instanceAddress, weight);
     }
 
     @Override

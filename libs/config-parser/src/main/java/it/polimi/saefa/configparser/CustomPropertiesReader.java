@@ -8,6 +8,12 @@ public class CustomPropertiesReader<T> {
         this.env = env;
     }
 
+    public String getLoadBalancerInstanceWeight(String serviceId, String address) {
+        String prop = LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
+        return getProperty(prop);
+    }
+
+    /*
     public int getLoadBalancerInstanceWeight(String serviceId, String address) {
         String prop = LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
         try {
@@ -24,6 +30,7 @@ public class CustomPropertiesReader<T> {
         String prop = LBPREFIX+serviceId.toLowerCase()+".global.weight";
         return Integer.parseInt(getProperty(prop, "1"));
     }
+     */
 
     public String getLoadBalancerTypeOrDefault(String serviceId) {
         String prop = LBPREFIX+serviceId.toLowerCase()+".global.type";

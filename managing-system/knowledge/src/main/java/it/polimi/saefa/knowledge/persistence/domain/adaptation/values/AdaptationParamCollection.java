@@ -9,6 +9,7 @@ import java.util.*;
 @Data
 public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamValueHistories = new HashMap<>();
+    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmark = new HashMap<>();
 
     public List<AdaptationParamSpecification> getAdaptationParameterSpecification(){
         List<AdaptationParamSpecification> toReturn = new LinkedList<>();
@@ -16,6 +17,15 @@ public class AdaptationParamCollection {
             adaptationParameter -> toReturn.add(adaptationParameter.getSpecification())
         );
         return toReturn;
+    }
+
+    @JsonIgnore
+    public Double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass){
+        return adaptationParamBootBenchmark.get(adaptationParamSpecificationClass);
+    }
+
+    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark){
+        adaptationParamBootBenchmark.put(adaptationParamSpecificationClass, benchmark);
     }
 
     @JsonIgnore
