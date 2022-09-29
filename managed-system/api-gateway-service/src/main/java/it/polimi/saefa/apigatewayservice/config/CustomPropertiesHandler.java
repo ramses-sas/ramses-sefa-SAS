@@ -1,12 +1,15 @@
 package it.polimi.saefa.apigatewayservice.config;
 
+import com.netflix.discovery.EurekaClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
+import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -34,6 +37,13 @@ public class CustomPropertiesHandler {
         return new CustomPropertiesReader<>(env);
     }
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    public void refreshRoutes() {
+        applicationEventPublisher.publishEvent(new RefreshRoutesEvent(this));
+    }
+
     @EventListener(EnvironmentChangeEvent.class)
     public void lbChanges(EnvironmentChangeEvent environmentChangeEvent) {
         // EXAMPLE: Received an environment changed event for keys [config.client.version, test.property]
@@ -46,6 +56,7 @@ public class CustomPropertiesHandler {
             handleLBTypeChange(changedProperty);
             handleLBWeightChange(changedProperty);
         });
+        refreshRoutes();
     }
 
 

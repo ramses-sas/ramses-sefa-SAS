@@ -84,7 +84,7 @@ public class OrderingService {
 	}
 
 	public boolean paymentFallback(Long cartId, PaymentInfo paymentInfo, RuntimeException e) {
-		log.warn("Payment fallback method called from gateway");
+		log.warn("Payment fallback method called from Circuit Breaker");
 
 		if(circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;

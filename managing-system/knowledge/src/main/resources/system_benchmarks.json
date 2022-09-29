@@ -1,0 +1,127 @@
+{
+	"services"	: [
+		{
+			"service_id":"RESTAURANT-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "restaurant-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"ORDERING-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "ordering-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+
+					]
+				}
+			]
+		},
+		{
+			"service_id":"PAYMENT-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "payment-proxy-1-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				},
+				{
+					"implementation_id" : "payment-proxy-2-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				},
+				{
+					"implementation_id" : "payment-proxy-3-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"DELIVERY-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "delivery-proxy-1-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				},
+				{
+					"implementation_id" : "delivery-proxy-2-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				},
+				{
+					"implementation_id" : "delivery-proxy-3-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				}
+			]
+		}
+	],
+	"trash" : [
+		{
+			"service_id":"API-GATEWAY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "api-gateway-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"WEB-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "web-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 5
+						}
+					]
+				}
+			]
+		}
+	]
+}

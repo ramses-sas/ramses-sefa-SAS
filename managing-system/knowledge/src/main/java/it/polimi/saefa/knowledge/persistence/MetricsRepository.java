@@ -27,7 +27,7 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
     @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND " +
             "m.timestamp > ISNULL((SELECT MAX(m1.timestamp) FROM InstanceMetrics m1 WHERE m1.instanceId = :instanceId AND m.status="+SHUTDOWNSTATUS+"), it.polimi.saefa.knowledge.persistence.MetricsRepository.MIN_TIMESTAMP) " +
             "ORDER BY m.timestamp DESC")
-    Page<InstanceMetrics> findLatestOfCurrentInstanceOrderByTimestampDesc(String instanceId, Pageable pageable);
+    Page<InstanceMetrics> findLatestOfCurrentInstanceOrderByTimestampDesc(String instanceId, Pageable pageable); //TODO vanno restituite quelle dopo il timestamp dell'ultima applied (non più chosen) adaptation option
 
     Page<InstanceMetrics> findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(String instanceId, Date timestamp, Pageable pageable);
 

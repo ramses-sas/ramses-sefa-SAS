@@ -137,8 +137,8 @@ public class AnalyseService {
                 Map<String, Double> endpointMaxRespTime = new HashMap<>();
 
                 for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-                    double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDuration() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDuration();
-                    double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
+                    double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+                    double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
                     if (requestDifference != 0)
                         endpointAvgRespTime.put(endpoint, durationDifference / requestDifference);
                     endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());

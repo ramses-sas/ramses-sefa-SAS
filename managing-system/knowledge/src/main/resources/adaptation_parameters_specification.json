@@ -22,10 +22,10 @@
 					"max_threshold" : 2
 				},
 				{
-					"name" : "total_cost",
+					"name" : "relative_performance",
 					"weight" : 0.2,
 					"priority" : 4,
-					"max_threshold": 1000
+					"min_threshold": 1000
 				}
 			]
 		},
@@ -51,10 +51,10 @@
 					"max_threshold" : 2
 				},
 				{
-					"name" : "total_cost",
+					"name" : "relative_performance",
 					"weight" : 0.2,
 					"priority" : 4,
-					"max_threshold": 1000
+					"min_threshold": 1000
 				}
 			]
 		},
@@ -80,10 +80,10 @@
 					"max_threshold" : 2
 				},
 				{
-					"name" : "total_cost",
+					"name" : "relative_performance",
 					"weight" : 0.2,
 					"priority" : 4,
-					"max_threshold": 1000
+					"min_threshold": 1000
 				}
 			]
 		},
@@ -109,10 +109,10 @@
 					"max_threshold" : 2
 				},
 				{
-					"name" : "total_cost",
+					"name" : "relative_performance",
 					"weight" : 0.2,
 					"priority" : 4,
-					"max_threshold": 1000
+					"min_threshold": 1000
 				}
 			]
 		}
