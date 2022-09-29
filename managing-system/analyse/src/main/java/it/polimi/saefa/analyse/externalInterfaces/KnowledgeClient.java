@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
@@ -69,4 +70,6 @@ public interface KnowledgeClient {
     // TODO remove after test
     @PostMapping("/rest/chooseAdaptationOptions")
     ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+
+
 }
