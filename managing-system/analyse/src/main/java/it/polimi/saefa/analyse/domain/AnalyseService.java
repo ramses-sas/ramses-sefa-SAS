@@ -58,7 +58,6 @@ public class AnalyseService {
     private KnowledgeClient knowledgeClient;
 
 
-
     public void startAnalysis() {
         log.warn("Starting analysis");
         updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin

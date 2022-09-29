@@ -23,7 +23,8 @@ import java.util.Map;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AddInstances.class),
-        @JsonSubTypes.Type(value = RemoveInstance.class)
+        @JsonSubTypes.Type(value = RemoveInstance.class),
+        @JsonSubTypes.Type(value = ChangeLoadBalancerWeights.class),
 })
 public abstract class AdaptationOption {
     @Id

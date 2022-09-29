@@ -26,4 +26,7 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/chooseAdaptationOptions")
     ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+
+    @GetMapping("/proposedAdaptationOptions")
+    Map<String, List<AdaptationOption>> getProposedAdaptationOptions();
 }
