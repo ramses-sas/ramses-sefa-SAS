@@ -176,8 +176,8 @@ public class AnalyseService {
                 adaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
             }
             log.debug("Adaptation options: {}", adaptationOptions);
-            // TODO
-            // HERE THE LOGIC TO SEND THE OPTIONS TO KNOWLEDGE FOR THE PLAN
+            // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
+            knowledgeClient.proposeAdaptationOptions(adaptationOptions);
         } else {
             analysisIterationCounter++;
         }
