@@ -10,8 +10,8 @@ public class CustomProperty {
     final private String value;
 
     public CustomProperty(String propertyKey, String value) {
-        if (propertyKey == null || value == null)
-            throw new IllegalArgumentException("Property key and value cannot be null");
+        if (propertyKey == null)
+            throw new IllegalArgumentException("Property key cannot be null");
         String[] propertyFields = propertyKey.split("\\.");
         this.parentProperty = propertyFields[0];
         this.serviceId = propertyFields[1];

@@ -2,6 +2,7 @@ package it.polimi.saefa.orderingservice.config;
 
 import it.polimi.saefa.configparser.CustomPropertiesReader;
 import it.polimi.saefa.configparser.CustomProperty;
+import it.polimi.saefa.loadbalancer.algorithms.WeightedRandomLoadBalancer;
 import it.polimi.saefa.loadbalancer.algorithms.WeightedRoundRobinLoadBalancer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +59,22 @@ public class CustomPropertiesHandler {
     private void handleLBWeightChange(CustomProperty changedProperty) {
         if (!changedProperty.isServiceGlobal() && !changedProperty.isInstanceGlobal()) {
             if (changedProperty.getPropertyElements().length == 1 && changedProperty.getPropertyElements()[0].equals("weight")) {
-                int weight = Integer.parseInt(changedProperty.getValue());
+                String stringWeight = changedProperty.getValue();
                 ReactiveLoadBalancer<ServiceInstance> lb = loadBalancerClientFactory.getInstance(changedProperty.getServiceId());
                 if (lb instanceof WeightedRoundRobinLoadBalancer) {
                     log.info("Changing load balancer weight for instance {} of service {} to {}", changedProperty.getServiceId(), changedProperty.getAddress(), changedProperty.getValue());
+                    Integer weight = null;
+                    try {
+                        weight = Integer.parseInt(stringWeight);
+                    } catch (Exception e) {}
                     ((WeightedRoundRobinLoadBalancer) lb).setWeightForInstanceAtAddress(changedProperty.getAddress(), weight);
+                } else if (lb instanceof WeightedRandomLoadBalancer) {
+                    log.info("Changing load balancer weight for instance {} of service {} to {}", changedProperty.getServiceId(), changedProperty.getAddress(), changedProperty.getValue());
+                    Double weight = null;
+                    try {
+                        weight = Double.parseDouble(stringWeight);
+                    } catch (Exception e) {}
+                    ((WeightedRandomLoadBalancer) lb).setWeightForInstanceAtAddress(changedProperty.getAddress(), weight);
                 }
             }
         }
