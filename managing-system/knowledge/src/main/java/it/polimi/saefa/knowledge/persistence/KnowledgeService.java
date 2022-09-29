@@ -39,17 +39,12 @@ public class KnowledgeService {
 
     private Set<Instance> previouslyActiveInstances = new HashSet<>();
     private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
-    @Getter @Setter private Map<String, List<AdaptationOption>> proposedAdaptationOptions = new HashMap<>();
-
-    /*public boolean addMetrics(Instance instance, InstanceMetrics metrics) {
-        if(metrics.isActive() || getLatestByInstanceId(metrics.getServiceId(),metrics.getInstance()).isActive()) {
-            //if the instance is down, only save it if it's the first detection
-            instance.getMetrics().add(metrics);
-            //metricsRepository.save(metrics);
-            return true;
-        }
-        return false;
-    }*/
+    // <serviceId, AdaptationOptions proposed by the Analyse>
+    @Getter @Setter
+    private Map<String, List<AdaptationOption>> proposedAdaptationOptions = new HashMap<>();
+    // <serviceId, AdaptationOption chosen by the Plan>
+    @Getter @Setter
+    private Map<String, AdaptationOption> chosenAdaptationOptions = new HashMap<>();
 
 
 
@@ -199,10 +194,16 @@ public class KnowledgeService {
         return adaptationChoicesRepository.findAllByServiceIdOrderByTimestampDesc(serviceId, Pageable.ofSize(n)).stream().toList();
     }
 
+    // Called by the Analyse module to propose the adaptation options
     public void addAdaptationOptions(List<AdaptationOption> options) {
+        // a new loop is started: reset the previous options
+        proposedAdaptationOptions = new HashMap<>();
+        chosenAdaptationOptions = new HashMap<>();
+        // add the options both to the repository and to the map
         options.forEach(option -> {
-            option.applyTimestamp();
+            // option.applyTimestamp(); MOVE to the method called by the Plan module
             adaptationChoicesRepository.save(option);
+            chosenAdaptationOptions.put(option.getServiceId(), option);
         });
     }
 

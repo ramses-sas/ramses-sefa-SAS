@@ -36,8 +36,6 @@ public class WeightedRandomLoadBalancer extends BaseLoadBalancer {
                 log.warn("No servers available for service: " + getServiceId());
             return new EmptyResponse();
         }
-        if (!weightPerAddress.isEmpty() && weightPerAddress.size() < serviceInstances.size())
-            throw new IllegalStateException("You don't have a weight for all the instances. You have to set a weight for all the instances or none of them.");
         double p = Math.random();
         double cumulativeProbability = 0.0;
         serviceInstances.sort((o1, o2) -> {
@@ -47,7 +45,18 @@ public class WeightedRandomLoadBalancer extends BaseLoadBalancer {
         });
         int n = serviceInstances.size();
         for (ServiceInstance instance : serviceInstances) {
-            Double instanceWeight = weightPerAddress.getOrDefault(instance.getHost()+":"+instance.getPort(), 1.0/n);
+            Double instanceWeight;
+            // If there are no weights, all the instances have the same weight.
+            if (weightPerAddress.isEmpty())
+                instanceWeight = 1.0 / n;
+            else {
+                // If there is no weight for the instance skip it
+                if (!weightPerAddress.containsKey(instance.getHost()+":"+instance.getPort())) {
+                    log.warn("You don't have the weight for the instance: " + instance.getInstanceId());
+                    continue;
+                }
+                instanceWeight = weightPerAddress.get(instance.getHost() + ":" + instance.getPort());
+            }
             cumulativeProbability += instanceWeight;
             if (p <= cumulativeProbability) {
                 if (log.isDebugEnabled())
@@ -55,7 +64,8 @@ public class WeightedRandomLoadBalancer extends BaseLoadBalancer {
                 return new DefaultResponse(instance);
             }
         }
-        // Se siamo qui, è perché la dim della lista è minore di quella della map dei pesi. Quindi la somma dei pesi è strettamente minore di 1.
+        // Se siamo qui è perché la cumulativeProbability finale è strettamente minore di 1
+        // (caso in cui un'istanza fallisce o semplicemente non è nella lista per qualche motivo, ma c'è il suo peso).
         // In questo caso, l'ultimo elemento della lista è quello scelto in extremis
         return new DefaultResponse(serviceInstances.get(serviceInstances.size()-1));
     }
