@@ -4,14 +4,12 @@ import static it.polimi.saefa.configparser.CustomPropertiesDefinition.LBPREFIX;
 
 public class CustomPropertiesWriter {
 
-    public String setLoadBalancerInstanceWeight(String serviceId, String address, String value) {
-        String key = LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
-        return key+"="+value;
+    public static String buildLoadBalancerInstanceWeightPropertyKey(String serviceId, String address) {
+        return LBPREFIX+serviceId.toLowerCase()+"."+address.replace(".","_").replace(":","_")+".weight";
     }
 
-    public String setLoadBalancerType(String serviceId, String value) {
-        String key = LBPREFIX+serviceId.toLowerCase()+".global.type";
-        return key+"="+value;
+    public static String buildLoadBalancerTypePropertyKey(String serviceId) {
+        return LBPREFIX+serviceId.toLowerCase()+".global.type";
     }
 
 }

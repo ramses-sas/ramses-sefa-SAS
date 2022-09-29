@@ -1,8 +1,10 @@
 package it.polimi.saefa.execute.domain;
 
+import it.polimi.saefa.configparser.CustomPropertiesWriter;
 import it.polimi.saefa.execute.externalInterfaces.*;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.ChangeLoadBalancerWeights;
 import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ public class ExecuteService {
 
     @Autowired
     private KnowledgeClient knowledgeClient;
+    @Autowired
+    private MonitorClient monitorClient;
     @Autowired
     private ConfigManagerClient configManagerClient;
     @Autowired
@@ -31,10 +35,13 @@ public class ExecuteService {
                 handleAddInstances((AddInstances) (adaptationOption));
             } else if (clazz.equals(RemoveInstance.class)) {
                 handleRemoveInstance((RemoveInstance) (adaptationOption));
+            } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
+                handleChangeLBWeight((ChangeLoadBalancerWeights) (adaptationOption));
             } else {
                 log.error("Unknown adaptation option type: " + adaptationOption.getClass());
             }
         });
+        monitorClient.notifyFinishedIteration();
         log.info("Execute step completed");
     }
 
@@ -47,7 +54,11 @@ public class ExecuteService {
         instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstanceOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
     }
 
-    private void changeLBWeight() {
-        //TODO
+    private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
+        String serviceId = changeLoadBalancerWeightsOption.getServiceId();
+        changeLoadBalancerWeightsOption.getNewWeights().forEach((instanceId, weight) -> {
+            String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
+            configManagerClient.addOrUpdateProperty(new AddOrUpdatePropertyRequest(serviceId, propertyKey, weight.toString()));
+        });
     }
 }

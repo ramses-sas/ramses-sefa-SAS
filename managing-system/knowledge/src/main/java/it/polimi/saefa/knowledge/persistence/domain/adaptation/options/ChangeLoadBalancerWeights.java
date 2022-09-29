@@ -12,12 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor
 @DiscriminatorValue("CHANGE_LOAD_BALANCER_WEIGHTS")
-public class ChangeLoadBalancerWeights extends AdaptationOption{
+public class ChangeLoadBalancerWeights extends AdaptationOption {
+    // <instanceId, newWeight>
     @ElementCollection
-    private Map<String, Double> newWeights = new HashMap<>();
+    private Map<String, Double> newWeights;
 
     public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId) {
         super(serviceId, serviceImplementationId);
@@ -25,6 +26,9 @@ public class ChangeLoadBalancerWeights extends AdaptationOption{
 
     @Override
     public String getDescription() {
-        return "Change load balancer weights of service " + super.getServiceId();
+        String base = "Change load balancer weights of service " + super.getServiceId();
+        if (newWeights != null)
+            base += "\nNew weights are: \n" + newWeights;
+        return base;
     }
 }
