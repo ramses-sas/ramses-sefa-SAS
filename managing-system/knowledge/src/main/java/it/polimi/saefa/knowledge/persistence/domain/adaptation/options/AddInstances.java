@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("ADD_INSTANCES")
 public class AddInstances extends AdaptationOption {
     private double newInstanceAvailabilityEstimation;
+    private Integer numberOfInstancesToAdd;
 
     public AddInstances(String serviceId, String implementationId, double newInstanceAvailabilityEstimation) {
         super(serviceId, implementationId);
@@ -22,7 +23,7 @@ public class AddInstances extends AdaptationOption {
 
     @Override
     public String getDescription() {
-        return "Add new instances of service " + super.getServiceId();
+        return "Add" + (numberOfInstancesToAdd == null ? "" : " "+numberOfInstancesToAdd) + " new instances of service " + super.getServiceId();
     }
 
 }

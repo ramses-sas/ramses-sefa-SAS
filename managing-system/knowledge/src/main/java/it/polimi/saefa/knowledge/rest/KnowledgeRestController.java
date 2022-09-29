@@ -164,8 +164,8 @@ public class KnowledgeRestController {
     }
 
     @GetMapping("/chosenAdaptationOptions")
-    public List<AdaptationOption> getChosenAdaptationOptions(@RequestParam String serviceId, @RequestParam(defaultValue = "1") String n) {
-        return knowledgeService.getAdaptationOptions(serviceId, Integer.parseInt(n));
+    public List<AdaptationOption> getChosenAdaptationOptions() {
+        return knowledgeService.getChosenAdaptationOptions().values().stream().toList();
     }
 
     @PostMapping("/chooseAdaptationOptions")

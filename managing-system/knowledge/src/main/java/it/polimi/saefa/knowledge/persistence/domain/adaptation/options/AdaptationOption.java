@@ -38,7 +38,7 @@ public abstract class AdaptationOption {
     //@ElementCollection
     //private Map<Class<? extends AdaptationParamSpecification>, Double> requiredValueMap = new HashMap<>();
 
-    // Timestamp of acceptance (it is null if the adaptation option has not been accepted by the Plan)
+    // Timestamp of acceptance (it is NOT NULL ONLY IF the adaptation option has been accepted by the Plan)
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
