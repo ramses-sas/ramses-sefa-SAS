@@ -220,6 +220,8 @@ public class AnalyseService {
             Instance worstInstance = instances.get(0);
             // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
             adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), averageAvailability));
+            // Ha il senso di "proponi di rimuovere l'istanza con l'availability peggiore. Se il constraint sull'avail continua a essere soddisfatto, hai risparmiato un'istanza"
+            // TODO non va qui, perché questa proposta l'analisi deve valutarla se il constraint è soddisfatto, non se non lo è
             adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId()));
             // TODO mancano le considerazioni sul cambio di implementazione
         }

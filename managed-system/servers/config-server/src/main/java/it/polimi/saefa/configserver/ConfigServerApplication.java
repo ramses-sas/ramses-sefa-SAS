@@ -64,7 +64,7 @@ public class ConfigServerApplication {
 
     @GetMapping(value = "/")
     public String hello() {
-        notifyInstance(new DefaultServiceInstance(appName, appName,"localhost", 44444, false));
+        notifyInstance(new DefaultServiceInstance("api-gateway-service@localhost:58081", "api-gateway-service","localhost", 58081, false));
         return "OK";
     }
 
@@ -80,7 +80,7 @@ public class ConfigServerApplication {
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .exceptionally(t -> {
-                    log.severe("Error refreshing " + instance.getServiceId() + "@" + instance.getHost() + ":" + instance.getPort() + ".\n " + t.getMessage());
+                    log.severe("Error refreshing " + instance.getServiceId() + "@" + instance.getHost() + ":" + instance.getPort() + ". Error: " + t.getMessage());
                     return null;
                 })
                 .thenAccept(body -> log.info("Refreshed " + instance.getServiceId() + "@" + instance.getHost() + ":" + instance.getPort()));
