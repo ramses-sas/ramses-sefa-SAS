@@ -13,6 +13,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.plan.externalInterfaces.KnowledgeClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,16 @@ public class PlanService {
     private KnowledgeClient knowledgeClient;
     private Map<String, Service> servicesMap;
 
+    static {
+        log.debug("Current directory: {}", System.getProperty("user.dir"));
+        try {
+            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
+            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
+        } catch (Exception e) {
+            log.error("Error loading or-tools libraries", e);
+        }
+    }
+    
     public void startPlan() {
         Map<String, List<AdaptationOption>> adaptationOptions = knowledgeClient.getProposedAdaptationOptions();
         servicesMap = knowledgeClient.getServicesMap();
@@ -100,8 +111,7 @@ public class PlanService {
         return newWeights;
     }
 
-    static { System.load("/Users/gian/Documents/saefa/libs/or-tools/libjniortools.dylib");
-        System.load("/Users/gian/Documents/saefa/libs/or-tools/libortools.9.dylib");}
+
 
 
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {
