@@ -2,7 +2,6 @@ package it.polimi.saefa.knowledge.domain.adaptation.values;
 
 import com.fasterxml.jackson.annotation.*;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

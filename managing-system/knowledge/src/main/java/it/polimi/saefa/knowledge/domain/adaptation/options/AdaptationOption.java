@@ -2,7 +2,6 @@ package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

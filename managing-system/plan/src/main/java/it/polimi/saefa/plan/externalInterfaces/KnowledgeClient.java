@@ -1,8 +1,7 @@
 package it.polimi.saefa.plan.externalInterfaces;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,9 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/services")
     List<Service> getServices();
+
+    @GetMapping("/rest/servicesMap")
+    Map<String, Service> getServicesMap();
 
     @PostMapping("/rest/addNewAdaptationParameterValue")
     ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
