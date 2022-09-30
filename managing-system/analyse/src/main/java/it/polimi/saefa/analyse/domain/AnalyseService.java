@@ -80,7 +80,7 @@ public class AnalyseService {
                 metrics.addAll(knowledgeClient.getLatestNMetricsAfterDate(instance.getInstance(), dateFormatter.format(lastAnalysisTimestamp), afterMetrics));
                  */
                 metrics.addAll(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
-                // Not enough data to perform analysis
+                // Not enough data to perform analysis. Can happen only at startup because once you have enough data, you will always have enough data
                 if (metrics.size() != metricsWindowSize) {
                     instancesStats.add(new InstanceStats(instance)); // Add unavailable instance stats that will be filled with the average valuesStackHistory computed over the other instances
                     continue;
