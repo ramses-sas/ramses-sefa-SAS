@@ -2,7 +2,5 @@ dependencies {
     implementation project(':knowledge')
     implementation fileTree(dir: '../libs', include: ['**/build/libs/*.jar'])
     implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
-    implementation fileTree(dir: '../../libs/or-tools', include: ['**/*.jar'])
-    compileOnly files('../../libs/or-tools/ortools-java-9.4.1874.jar')
     implementation 'com.google.ortools:ortools-java:9.4.1874'
 }
