@@ -107,8 +107,9 @@ public class PlanService {
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {
         log.warn("TEST");
         Map<String, Double> previousWeights = new HashMap<>();
-        previousWeights.put("1", 0.5);
-        previousWeights.put("2", 0.5);
+        previousWeights.put("1", 0.34);
+        previousWeights.put("2", 0.33);
+        previousWeights.put("3", 0.33);
 
         Map<String, Double> newWeights = new HashMap<>();
 
@@ -125,10 +126,21 @@ public class PlanService {
 
 
             if(instance.equals("1")) {
-                instanceAvgRespTime = 1;
-                instanceAvailability = 0.7;
+                instanceAvgRespTime = 1.51;
+                instanceAvailability = 0.75;
+            }
+
+            if (instance.equals("2")) {
+                instanceAvgRespTime = 9;
+                instanceAvailability = 0.3;
+            }
+
+            if(instance.equals("3")) {
+                instanceAvgRespTime = 1.5;
+                instanceAvailability = 0.75;
             }
             double upperBound = previousWeights.get(instance) * (serviceAvgRespTime/instanceAvgRespTime) * (instanceAvailability/serviceAvailability);
+            upperBound = previousWeights.get(instance) * 2;
             MPVariable weight = solver.makeNumVar(0, upperBound, instance);
             weights.put(instance, weight);
 
@@ -142,6 +154,7 @@ public class PlanService {
 
             objective.setCoefficient(weight, instanceAvgRespTime/instanceAvailability);
         }
+
 
         MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights");
         for (MPVariable weight : weights.values()) {
