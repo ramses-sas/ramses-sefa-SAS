@@ -26,6 +26,7 @@ public class PlanService {
     @Autowired
     private KnowledgeClient knowledgeClient;
     private Map<String, Service> servicesMap;
+    private Map<String, AdaptationOption> chosenAdaptationOptions;
 
     static {
         log.debug("Current directory: {}", System.getProperty("user.dir"));
@@ -36,7 +37,7 @@ public class PlanService {
             log.error("Error loading or-tools libraries", e);
         }
     }
-    
+
     public void startPlan() {
         Map<String, List<AdaptationOption>> adaptationOptions = knowledgeClient.getProposedAdaptationOptions();
         servicesMap = knowledgeClient.getServicesMap();
@@ -69,37 +70,51 @@ public class PlanService {
         Map<String, MPVariable> weights = new HashMap<>();
         //List<MPConstraint> increaseDecreaseConstraintList = new LinkedList<>();
         MPObjective objective = solver.objective();
+        MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights");
+
+
+        double serviceAvgRespTime = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+        double serviceAvgAvailability = option.getServiceAverageAvailability();
+
+        double k_s = serviceAvgAvailability/serviceAvgRespTime; //performance indicator
 
         for(Instance instance : servicesMap.get(service.getServiceId()).getInstances()){
             if(emptyWeights)
                 previousWeights.put(instance.getAddress(), defaultWeight);
-            double serviceAvgRespTime = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
             double instanceAvgRespTime = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-            double serviceAvgAvailability = option.getServiceAverageAvailability();
             double instanceAvailability = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
-
-            double upperBound = previousWeights.get(instance.getAddress()) * (serviceAvgRespTime/instanceAvgRespTime) * (instanceAvailability/serviceAvgAvailability);
+            double k_i = instanceAvailability/instanceAvgRespTime;
+            double upperBound = previousWeights.get(instance.getAddress()) * (k_i/k_s); // k_i/k_s is the performance ratio between instance and service
+            //performanceRatioConstraint: weight_i <= old_weight_i * k_i/k_s
             MPVariable weight = solver.makeNumVar(0, upperBound, instance.getInstanceId());
+
             weights.put(instance.getInstanceId(), weight);
-
-            MPConstraint increaseDecreaseTimeConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, previousWeights.get(instance.getAddress())*(instanceAvgRespTime-serviceAvgRespTime), "increaseDecreaseTimeConstraint");
-            increaseDecreaseTimeConstraint.setCoefficient(weight, instanceAvgRespTime-serviceAvgRespTime);
-            //increaseDecreaseConstraintList.add(increaseDecreaseTimeConstraint);
-
-            MPConstraint increaseDecreaseAvailabilityConstraint = solver.makeConstraint(previousWeights.get(instance.getAddress())*(instanceAvailability-serviceAvgAvailability), Double.POSITIVE_INFINITY, "increaseDecreaseAvailabilityConstraint");
-            increaseDecreaseAvailabilityConstraint.setCoefficient(weight, instanceAvailability-serviceAvgAvailability);
-            //increaseDecreaseConstraintList.add(increaseDecreaseAvailabilityConstraint);
-
+            sumOfWeights.setCoefficient(weight, 1);
             objective.setCoefficient(weight, instanceAvgRespTime/instanceAvailability);
         }
 
-        MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights");
-        for (MPVariable weight : weights.values()) {
-            sumOfWeights.setCoefficient(weight, 1);
+        for (Instance instance_i : servicesMap.get(service.getServiceId()).getInstances()) {
+            MPVariable weight_i = weights.get(instance_i.getInstanceId());
+            double instanceAvgRespTime_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+            double instanceAvailability_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double k_i = instanceAvailability_i/instanceAvgRespTime_i;
+
+            for(Instance instance_j : servicesMap.get(service.getServiceId()).getInstances()){
+                if(!instance_i.getInstanceId().equals(instance_j.getInstanceId())){
+                    MPVariable weight_j = weights.get(instance_j.getInstanceId());
+                    double instanceAvgRespTime_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+                    double instanceAvailability_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+                    double k_j = instanceAvailability_j/instanceAvgRespTime_j;
+
+                    //weightRatioConstraint: weight_i <= k_i/k_j * weight_j
+                    MPConstraint weightRatioConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, "weightRatioConstraint between " + instance_i.getInstanceId() + " and " + instance_j.getInstanceId());
+                    weightRatioConstraint.setCoefficient(weight_i, k_j);
+                    weightRatioConstraint.setCoefficient(weight_j, -k_i);
+                }
+            }
         }
 
         objective.setMinimization();
-
         solver.solve();
         log.info("Solution:");
         log.info("Objective value = " + objective.value());
@@ -111,15 +126,13 @@ public class PlanService {
         return newWeights;
     }
 
-
-
-
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {
         log.warn("TEST");
         Map<String, Double> previousWeights = new HashMap<>();
-        previousWeights.put("1", 0.34);
-        previousWeights.put("2", 0.33);
-        previousWeights.put("3", 0.33);
+        previousWeights.put("1", 0.3);
+        previousWeights.put("2", 0.25);
+        previousWeights.put("3", 0.3);
+        previousWeights.put("4", 0.15);
 
         Map<String, Double> newWeights = new HashMap<>();
 
@@ -129,8 +142,8 @@ public class PlanService {
         MPObjective objective = solver.objective();
 
         for(String instance : previousWeights.keySet()){
-            double serviceAvgRespTime = 5;
-            double serviceAvailability = 0.5;
+            double serviceAvgRespTime = 4.25;
+            double serviceAvailability = 0.675;
             double instanceAvgRespTime = 9;
             double instanceAvailability = 0.3;
 
@@ -149,18 +162,18 @@ public class PlanService {
                 instanceAvgRespTime = 1.5;
                 instanceAvailability = 0.75;
             }
+
+            if(instance.equals("4")) {
+                instanceAvgRespTime = 5;
+                instanceAvailability = 0.9;
+            }
+
             double upperBound = previousWeights.get(instance) * (serviceAvgRespTime/instanceAvgRespTime) * (instanceAvailability/serviceAvailability);
             upperBound = previousWeights.get(instance) * 2;
             MPVariable weight = solver.makeNumVar(0, upperBound, instance);
             weights.put(instance, weight);
 
-            MPConstraint increaseDecreaseTimeConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, previousWeights.get(instance)*(instanceAvgRespTime-serviceAvgRespTime), "increaseDecreaseTimeConstraint");
-            increaseDecreaseTimeConstraint.setCoefficient(weight, instanceAvgRespTime-serviceAvgRespTime);
-            //increaseDecreaseConstraintList.add(increaseDecreaseTimeConstraint);
 
-            MPConstraint increaseDecreaseAvailabilityConstraint = solver.makeConstraint(previousWeights.get(instance)*(instanceAvailability-serviceAvailability), Double.POSITIVE_INFINITY, "increaseDecreaseAvailabilityConstraint");
-            increaseDecreaseAvailabilityConstraint.setCoefficient(weight, instanceAvailability-serviceAvailability);
-            //increaseDecreaseConstraintList.add(increaseDecreaseAvailabilityConstraint);
 
             objective.setCoefficient(weight, instanceAvgRespTime/instanceAvailability);
         }
@@ -169,6 +182,71 @@ public class PlanService {
         MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights");
         for (MPVariable weight : weights.values()) {
             sumOfWeights.setCoefficient(weight, 1);
+        }
+
+        for(String instance: weights.keySet()){
+            double instanceAvgRespTime = 9;
+            double instanceAvailability = 0.3;
+
+
+            if(instance.equals("1")) {
+                instanceAvgRespTime = 1.51;
+                instanceAvailability = 0.75;
+            }
+
+            if (instance.equals("2")) {
+                instanceAvgRespTime = 9;
+                instanceAvailability = 0.3;
+            }
+
+            if(instance.equals("3")) {
+                instanceAvgRespTime = 1.5;
+                instanceAvailability = 0.75;
+            }
+
+            if(instance.equals("4")) {
+                instanceAvgRespTime = 5;
+                instanceAvailability = 0.9;
+            }
+
+            double k_i = instanceAvailability/instanceAvgRespTime;
+
+            for(String instance2 : weights.keySet()){
+                double instanceAvgRespTime2 = 9;
+                double instanceAvailability2 = 0.3;
+                if(!instance.equals(instance2)){
+
+                    if(instance2.equals("1")) {
+                        instanceAvgRespTime2 = 1.51;
+                        instanceAvailability2 = 0.75;
+                    }
+
+                    if (instance2.equals("2")) {
+                        instanceAvgRespTime2 = 9;
+                        instanceAvailability2 = 0.3;
+                    }
+
+                    if(instance2.equals("3")) {
+                        instanceAvgRespTime2 = 1.5;
+                        instanceAvailability2 = 0.75;
+                    }
+
+                    if(instance2.equals("4")) {
+                        instanceAvgRespTime2 = 5;
+                        instanceAvailability2 = 0.9;
+                    }
+
+                    double k_j = instanceAvailability2/instanceAvgRespTime2;
+
+                    double z_ij = k_i/k_j;
+
+
+                    MPConstraint constraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, "upperBoundSimilarWeights");
+                    constraint.setCoefficient(weights.get(instance), 1);
+                    constraint.setCoefficient(weights.get(instance2), -z_ij);
+                }
+            }
+
         }
 
         objective.setMinimization();
