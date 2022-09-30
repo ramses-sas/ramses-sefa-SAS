@@ -196,10 +196,9 @@ public class KnowledgeService {
         return adaptationChoicesRepository.findAllByServiceIdOrderByTimestampDesc(serviceId, Pageable.ofSize(n)).stream().toList();
     }
 
-    // Called by the Analyse module to propose the adaptation options
-    public void addAdaptationOptions(List<AdaptationOption> options) {
-        // a new loop is started: reset the previous options
-        proposedAdaptationOptions = new HashMap<>();
+    // Called by the Plan module to choose the adaptation options
+    public void chooseAdaptationOptions(List<AdaptationOption> options) {
+        // a new loop is started: reset the previous chosen options
         chosenAdaptationOptions = new HashMap<>();
         // add the options both to the repository and to the map
         options.forEach(option -> {

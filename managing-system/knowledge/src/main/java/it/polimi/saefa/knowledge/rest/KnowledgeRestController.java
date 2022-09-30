@@ -175,13 +175,13 @@ public class KnowledgeRestController {
 
     @PostMapping("/chooseAdaptationOptions")
     public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
-        knowledgeService.addAdaptationOptions(adaptationOptions);
+        knowledgeService.chooseAdaptationOptions(adaptationOptions);
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
     }
 
     // TODO remove after test
     @GetMapping("/")
-    public String hello() {
+    public String debug() {
         knowledgeService.breakpoint();
         return "Hello from Knowledge Service";
     }

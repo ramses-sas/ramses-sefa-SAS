@@ -10,6 +10,7 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.plan.externalInterfaces.ExecuteClient;
 import it.polimi.saefa.plan.externalInterfaces.KnowledgeClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,10 @@ public class PlanService {
 
     @Autowired
     private KnowledgeClient knowledgeClient;
+
+    @Autowired
+    private ExecuteClient executeClient;
+
     private Map<String, Service> servicesMap;
     private Map<String, AdaptationOption> chosenAdaptationOptions;
 
@@ -34,29 +39,28 @@ public class PlanService {
             System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
             System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
         } catch (Exception e) {
-            log.error("Error loading or-tools libraries", e);
+            throw new RuntimeException("Error loading or-tools libraries", e);
         }
     }
 
     public void startPlan() {
-        Map<String, List<AdaptationOption>> adaptationOptions = knowledgeClient.getProposedAdaptationOptions();
+        Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
+        Map<String, AdaptationOption> chosenAdaptationOptionMap = new HashMap<>();
         servicesMap = knowledgeClient.getServicesMap();
 
-        for (String serviceId : adaptationOptions.keySet()) {
-            List<AdaptationOption> options = adaptationOptions.get(serviceId);
+        for (String serviceId : proposedAdaptationOptions.keySet()) {
+            List<AdaptationOption> options = proposedAdaptationOptions.get(serviceId);
             for (AdaptationOption option : options) {
                 log.info("Adaptation option: {}", option.getDescription());
                 if(option.getClass().equals(ChangeLoadBalancerWeights.class)){
                     ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
                     changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
+                    chosenAdaptationOptionMap.put(serviceId, changeLoadBalancerWeights); //TODO REMOVE IN FUTURO
                 }
-
-
-
             }
-
-
         }
+        knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionMap.values().stream().toList());
+        executeClient.start();
     }
 
     public Map<String, Double> handleChangeLoadBalancerWeights(ChangeLoadBalancerWeights option, Service service) {
@@ -85,7 +89,7 @@ public class PlanService {
             double instanceAvailability = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
             double k_i = instanceAvailability/instanceAvgRespTime;
             double upperBound = previousWeights.get(instance.getAddress()) * (k_i/k_s); // k_i/k_s is the performance ratio between instance and service
-            //performanceRatioConstraint: weight_i <= old_weight_i * k_i/k_s
+            /* performanceRatioConstraint: weight_i <= old_weight_i * k_i/k_s */
             MPVariable weight = solver.makeNumVar(0, upperBound, instance.getInstanceId());
 
             weights.put(instance.getInstanceId(), weight);
@@ -106,14 +110,13 @@ public class PlanService {
                     double instanceAvailability_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
                     double k_j = instanceAvailability_j/instanceAvgRespTime_j;
 
-                    //weightRatioConstraint: weight_i <= k_i/k_j * weight_j
+                    /* weightRatioConstraint: weight_i <= k_i/k_j * weight_j */
                     MPConstraint weightRatioConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, "weightRatioConstraint between " + instance_i.getInstanceId() + " and " + instance_j.getInstanceId());
                     weightRatioConstraint.setCoefficient(weight_i, k_j);
                     weightRatioConstraint.setCoefficient(weight_j, -k_i);
                 }
             }
         }
-
         objective.setMinimization();
         solver.solve();
         log.info("Solution:");
