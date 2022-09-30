@@ -1,11 +1,11 @@
 package it.polimi.saefa.knowledge.rest;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
-import it.polimi.saefa.knowledge.persistence.KnowledgeService;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.KnowledgeService;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -96,7 +96,12 @@ public class KnowledgeRestController {
 
     @GetMapping("/services")
     public List<Service> getServices() {
-        return knowledgeService.getServices();
+        return knowledgeService.getServicesList();
+    }
+
+    @GetMapping("/servicesMap")
+    public Map<String, Service> getServicesMap() {
+        return knowledgeService.getServicesMap();
     }
 
     @GetMapping("/service/{serviceId}")

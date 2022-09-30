@@ -1,7 +1,7 @@
 package it.polimi.saefa.execute.externalInterfaces;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 

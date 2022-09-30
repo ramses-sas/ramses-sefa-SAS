@@ -3,8 +3,8 @@ package it.polimi.saefa.knowledge.parser;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.CustomProperty;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +74,7 @@ public class ConfigurationParser {
                                 case "type" ->
                                     serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue());
                                 case "weight" ->
-                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(customProperty.getAddress(), Integer.valueOf(customProperty.getValue()));
+                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
                             }
                         }
                     }

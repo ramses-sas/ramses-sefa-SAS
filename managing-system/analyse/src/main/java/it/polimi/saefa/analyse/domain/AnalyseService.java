@@ -1,18 +1,18 @@
 package it.polimi.saefa.analyse.domain;
 
 import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.Availability;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AverageResponseTime;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.MaxResponseTime;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParamCollection;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.HttpRequestMetrics;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.MaxResponseTime;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import lombok.Getter;
 import lombok.Setter;
@@ -275,7 +275,7 @@ public class AnalyseService {
         double maxResponseTimeAccumulator = 0;
         double averageResponseTimeAccumulator = 0;
         for (InstanceStats instanceStats : instancesStats) {
-            if (instanceStats.isDataUnavailable()) {
+            if (instanceStats.isDataUnavailable()) { //TODO capire cosa fare con le unavailableStats e l'oracolo
                 unavailableStats.add(instanceStats);
             } else {
                 availabilityAccumulator += instanceStats.getAvailability();

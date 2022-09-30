@@ -1,8 +1,8 @@
 package it.polimi.saefa.dashboard.domain;
 
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 

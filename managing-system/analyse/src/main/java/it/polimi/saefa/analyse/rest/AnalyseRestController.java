@@ -2,9 +2,9 @@ package it.polimi.saefa.analyse.rest;
 
 import it.polimi.saefa.analyse.domain.AnalyseService;
 import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
