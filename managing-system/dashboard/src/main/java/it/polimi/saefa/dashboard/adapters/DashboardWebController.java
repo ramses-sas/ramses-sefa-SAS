@@ -1,15 +1,15 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.values.AdaptationParameter;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.CircuitBreakerMetrics;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.HttpRequestMetrics;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
+import it.polimi.saefa.knowledge.domain.metrics.CircuitBreakerMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;

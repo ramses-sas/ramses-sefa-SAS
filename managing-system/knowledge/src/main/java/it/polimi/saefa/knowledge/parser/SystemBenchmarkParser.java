@@ -3,13 +3,10 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Getter;
 
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

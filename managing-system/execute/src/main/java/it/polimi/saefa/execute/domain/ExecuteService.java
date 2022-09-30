@@ -1,9 +1,9 @@
 package it.polimi.saefa.execute.domain;
 
 import it.polimi.saefa.execute.externalInterfaces.*;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AddInstances;
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.RemoveInstance;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 

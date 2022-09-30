@@ -1,8 +1,8 @@
 package it.polimi.saefa.monitor.domain;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.InstanceStatus;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.monitor.InstancesSupplier;
 import it.polimi.saefa.monitor.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;

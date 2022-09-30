@@ -1,15 +1,14 @@
 package it.polimi.saefa.analyse.externalInterfaces;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")

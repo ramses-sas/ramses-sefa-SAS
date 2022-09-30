@@ -1,6 +1,6 @@
 package it.polimi.saefa.knowledge.rest;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Getter;
 
 @Getter

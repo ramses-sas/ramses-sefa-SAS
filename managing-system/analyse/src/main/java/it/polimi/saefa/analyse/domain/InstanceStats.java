@@ -1,6 +1,6 @@
 package it.polimi.saefa.analyse.domain;
 
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 
 import lombok.Getter;
 import lombok.Setter;

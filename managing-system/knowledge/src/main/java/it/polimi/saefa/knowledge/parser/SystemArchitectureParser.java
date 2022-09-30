@@ -3,8 +3,8 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 
 import java.io.Reader;
 import java.util.LinkedList;
