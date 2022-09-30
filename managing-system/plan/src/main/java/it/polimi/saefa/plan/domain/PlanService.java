@@ -27,6 +27,16 @@ public class PlanService {
     private KnowledgeClient knowledgeClient;
     private Map<String, Service> servicesMap;
 
+    static {
+        log.debug("Current directory: {}", System.getProperty("user.dir"));
+        try {
+            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
+            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
+        } catch (Exception e) {
+            log.error("Error loading or-tools libraries", e);
+        }
+    }
+    
     public void startPlan() {
         Map<String, List<AdaptationOption>> adaptationOptions = knowledgeClient.getProposedAdaptationOptions();
         servicesMap = knowledgeClient.getServicesMap();
@@ -101,15 +111,7 @@ public class PlanService {
         return newWeights;
     }
 
-    static {
-        log.debug("Current directory: {}", System.getProperty("user.dir"));
-        try {
-            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
-            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
-        } catch (Exception e) {
-            log.error("Error loading or-tools libraries", e);
-        }
-    }
+
 
 
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {
