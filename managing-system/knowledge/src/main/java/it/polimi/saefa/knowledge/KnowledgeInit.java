@@ -43,21 +43,17 @@ public class KnowledgeInit implements InitializingBean {
 
         serviceList.forEach(service -> {
             Application serviceApplication = discoveryClient.getApplication(service.getServiceId());
-            if(serviceApplication == null)
+            if (serviceApplication == null)
                 throw new RuntimeException("Service " + service.getServiceId() + " not found in Eureka");
             List<InstanceInfo> instances = serviceApplication.getInstances();
-            if(instances == null || instances.isEmpty())
+            if (instances == null || instances.isEmpty())
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
             service.setCurrentImplementation(instances.get(0).getInstanceId().split("@")[0]);
             instances.forEach(instanceInfo -> {
-                if(!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementation())) {
+                if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementation()))
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
-                }
-                log.debug("Instance: " + instanceInfo.getHostName() + ":" + instanceInfo.getPort());
                 service.getOrCreateInstance(instanceInfo.getInstanceId());
             });
-            log.debug(discoveryClient.getApplication(service.getServiceId()).getName());
-
 
             service.setConfiguration(configurationParser.parseProperties(service));
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
@@ -77,11 +73,10 @@ public class KnowledgeInit implements InitializingBean {
         for (Service service : serviceList){
             ServiceConfiguration configuration = service.getConfiguration();
             if(configuration.getLoadBalancerType() != null && configuration.getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)) {
-                if(configuration.getLoadBalancerWeights() == null) {
-                    for(Instance instance : service.getInstances())
+                if (configuration.getLoadBalancerWeights() == null) {
+                    for (Instance instance : service.getInstances())
                         configuration.addLoadBalancerWeight(instance.getInstanceId(), 1.0/service.getInstances().size());
-
-                }else if(configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementationObject().getInstances().keySet())) {
+                } else if (configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementationObject().getInstances().keySet())) {
                     throw new RuntimeException("Service " + service.getServiceId() + " has a load balancer weights map with different keys than the current implementation instances");
                 }
             }
