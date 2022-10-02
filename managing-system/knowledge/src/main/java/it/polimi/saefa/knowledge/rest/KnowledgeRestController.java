@@ -72,7 +72,7 @@ public class KnowledgeRestController {
         if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
             return knowledgeService.getAllMetricsBetween(startDate, endDate);
 
-        // instanceId
+        // instanceIdList
         if (/*serviceId != null && */instanceId != null) {
             // + startDate + endDate
             if (startDate != null && endDate != null)
@@ -85,7 +85,7 @@ public class KnowledgeRestController {
             /* + timestamp
             if (timestamp != null && startDate == null && endDate == null)
                 try {
-                    return List.of(persistenceService.getMetrics(serviceId, instanceId, timestamp));
+                    return List.of(persistenceService.getMetrics(serviceId, instanceIdList, timestamp));
                 } catch (NullPointerException e) { return List.of(); }
              */
         }
@@ -206,9 +206,9 @@ public class KnowledgeRestController {
         return persistenceService.getMetrics();
     }
 
-    @GetMapping("/getAll/{instanceId}")
-    public List<InstanceMetrics> getAllMetricsOfInstance(@PathVariable String instanceId) {
-        return persistenceService.getMetrics(instanceId);
+    @GetMapping("/getAll/{instanceIdList}")
+    public List<InstanceMetrics> getAllMetricsOfInstance(@PathVariable String instanceIdList) {
+        return persistenceService.getMetrics(instanceIdList);
     }
 
     @GetMapping("/getAll/{serviceId}")
@@ -216,9 +216,9 @@ public class KnowledgeRestController {
         return persistenceService.getMetrics(serviceId);
     }
 
-    @GetMapping("/getRecent/instance/{instanceId}")
-    public InstanceMetrics getRecentMetricsOfInstance(@PathVariable String instanceId) {
-        return persistenceService.getLatestByInstanceId(instanceId);
+    @GetMapping("/getRecent/instance/{instanceIdList}")
+    public InstanceMetrics getRecentMetricsOfInstance(@PathVariable String instanceIdList) {
+        return persistenceService.getLatestByInstanceId(instanceIdList);
     }
 
     @GetMapping("/getRecent/service/{serviceId}")

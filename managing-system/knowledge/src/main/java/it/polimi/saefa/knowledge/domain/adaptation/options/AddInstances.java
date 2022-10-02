@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("ADD_INSTANCES")
 public class AddInstances extends AdaptationOption {
     private double newInstanceAvailabilityEstimation;
+    private Double newInstanceAverageResponseTimeEstimation;
     private Integer numberOfInstancesToAdd;
 
     public AddInstances(String serviceId, String implementationId, double newInstanceAvailabilityEstimation) {

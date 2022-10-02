@@ -18,7 +18,7 @@ public class ServiceImplementation {
     private String serviceId; //implemented service name
     private String implementationId; //specific implementation id
 
-    // <instanceId, Instance>
+    // <instanceIdList, Instance>
     private Map<String, Instance> instances = new HashMap<>();
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
 
@@ -28,9 +28,10 @@ public class ServiceImplementation {
     private double costPerBoot; //costo per avvio di un'istanza
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
-    private double riskFactor = 0; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
+    private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
+    private double instanceLoadShutdownThreshold;// TODO spiegare cos'è
 
-    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor) {
+    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor, double instanceLoadShutdownThreshold) {
         this.implementationId = implementationId;
         this.costPerInstance = costPerInstance;
         this.costPerRequest = costPerRequest;
@@ -38,6 +39,7 @@ public class ServiceImplementation {
         this.costPerBoot = costPerBoot;
         this.score = score;
         this.riskFactor = riskFactor;
+        this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
     }
 
     public boolean addInstance(Instance instance) {
@@ -86,4 +88,7 @@ public class ServiceImplementation {
         }
     }
 
+    public void removeInstance(Instance shutdownInstance) {
+        instances.remove(shutdownInstance.getInstanceId());
+    }
 }

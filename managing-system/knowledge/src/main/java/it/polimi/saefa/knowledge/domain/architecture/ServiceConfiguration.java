@@ -24,6 +24,11 @@ public class ServiceConfiguration {
         private Date timestamp;
     }
 
+    public enum LoadBalancerType{
+        WEIGHTED_RANDOM,
+        UNKNOWN
+    }
+
     @Id
     private String serviceId;
 
@@ -31,9 +36,9 @@ public class ServiceConfiguration {
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    @ElementCollection // <instanceId, weight>
-    private Map<String, Double> loadBalancerWeights = new HashMap<>();
-    private String loadBalancerType;
+    @ElementCollection // <instanceIdList, weight>
+    private Map<String, Double> loadBalancerWeights;
+    private LoadBalancerType loadBalancerType;
 
     @ElementCollection // <circuitBreakerName, circuitBreakerConfiguration>
     private Map<String, CircuitBreakerConfiguration> circuitBreakersConfiguration = new HashMap<>();
@@ -42,7 +47,7 @@ public class ServiceConfiguration {
     public String toString() {
         return "Configuration of service: " + serviceId + "\n" +
                 "\tcaptured at: " + timestamp + "\n\n" +
-                "\tloadBalancerType: " + loadBalancerType + "\n" +
+                "\tloadBalancerType: " + loadBalancerType.name() + "\n" +
                 //pesi commentati altrimenti la stampa può esplodere. Si possono ottenere nella stampa di una singola istanza
                 //(loadBalancerWeights.isEmpty() ? "" : ("loadBalancerWeights: " + loadBalancerWeights + "\n")) +
                 (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration.values());
@@ -61,8 +66,11 @@ public class ServiceConfiguration {
     }
      */
 
-    public void addLoadBalancerWeightForInstanceAtAddress(String instanceAddress, Double value){
-        loadBalancerWeights.put(instanceAddress, value);
+
+    public void addLoadBalancerWeight(String instanceId, Double value){
+        if(loadBalancerWeights == null)
+            loadBalancerWeights = new HashMap<>();
+        loadBalancerWeights.put(instanceId, value);
     }
 
     public void addCircuitBreakerProperty(String cbName, String property, String value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

@@ -94,6 +94,7 @@ public class KnowledgeService {
                     // the instance has been correctly shutdown
                     shutdownInstances.remove(shutdownInstance);
                     shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+                    services.get(shutdownInstance.getServiceId()).removeInstance(shutdownInstance);
                     InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
                     metrics.setStatus(InstanceStatus.SHUTDOWN);
                     metrics.applyTimestamp();
@@ -127,7 +128,7 @@ public class KnowledgeService {
         shutdownInstances.add(instance);
         //Codice rimosso perché può succedere che avvio lo shutdown di una macchina ma ricevo successivamente una
         // richiesta dal monitor che la contiene ancora.
-        /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceId);
+        /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceIdList);
         metrics.setStatus(InstanceStatus.SHUTDOWN);
         metrics.applyTimestamp();
         metricsRepository.save(metrics);
@@ -224,14 +225,14 @@ public class KnowledgeService {
 
     Non più necessario per l'inserimento della seguente riga di codice al metodo addMetrics:
     shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
-    public void notifyBootInstance(String serviceId, String instanceId) {
-        shutdownInstances.remove(serviceId + "@" + instanceId);
+    public void notifyBootInstance(String serviceId, String instanceIdList) {
+        shutdownInstances.remove(serviceId + "@" + instanceIdList);
     }
 
-    public InstanceMetrics getMetrics(String serviceId, String instanceId, String timestamp) {
+    public InstanceMetrics getMetrics(String serviceId, String instanceIdList, String timestamp) {
         LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
         Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceId, date);
+        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceIdList, date);
     }
 
     public List<InstanceMetrics> getServiceMetrics(String serviceId) {

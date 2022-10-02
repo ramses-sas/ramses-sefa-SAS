@@ -113,7 +113,7 @@ public class DashboardWebController {
 			List<String[]> table = new ArrayList<>();
 			table.add(new String[]{"Time Of Snapshot", sdf.format(conf.getTimestamp())+" UTC"});
 			table.add(new String[]{"", ""});
-			table.add(new String[]{"Load Balancer Type", conf.getLoadBalancerType().replace("_", " ")});
+			table.add(new String[]{"Load Balancer Type", conf.getLoadBalancerType().name().replace("_", " ")});
 			table.add(new String[]{"", ""});
 			for (ServiceConfiguration.CircuitBreakerConfiguration cbConf : conf.getCircuitBreakersConfiguration().values()) {
 				table.add(new String[]{"Circuit Breaker Name", cbConf.getCircuitBreakerName()});

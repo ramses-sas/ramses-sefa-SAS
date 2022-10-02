@@ -75,4 +75,13 @@ public class Service {
             adaptationParamSpecifications.put(spec.getClass(), spec);
         }
     }
+
+
+    public Double getLoadBalancerWeight(Instance instance) {
+        return configuration.getLoadBalancerWeights().get(instance.getInstanceId());
+    }
+
+    public void removeInstance(Instance shutdownInstance) {
+        getCurrentImplementationObject().removeInstance(shutdownInstance);
+    }
 }

@@ -16,9 +16,13 @@ public class TestComponent implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        log.info("TestComponent initialized");
+        /*
+        log.warn("Starting iteration 0");
+        for (int i = 0; i < 10_000 && service.handleChangeLoadBalancerWeightsTEST()!=null; i++) {
+            log.warn("Starting iteration " + (i+1));
+        }
 
-        service.handleChangeLoadBalancerWeightsTEST();
+         */
     }
 
 }

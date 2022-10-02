@@ -30,8 +30,8 @@ public class ExecuteService {
             Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
             if (clazz.equals(AddInstances.class)) {
                 handleAddInstances((AddInstances) (adaptationOption));
-            } else if (clazz.equals(RemoveInstance.class)) {
-                handleRemoveInstance((RemoveInstance) (adaptationOption));
+            } else if (clazz.equals(RemoveInstances.class)) {
+                handleRemoveInstance((RemoveInstances) (adaptationOption));
             } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
                 handleChangeLBWeight((ChangeLoadBalancerWeights) (adaptationOption));
             } else {
@@ -46,9 +46,11 @@ public class ExecuteService {
         instancesManagerClient.addInstances(new AddInstancesRequest(addInstancesOption.getServiceImplementationId(), addInstancesOption.getNumberOfInstancesToAdd()));
     }
 
-    private void handleRemoveInstance(RemoveInstance removeInstanceOption) {
-        String[] ipPort = removeInstanceOption.getInstanceId().split("@")[0].split(":");
-        instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstanceOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
+    private void handleRemoveInstance(RemoveInstances removeInstancesOption) {
+        for (String instanceId : removeInstancesOption.getInstanceIdList()) {
+            String[] ipPort = instanceId.split("@")[0].split(":");
+            instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
+        }
     }
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {

@@ -18,7 +18,7 @@ import java.util.Date;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AddInstances.class),
-        @JsonSubTypes.Type(value = RemoveInstance.class),
+        @JsonSubTypes.Type(value = RemoveInstances.class),
         @JsonSubTypes.Type(value = ChangeLoadBalancerWeights.class),
 })
 public abstract class AdaptationOption {
@@ -62,8 +62,8 @@ public abstract class AdaptationOption {
         return new AdaptationOption(Type.ADD_INSTANCES, "Add new instances of service " + service.getServiceId(), service, null, null);
     }
 
-    public static AdaptationOption removeInstance(Service service, Instance instanceId) {
-        return new AdaptationOption(Type.REMOVE_INSTANCE, "Remove instance " + instanceId + " of service " + service.getServiceId(), service, instanceId, null);
+    public static AdaptationOption removeInstance(Service service, Instance instanceIdList) {
+        return new AdaptationOption(Type.REMOVE_INSTANCE, "Remove instance " + instanceIdList + " of service " + service.getServiceId(), service, instanceIdList, null);
     }
 
     public static AdaptationOption changeImplementation(Service service, List<ServiceImplementation> serviceImplementationList) {

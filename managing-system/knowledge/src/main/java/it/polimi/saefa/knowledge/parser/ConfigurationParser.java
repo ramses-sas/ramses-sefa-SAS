@@ -9,23 +9,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 @Slf4j
 @Component
-@RestController
 public class ConfigurationParser {
     @Autowired
     private EurekaClient discoveryClient;
 
 
-    public ServiceConfiguration parseProperties(@PathVariable String serviceId) {
+    public ServiceConfiguration parseProperties(Service service) {
         InstanceInfo configInstance = getConfigServerInstance();
-        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId + ".properties";
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
+        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + service.getServiceId() + ".properties";
+        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(service.getServiceId());
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
         String[] lines = Arrays.stream(response.getBody().split("\n")).filter(line -> line.matches("([\\w\\.-])+=.+")).toArray(String[]::new);
         for (String line : lines) {
@@ -67,14 +65,14 @@ public class ConfigurationParser {
                         String propertyName = customProperty.getPropertyElements()[0];
                         if (customProperty.isServiceGlobal() && propertyName.equals("type")) {
                             for (Service service : services.values())
-                                service.getConfiguration().setLoadBalancerType(customProperty.getValue());
+                                service.getConfiguration().setLoadBalancerType(customProperty.getValue().equalsIgnoreCase("weighted_random") ? ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM : ServiceConfiguration.LoadBalancerType.UNKNOWN);
                         } else if (services.containsKey(customProperty.getServiceId())) {
                             ServiceConfiguration serviceToBalanceConfiguration = services.get(customProperty.getServiceId()).getConfiguration();
                             switch (propertyName) {
                                 case "type" ->
-                                    serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue());
+                                    serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue().equalsIgnoreCase("weighted_random") ? ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM : ServiceConfiguration.LoadBalancerType.UNKNOWN);
                                 case "weight" ->
-                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
+                                    serviceToBalanceConfiguration.addLoadBalancerWeight(services.get(serviceToBalanceConfiguration.getServiceId()).getCurrentImplementation() + "@" + customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
                             }
                         }
                     }

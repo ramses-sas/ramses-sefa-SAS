@@ -30,6 +30,14 @@ public class InstanceStats {
         return instance.getInstanceId();
     }
 
+    public String getServiceId() {
+        return instance.getServiceId();
+    }
+
+    public String getImplementationId() {
+        return instance.getServiceImplementationId();
+    }
+
     public boolean isDataUnavailable() {
         return dataUnavailable || averageResponseTime == null || maxResponseTime == null || availability == null;
     }

@@ -3,23 +3,31 @@ package it.polimi.saefa.monitor;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import it.polimi.saefa.knowledge.KnowledgeInit;
+import it.polimi.saefa.knowledge.domain.KnowledgeService;
+import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class InstancesSupplier {
     @Autowired
     private EurekaClient discoveryClient;
 
+    @Autowired
+    private KnowledgeClient knowledgeClient;
+
     public Map<String, List<InstanceInfo>> getServicesInstances() {
+        Set<String> serviceIdSet = knowledgeClient.getServicesMap().keySet();
         List<Application> applications = discoveryClient.getApplications().getRegisteredApplications();
         Map<String, List<InstanceInfo>> servicesInstances = new HashMap<>();
         applications.forEach(application -> {
-            if (application.getName().endsWith("-SERVICE")) {
+            if (serviceIdSet.contains(application.getName())) {
                 List<InstanceInfo> applicationsInstances = application.getInstances();
                 servicesInstances.put(application.getName(), applicationsInstances);
             }
