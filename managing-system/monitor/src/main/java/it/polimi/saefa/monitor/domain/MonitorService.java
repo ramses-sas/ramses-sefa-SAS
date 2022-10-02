@@ -105,7 +105,7 @@ public class MonitorService {
             }
             instanceMetricsListBuffer.clear();
             setLoopIterationFinished(false);
-            analyseClient.beginAnalysis();
+            analyseClient.start();
         }
     }
 
