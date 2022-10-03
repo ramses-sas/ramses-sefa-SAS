@@ -3,6 +3,7 @@ package it.polimi.saefa.paymentproxy3service.aop;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,8 @@ public class InstrumentationAspect {
     private final Double sleepMean;
     private final Double sleepVariance;
     private final Double exceptionProbability;
+    @Autowired
+    private Environment env;
 
     public InstrumentationAspect(Environment env) {
         String sleepMean, sleepVariance, exceptionProbability;
