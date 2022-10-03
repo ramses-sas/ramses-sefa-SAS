@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(name = "EXECUTE", url = "${EXECUTE_URL}")
 public interface ExecuteClient {
 
-    @GetMapping("/start")
+    @GetMapping("/rest/start")
     String start();
 }
