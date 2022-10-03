@@ -56,4 +56,10 @@ public class ApplicationExceptionHandler {
     public ConfirmOrderResponse processException(DeliveryNotAvailableException e) {
         return new ConfirmOrderResponse(false, orderingService.orderRequiresCashPayment(e.getCartId()), true);
     }
+
+    @ExceptionHandler(ForcedException.class)
+    @ResponseBody
+    public ResponseEntity<String> processException(ForcedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
