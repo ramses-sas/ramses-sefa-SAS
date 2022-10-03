@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "CONFIG-MANAGER", url = "${CONFIG_MANAGER_ACTUATOR_URL}")
 public interface ConfigManagerClient {
 
-    @PostMapping(path = "/rest/addInstances")
-    void addOrUpdateProperty(@RequestBody AddOrUpdatePropertyRequest request);
+    @PostMapping(path = "/rest/changeProperty")
+    void changeProperty(@RequestBody ChangePropertyRequest request);
 
 }

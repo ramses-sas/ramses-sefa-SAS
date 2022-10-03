@@ -15,7 +15,9 @@ public class TestingRestController {
     @GetMapping("/add")
     public String add() {
         try {
-            configManagerService.addOrUpdatePropertyAndPush("test", "test", "application.properties");
+            configManagerService.pull();
+            configManagerService.changeProperty("test", "test", "application.properties");
+            configManagerService.commitAndPush("ConfigManagerActuator: changing properties");
         } catch (Exception e) {
             return "FAILED!\n"+e.getMessage();
         }
@@ -25,7 +27,9 @@ public class TestingRestController {
     @GetMapping("/remove")
     public String remove() {
         try {
-            configManagerService.removePropertyAndPush("test", "application.properties");
+            configManagerService.pull();
+            configManagerService.changeProperty("test", null, "application.properties");
+            configManagerService.commitAndPush("ConfigManagerActuator: changing properties");
         } catch (Exception e) {
             return "FAILED!\n"+e.getMessage();
         }

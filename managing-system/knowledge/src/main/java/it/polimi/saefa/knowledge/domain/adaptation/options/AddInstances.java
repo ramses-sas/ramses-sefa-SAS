@@ -17,14 +17,14 @@ public class AddInstances extends AdaptationOption {
     private Double newInstanceAverageResponseTimeEstimation;
     private Integer numberOfInstancesToAdd;
 
-    public AddInstances(String serviceId, String implementationId, double newInstanceAvailabilityEstimation) {
-        super(serviceId, implementationId);
+    public AddInstances(String serviceId, String implementationId, double newInstanceAvailabilityEstimation, String comment) {
+        super(serviceId, implementationId, comment);
         this.newInstanceAvailabilityEstimation = newInstanceAvailabilityEstimation;
     }
 
     @Override
     public String getDescription() {
-        return "Add" + (numberOfInstancesToAdd == null ? "" : " "+numberOfInstancesToAdd) + " new instances of service " + super.getServiceId();
+        return "Add" + (numberOfInstancesToAdd == null ? "" : " "+numberOfInstancesToAdd) + " new instances of service " + super.getServiceId() + ". " + getComment();
     }
 
 }

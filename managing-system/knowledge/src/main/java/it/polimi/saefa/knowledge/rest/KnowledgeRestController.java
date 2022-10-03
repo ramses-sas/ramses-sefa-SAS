@@ -142,7 +142,6 @@ public class KnowledgeRestController {
             knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
         } else if (request.getInstanceId() != null){
             knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
-
         }
         return ResponseEntity.ok().body("Adaptation parameter value added");
     }
@@ -177,6 +176,14 @@ public class KnowledgeRestController {
     public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
         knowledgeService.chooseAdaptationOptions(adaptationOptions);
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
+    }
+
+    @PostMapping("/setLoadBalancerWeights")
+    public ResponseEntity<String> setLoadBalancerWeights(@RequestBody Map<String, Map<String, Double>> servicesWeights) {
+        servicesWeights.forEach((serviceId, instanceWeights) -> {
+            knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
+        });
+        return ResponseEntity.ok().body("Load balancer weights correctly set");
     }
 
     // TODO remove after test

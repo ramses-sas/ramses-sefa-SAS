@@ -6,7 +6,10 @@ import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -55,9 +58,14 @@ public class ExecuteService {
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
         String serviceId = changeLoadBalancerWeightsOption.getServiceId();
+        List<PropertyToChange> propertyToChangeList = new LinkedList<>();
         changeLoadBalancerWeightsOption.getNewWeights().forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
-            configManagerClient.addOrUpdateProperty(new AddOrUpdatePropertyRequest(serviceId, propertyKey, weight.toString()));
+            propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
         });
+        configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
+        Map<String, Map<String, Double>> servicesWeights = new HashMap<>();
+        servicesWeights.put(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
+        knowledgeClient.setLoadBalancerWeights(servicesWeights);
     }
 }

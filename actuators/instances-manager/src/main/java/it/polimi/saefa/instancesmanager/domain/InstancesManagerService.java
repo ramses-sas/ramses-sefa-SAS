@@ -26,6 +26,10 @@ public class InstancesManagerService {
     String dockerIp;
     DockerClient dockerClient;
 
+    // <Profile, List of SimulationInstanceParams>
+    Map<String, List<SimulationInstanceParams>> simulationInstanceParamsMap;
+
+
     public InstancesManagerService(Environment env) throws UnknownHostException {
         this.env = env;
         dockerIp = env.getProperty("DOCKER_IP");
@@ -44,18 +48,35 @@ public class InstancesManagerService {
             //log.warn("Container: {}", container);
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
+        String profile = env.getProperty("PROFILE");
+        profile = "AAA";
+        simulationInstanceParamsMap = new HashMap<>();
+        switch (profile) {
+            case "AAA":
+                simulationInstanceParamsMap.put(profile, List.of(
+                    new SimulationInstanceParams(0.1, 1.7, 0.2),
+                    new SimulationInstanceParams(0.2, 2.0, 0.2),
+                    new SimulationInstanceParams(0.5, 4.0, 0.5)
+                ));
+                break;
+            default:
+                break;
+        }
     }
 
 
     public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances) {
         String imageName = serviceImplementationName;
         List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
+        String profile = env.getProperty("PROFILE");
+        profile = "AAA";
+        List<SimulationInstanceParams> simulationInstanceParamsList = simulationInstanceParamsMap.get(profile);
         for (int i = 0; i < numberOfInstances; i++) {
             int randomPort = getRandomPort();
             ExposedPort serverPort = ExposedPort.tcp(randomPort);
             Ports portBindings = new Ports();
             portBindings.bind(serverPort, Ports.Binding.bindIpAndPort("0.0.0.0", randomPort));
-            List<String> envVars = buildContainerEnvVariables(randomPort);
+            List<String> envVars = buildContainerEnvVariables(randomPort, simulationInstanceParamsList.get(i % simulationInstanceParamsList.size()));
             String newContainerId = dockerClient.createContainerCmd(imageName)
                     .withName(imageName + "_" + randomPort)
                     .withEnv(envVars)
@@ -79,7 +100,7 @@ public class InstancesManagerService {
         throw new RuntimeException("Container not found");
     }
 
-    private List<String> buildContainerEnvVariables(int serverPort) {
+    private List<String> buildContainerEnvVariables(int serverPort, SimulationInstanceParams simulationInstanceParams) {
         List<String> envVars = new LinkedList<>();
         // TODO remove after local tests
         String localIp;
@@ -107,15 +128,16 @@ public class InstancesManagerService {
         envVars.add("SERVER_PORT="+serverPort);
         envVars.add("HOST="+dockerIp);
 
+
         // TO SIMULATE SOME SCENARIOS
-        double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
+        /*double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
         double sleepMean = sleepMeanSecondsPool[new Random().nextInt(sleepMeanSecondsPool.length)]*1000;
-        double sleepVariance = 1500;
-        envVars.add("SLEEP_MEAN="+sleepMean);
-        envVars.add("SLEEP_VARIANCE="+sleepVariance);
+        double sleepVariance = 1500;*/
+        envVars.add("SLEEP_MEAN="+simulationInstanceParams.getSleepDuration()*1000);
+        envVars.add("SLEEP_VARIANCE="+simulationInstanceParams.getSleepVariance());
         double[] exceptionProbabilitiesPool = new double[]{0, 0.2, 0.65, 0.9};
         double exceptionProbability = exceptionProbabilitiesPool[new Random().nextInt(exceptionProbabilitiesPool.length)];
-        envVars.add("EXCEPTION_PROBABILITY="+exceptionProbability);
+        envVars.add("EXCEPTION_PROBABILITY="+simulationInstanceParams.getExceptionProbability());
         return envVars;
     }
 

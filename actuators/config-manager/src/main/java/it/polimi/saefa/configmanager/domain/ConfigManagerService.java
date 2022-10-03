@@ -1,5 +1,6 @@
 package it.polimi.saefa.configmanager.domain;
 
+import it.polimi.saefa.configmanager.restinterface.PropertyToChange;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -11,8 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 @Slf4j
@@ -21,6 +21,9 @@ public class ConfigManagerService {
     Git gitClient;
     CredentialsProvider credentialsProvider;
 
+    List<PropertyToChange> propertiesToChange = Collections.synchronizedList(new LinkedList<>());
+
+    // Remember to set the auth token as an environment variable
     public ConfigManagerService(@Value("${GITHUB_REPOSITORY_URL}") String gitRepository) throws Exception {
         String token = System.getenv("GITHUB_OAUTH");
         if (token == null)
@@ -33,60 +36,42 @@ public class ConfigManagerService {
         log.info("Cloned repository: {}", gitClient.getRepository().getDirectory().getParent());
     }
 
-    public void addOrUpdatePropertyAndPush(String property, String value, String fileName) throws Exception {
-        pull();
-        addOrUpdateProperty(property, value, fileName);
-        commitAndPush("Added property "+property+" with value "+value);
-    }
-
-    public void removePropertyAndPush(String property, String fileName) throws Exception {
-        pull();
-        removeProperty(property, fileName);
-        commitAndPush("Removed property "+property);
-    }
-
-    private void removeProperty(String property, String fileName) throws Exception {
-        log.info("Removing property {}", property);
+    public void changeProperty(String property, String value, String fileName) throws Exception {
+        log.info("Changing property {} with value {}", property, value);
         Path propFile = Path.of(gitClient.getRepository().getDirectory().getParent(), fileName);
         List<String> fileContent = new ArrayList<>(Files.readAllLines(propFile, StandardCharsets.UTF_8));
         boolean propertyFound = false;
         for (int i = 0; i < fileContent.size(); i++) {
             if (fileContent.get(i).startsWith(property+"=")) {
-                fileContent.remove(i);
+                if (value == null)
+                    fileContent.remove(i);
+                else
+                    fileContent.set(i, property+"="+value);
                 propertyFound = true;
                 break;
             }
         }
-        if (!propertyFound)
-            throw new Exception("Property "+property+" not found in file "+fileName);
-        Files.write(propFile, fileContent, StandardCharsets.UTF_8);
-    }
-
-    private void addOrUpdateProperty(String property, String value, String fileName) throws IOException {
-        log.info("Adding property {} with value {}", property, value);
-        Path propFile = Path.of(gitClient.getRepository().getDirectory().getParent(), fileName);
-        List<String> fileContent = new ArrayList<>(Files.readAllLines(propFile, StandardCharsets.UTF_8));
-        boolean propertyFound = false;
-        for (int i = 0; i < fileContent.size(); i++) {
-            if (fileContent.get(i).startsWith(property+"=")) {
-                fileContent.set(i, property+"="+value);
-                propertyFound = true;
-                break;
-            }
+        if (!propertyFound) {
+            if (value != null)
+                fileContent.add(property+"="+value);
+            else
+                throw new Exception("Impossible to remove property. Property "+property+" not found in file "+fileName);
         }
-        if (!propertyFound)
-            fileContent.add(property+"="+value);
         Files.write(propFile, fileContent, StandardCharsets.UTF_8);
     }
 
-    private void commitAndPush(String message) throws Exception {
+    public void commitAndPush(String message) throws Exception {
         gitClient.add().addFilepattern(".").call();
         gitClient.commit().setMessage(message).call();
         gitClient.push().setRemote("origin").setForce(true).setCredentialsProvider(credentialsProvider).call(); //.setRefSpecs(new RefSpec("refs/heads/master:refs/heads/master"))
     }
 
-    private void pull() throws Exception {
+    public void pull() throws Exception {
         gitClient.pull().setCredentialsProvider(credentialsProvider).setRebase(true).call();
+    }
+
+    public void rollback() throws Exception {
+        gitClient.checkout().call();
     }
 }
 

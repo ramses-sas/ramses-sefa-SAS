@@ -27,7 +27,7 @@ public class RestClientApplication implements CommandLineRunner {
 			new Thread(() -> {
 				requestsGenerator.simulateOrder();
 			}).start();
-			Thread.sleep(200);
+			Thread.sleep(1000);
 		}
 		log.info("Exiting...");
 	}

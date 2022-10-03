@@ -22,8 +22,8 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
     //private Double serviceAverageResponseTime;
 
 
-    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, Double serviceAverageAvailability) {
-        super(serviceId, serviceImplementationId);
+    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, Double serviceAverageAvailability, String comment) {
+        super(serviceId, serviceImplementationId, comment);
         this.serviceAverageAvailability = serviceAverageAvailability;
     }
 
@@ -32,6 +32,6 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
         String base = "Change load balancer weights of service " + super.getServiceId();
         if (newWeights != null)
             base += "\nNew weights are: \n" + newWeights;
-        return base;
+        return base + ". " + getComment();
     }
 }

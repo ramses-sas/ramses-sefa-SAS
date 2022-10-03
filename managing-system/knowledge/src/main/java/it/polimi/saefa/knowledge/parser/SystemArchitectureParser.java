@@ -30,7 +30,7 @@ public class SystemArchitectureParser {
                 double costPerBoot = implementation.get("cost_per_boot").getAsDouble();
                 double score = implementation.get("score").getAsDouble();
                 double riskFactor = implementation.get("risk_factor").getAsDouble();
-                double instanceLoadShutdownThreshold = implementation.get("instance_load_shutdown_threshold") == null ? implementation.get("instance_load_shutdown_threshold").getAsDouble() : 0;
+                double instanceLoadShutdownThreshold = implementation.get("instance_load_shutdown_threshold") == null ? 0 : implementation.get("instance_load_shutdown_threshold").getAsDouble();
                 serviceImplementations.add(new ServiceImplementation(implementationId, costPerInstance, costPerRequest, costPerSecond, costPerBoot, score, riskFactor, instanceLoadShutdownThreshold));
             });
             double totalScore = serviceImplementations.stream().map(ServiceImplementation::getScore).reduce(0.0, Double::sum);

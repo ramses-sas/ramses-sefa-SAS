@@ -199,7 +199,8 @@ public class KnowledgeService {
 
     // Called by the Plan module to choose the adaptation options
     public void chooseAdaptationOptions(List<AdaptationOption> options) {
-        // a new loop is started: reset the previous chosen options
+        // a new loop is started: reset the previous chosen options and the current proposed adaptation options
+        proposedAdaptationOptions = new HashMap<>();
         chosenAdaptationOptions = new HashMap<>();
         // add the options both to the repository and to the map
         options.forEach(option -> {
@@ -216,6 +217,13 @@ public class KnowledgeService {
     public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
         services.get(serviceId).getCurrentImplementationObject().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
     }
+
+    public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
+        Service service = services.get(serviceId);
+        service.getConfiguration().setLoadBalancerWeights(weights);
+        configurationRepository.save(service.getConfiguration());
+    }
+
 }
 
 

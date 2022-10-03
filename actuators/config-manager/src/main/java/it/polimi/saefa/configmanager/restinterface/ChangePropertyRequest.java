@@ -4,10 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class RemovePropertyRequest {
-    private String serviceName;
-    private String propertyName;
+@NoArgsConstructor
+public class ChangePropertyRequest {
+    List<PropertyToChange> propertiesToChange;
 }

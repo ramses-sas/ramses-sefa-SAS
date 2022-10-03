@@ -29,6 +29,8 @@ public abstract class AdaptationOption {
     private String serviceId;
     private String serviceImplementationId;
 
+    private String comment;
+
     // Introdotta per astrarre il Plan
     // TODO: verifica se va messa (ora le variabili nelle singole adapt options)
     //@ElementCollection
@@ -44,9 +46,10 @@ public abstract class AdaptationOption {
         this.timestamp = new Date();
     }
 
-    public AdaptationOption(String serviceId, String serviceImplementationId) {
+    public AdaptationOption(String serviceId, String serviceImplementationId, String comment) {
         this.serviceId = serviceId;
         this.serviceImplementationId = serviceImplementationId;
+        this.comment = comment;
     }
 
     /*

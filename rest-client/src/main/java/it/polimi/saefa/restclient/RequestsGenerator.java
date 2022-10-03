@@ -35,7 +35,7 @@ public class RequestsGenerator {
                 returnedItem.getId().equals(menuItem.getId()) &&
                 returnedItem.getName().equals(menuItem.getName()) &&
                 cart.getTotalPrice() == menuItem.getPrice() * 2;
-        ConfirmOrderResponse confirmedOrder = requestGeneratorService.confirmOrder(cartId, "1111111111111111", 12, 2023, "023",
+        ConfirmOrderResponse confirmedOrder = requestGeneratorService.confirmOrder(cartId, "1111111111111111", 12, 2023, "001",
                 "Via REST Client", "Roma", 1, "12345", "1234567890", new Date());
         if (!confirmedOrder.isConfirmed()) {
             if (confirmedOrder.getRequiresCashPayment()) {

@@ -53,7 +53,9 @@ public class PlanService {
                     chosenAdaptationOptionMap.put(serviceId, changeLoadBalancerWeights); //TODO REMOVE IN FUTURO, solo per test
                 }
             }
-            log.debug("\n\nFor service '{}' the chosen adaptation option is: '{}'", serviceId, chosenAdaptationOptionMap.get(serviceId).getDescription());
+            if (chosenAdaptationOptionMap.get(serviceId) != null) {
+                log.debug("\n\nFor service '{}' the chosen adaptation option is: '{}'", serviceId, chosenAdaptationOptionMap.get(serviceId).getDescription());
+            }
         }
         knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionMap.values().stream().toList());
         log.info("Ending plan. Notifying the Execute module to start the next iteration.");
@@ -78,7 +80,7 @@ public class PlanService {
         double serviceAvgAvailability = option.getServiceAverageAvailability(); //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio
         double k_s = serviceAvgAvailability/serviceAvgRespTime; //performance indicator
 
-        for(Instance instance : service.getInstances()){
+        for (Instance instance : service.getInstances()) {
             MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
             MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
             weights.put(instance.getInstanceId(), weight);
@@ -154,18 +156,41 @@ public class PlanService {
         objective.setMinimization();
         final MPSolver.ResultStatus resultStatus = solver.solve();
 
+        StringBuffer sb = new StringBuffer();
+        sb.append("\nSoglia: ").append(shutdownThreshold).append("\n");
+        sb.append("Service response time: ").append(serviceAvgRespTime).append("\n");
+        sb.append("Service availability: ").append(serviceAvgAvailability).append("\n");
+        sb.append("Service k_s: ").append(k_s).append("\n");
+        sb.append("\nSolution: \n");
+        sb.append("Objective value = ").append(objective.value()).append("\n");
+
+        for (String instanceId : previousWeights.keySet()) {
+            String P_i = String.format("%.2f", previousWeights.get(instanceId));
+            double avail_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            String avail_i = String.format("%.2f", avail_i_double);
+            double ART_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+            String ART_i = String.format("%.2f", ART_i_double);
+            double k_i_double = avail_i_double/ART_i_double;
+            String k_i = String.format("%.2f", k_i_double);
+            double z_i_double = k_i_double/k_s;
+            String z_i = String.format("%.2f", z_i_double);
+            sb.append(instanceId + " { P_i="+P_i+", k_i="+k_i+", z_i="+z_i+", ART_i="+ART_i+", avail_i="+avail_i+" }\n");
+        }
+
         if (resultStatus != MPSolver.ResultStatus.OPTIMAL && resultStatus != MPSolver.ResultStatus.FEASIBLE && resultStatus != MPSolver.ResultStatus.UNBOUNDED) {
             log.error("The problem of determining new weights for service " + service.getServiceId() + " does not have an optimal solution!");
+            log.debug(sb.toString());
             return null;
         }
-
-        log.debug("Solution:");
-        log.debug("Objective value = " + objective.value());
-
-        for (String instanceId : weights.keySet()) {
-            log.debug(instanceId + " weight = " + weights.get(instanceId).solutionValue());
-            newWeights.put(instanceId, weights.get(instanceId).solutionValue());
+        for (String instanceId : previousWeights.keySet()) {
+            double W_i_double = weights.get(instanceId).solutionValue();
+            String W_i = String.format("%.3f", W_i_double);
+            newWeights.put(instanceId, W_i_double);
+            sb.append(instanceId + " { W_i="+W_i+" }\n");
         }
+
+        log.debug(sb.toString());
+
         return newWeights;
     }
 
@@ -232,11 +257,10 @@ public class PlanService {
         MPVariable sumOfActivationsValue = solver.makeNumVar(0, Double.POSITIVE_INFINITY , "sumOfActivationsValue");
         MPConstraint sumOfActivationsEquality = solver.makeConstraint(0, 0, "sumOfActivationsEquality"); //Somma_di_attivazioni - ∑a_i =0
         sumOfActivationsEquality.setCoefficient(sumOfActivationsValue, 1);
-        for(String instance : previousWeights.keySet()){
+        for (String instance : previousWeights.keySet()){
             MPVariable activation = solver.makeIntVar(0, 1, "activation_ " + instance);
             activations.put(instance, activation);
             sumOfActivationsEquality.setCoefficient(activation, -1);
-
         }
         //objective.setCoefficient(sumOfActivationsValue, -1);
 

@@ -159,16 +159,20 @@ public class AnalyseService {
             }
             if (instancesStats.isEmpty()) {
                 // TODO alloca nuova istanza creando una adaptation option (l'unica per questo servizio)
+                log.debug("Service {} has no instances with available stats", service.getServiceId());
                 continue;
             }
             // Given the adaptation parameters of each service instance, compute the adaptation parameters for the service
             ServiceStats serviceStats = createServiceStats(instancesStats);
             // The serviceStats are not available if all the instances of the service have unavailable stats.
             // In this case none of the instances have enough metrics to perform the analysis.
-            if (serviceStats == null)
+            if (serviceStats == null) {
+                log.debug("Service {} has no available stats", service.getServiceId());
                 continue;
+            }
             // Update the stats of the service and of its instances both locally and remotely
             updateServiceAndInstancesWithStats(service, serviceStats, instancesStats);
+            log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue(), service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue());
             servicesStatsMap.put(service.getServiceId(), serviceStats);
         }
 
@@ -182,7 +186,9 @@ public class AnalyseService {
             for (Service service : currentArchitecture) {
                 adaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
             }
-            log.debug("Adaptation options: {}", adaptationOptions);
+            for (AdaptationOption adaptationOption : adaptationOptions) {
+                log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
+            }
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(adaptationOptions);
         } else {
@@ -193,6 +199,7 @@ public class AnalyseService {
         planClient.start();
     }
 
+    // Recursive
     private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         if (service == null)
@@ -223,17 +230,17 @@ public class AnalyseService {
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, ServiceStats serviceStats) {//TODO oracolo: togliere avg avail ma usiamo quella dell'oracolo
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         List<Double> serviceAvailabilityHistory = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestNAdaptationParamValues(Availability.class, analysisWindowSize);
-        if (!service.getAdaptationParamSpecifications().get(Availability.class).isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)) {
+        if (serviceAvailabilityHistory != null && !service.getAdaptationParamSpecifications().get(Availability.class).isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)) {
             // Order the instances by average availability (ascending)
             List<Instance> instances = service.getInstances().stream()
                     .sorted(Comparator.comparingDouble(i -> i.getAdaptationParamCollection().getLatestNAdaptationParamValues(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow())).toList();
             Instance worstInstance = instances.get(0);
             // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
             //TODO SE USIAMO L'ORACOLO, NON VA PASSATA LA AVG AVAILABILITY BENSì LA STIMA DELL'AVAILABILITY DELL'ORACOLO
-            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability()));
+            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability(), "Add instances to improve the availability of the service"));
             // Ha il senso di "proponi di rimuovere l'istanza con l'availability peggiore. Se il constraint sull'avail continua a essere soddisfatto, hai risparmiato un'istanza"
             // TODO non va qui, perché questa proposta l'analisi deve valutarla se il constraint è soddisfatto, non se non lo è
-            adaptationOptions.add(new RemoveInstances(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId()));
+            adaptationOptions.add(new RemoveInstances(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId(), "Remove the least available instance to improve the availability of the service"));
             // TODO mancano le considerazioni sul cambio di implementazione
 
             //TODO se parriamo a un modello con availability media e non in parallelo la media va calcolata come media pesata sui pesi del LB,
@@ -246,7 +253,7 @@ public class AnalyseService {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         AverageResponseTime avgRespTimeSpecs = (AverageResponseTime) service.getAdaptationParamSpecifications().get(AverageResponseTime.class);
         List<Double> serviceAverageResponseTimeHistory = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestNAdaptationParamValues(AverageResponseTime.class, analysisWindowSize);
-        if(!avgRespTimeSpecs.isSatisfied(serviceAverageResponseTimeHistory, parametersSatisfactionRate)){
+        if(serviceAverageResponseTimeHistory != null && !avgRespTimeSpecs.isSatisfied(serviceAverageResponseTimeHistory, parametersSatisfactionRate)){
             List<Instance> instances = service.getInstances();
             List<Instance> slowInstances = instances.stream().filter(
                     i -> !avgRespTimeSpecs.isSatisfied(
@@ -260,10 +267,10 @@ public class AnalyseService {
 
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if(slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)) {
-                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability()));
+                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability(), "At least one instance satisfies the avg Response time specifications: change the LB weights"));
             }
             //TODO SE USIAMO L'ORACOLO, NON VA PASSATA LA AVG AVAILABILITY BENSì LA STIMA DELL'AVAILABILITY DELL'ORACOLO
-            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability()));
+            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability(), "The service avg response time specification is not satisfied: add instances"));
         }
         return adaptationOptions;
     }
