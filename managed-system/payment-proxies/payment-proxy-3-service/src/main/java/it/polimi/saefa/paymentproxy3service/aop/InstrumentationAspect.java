@@ -104,8 +104,11 @@ public class InstrumentationAspect {
     }
 
     private void shouldThrowException() throws RuntimeException {
-        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
+        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability){
+            log.warn("Throwing artificial exception");
             throw new RuntimeException("An artificial exception has been thrown!");
+        }
+
     }
 
 }
