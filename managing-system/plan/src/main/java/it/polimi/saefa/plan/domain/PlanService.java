@@ -135,7 +135,10 @@ public class PlanService {
                         maxGrowthUpperBoundConstraint.setCoefficient(weight_i, 1);
                         maxGrowthUpperBoundConstraint.setCoefficient(weight_j, -z_ij);
                         maxGrowthUpperBoundConstraint.setCoefficient(activations.get(instance_j.getInstanceId()), 1);
-                    }else{// Caso k_i<k_j
+                    }
+                    /*
+
+                    else{// Caso k_i<k_j il costraint viene implicato da sopra
                         // w_i - k_i/k_j * w_j - a_i  >= -1 OVVERO
                         // w_i >= k_i/k_j * w_j - (1 - a_i)
                         MPConstraint maxDecreaseUpperBoundConstraint = solver.makeConstraint(-1, Double.POSITIVE_INFINITY, instance_i + "maxDecreaseUpperBoundConstraint");
@@ -143,6 +146,7 @@ public class PlanService {
                         maxDecreaseUpperBoundConstraint.setCoefficient(weight_j, -z_ij);
                         maxDecreaseUpperBoundConstraint.setCoefficient(activations.get(instance_i.getInstanceId()), -1);
                     }
+                   */
                 }
             }
         }
@@ -290,12 +294,16 @@ public class PlanService {
                         maxGrowthUpperBoundConstraint.setCoefficient(weights.get(instance_i), 1);
                         maxGrowthUpperBoundConstraint.setCoefficient(weights.get(instance_j), -z_ij);
                         maxGrowthUpperBoundConstraint.setCoefficient(activations.get(instance_j), 1);
-                    }else{//k_i<k_j
+                    }
+                    /*else{//k_i<k_j il costraint viene implicato da sopra
+
                         MPConstraint maxDecreaseUpperBoundConstraint = solver.makeConstraint(-1, Double.POSITIVE_INFINITY, instance_i + "maxDecreaseUpperBoundConstraint"); //w_i - k_i/k_j * w_j - a_i  >= -1
                         maxDecreaseUpperBoundConstraint.setCoefficient(weights.get(instance_i), 1);
                         maxDecreaseUpperBoundConstraint.setCoefficient(weights.get(instance_j), -z_ij);
                         maxDecreaseUpperBoundConstraint.setCoefficient(activations.get(instance_i), -1);
                     }
+
+                     */
                 }
             }
 
