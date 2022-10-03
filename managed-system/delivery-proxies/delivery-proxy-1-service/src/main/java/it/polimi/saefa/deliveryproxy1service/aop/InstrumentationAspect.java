@@ -1,5 +1,6 @@
 package it.polimi.saefa.deliveryproxy1service.aop;
 
+import it.polimi.saefa.deliveryproxy1service.exception.ForcedException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -103,10 +104,10 @@ public class InstrumentationAspect {
         return (long)((new Random()).nextGaussian()*sleepVariance + sleepMean);
     }
 
-    private void shouldThrowException() throws RuntimeException {
+    private void shouldThrowException() throws ForcedException {
         if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability){
             log.warn("Throwing artificial exception");
-            throw new RuntimeException("An artificial exception has been thrown!");
+            throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
         }
     }
 

@@ -109,8 +109,10 @@ public class InstrumentationAspect {
     }
 
     private void shouldThrowException() throws ForcedException {
-        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
+        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability){
+            log.warn("Throwing artificial exception");
             throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
+        }
     }
 
 }
