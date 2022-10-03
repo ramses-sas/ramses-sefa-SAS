@@ -22,6 +22,9 @@ public class InstrumentationAspect {
     private final Double sleepMean;
     private final Double sleepVariance;
     private final Double exceptionProbability;
+    @Autowired
+    private Environment env;
+    
 
     public InstrumentationAspect(Environment env) {
         String sleepMean, sleepVariance, exceptionProbability;
@@ -107,7 +110,7 @@ public class InstrumentationAspect {
 
     private void shouldThrowException() throws ForcedException {
         if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
-            throw new ForcedException("An artificial exception has been thrown! Host: "+ System.getenv("HOST") + ":" + System.getenv("SERVER_PORT"));
+            throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
     }
 
 }
