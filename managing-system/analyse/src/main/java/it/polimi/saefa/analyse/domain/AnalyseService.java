@@ -88,6 +88,7 @@ public class AnalyseService {
                 metrics.addAll(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
                 // Not enough data to perform analysis. Can happen only at startup because once you have enough data, you will always have enough data
                 if (metrics.size() != metricsWindowSize) {
+                    // TODO se passiamo all'oracolo le empty stats vanno riempite con i dati dell'oracolo
                     instancesStats.add(new InstanceStats(instance)); // Add unavailable instance stats that will be filled with the average valuesStackHistory computed over the other instances
                     continue;
                 }
