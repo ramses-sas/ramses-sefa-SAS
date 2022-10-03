@@ -40,7 +40,7 @@ public class RestClientLoggingAspect {
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     ERROR IN RestClient.{} {} -> {}", methodName, args, exception.toString());
+        log.info("     ERROR IN RestClient.{} {} -> {}", methodName, args, ((Exception)exception).getMessage());
     }
 
     /* Eseguito prima dell'esecuzione del metodo */

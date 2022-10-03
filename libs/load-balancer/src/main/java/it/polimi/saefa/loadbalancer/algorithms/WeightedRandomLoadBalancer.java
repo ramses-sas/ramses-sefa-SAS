@@ -38,9 +38,16 @@ public class WeightedRandomLoadBalancer extends BaseLoadBalancer {
         }
         double p = Math.random();
         double cumulativeProbability = 0.0;
+        // Sort in increasing order of weight
         serviceInstances.sort((o1, o2) -> {
             Double weight1 = weightPerAddress.get(o1.getHost()+":"+o1.getPort());
             Double weight2 = weightPerAddress.get(o2.getHost()+":"+o2.getPort());
+            if (weight1 == null && weight2 == null)
+                return 0;
+            if (weight1 == null)
+                return -1;
+            if (weight2 == null)
+                return 1;
             return weight1.compareTo(weight2);
         });
         int n = serviceInstances.size();
