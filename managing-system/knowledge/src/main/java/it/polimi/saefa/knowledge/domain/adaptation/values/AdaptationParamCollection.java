@@ -9,9 +9,9 @@ import java.util.*;
 @Data
 public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamValueHistories = new HashMap<>();
-    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmark = new HashMap<>();
+    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmarks = new HashMap<>();
 
-    public List<AdaptationParamSpecification> getAdaptationParameterSpecification(){
+    public List<AdaptationParamSpecification> getAdaptationParameterSpecification() {
         List<AdaptationParamSpecification> toReturn = new LinkedList<>();
         adaptationParamValueHistories.values().forEach(
             adaptationParameter -> toReturn.add(adaptationParameter.getSpecification())
@@ -20,12 +20,12 @@ public class AdaptationParamCollection {
     }
 
     @JsonIgnore
-    public Double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass){
-        return adaptationParamBootBenchmark.get(adaptationParamSpecificationClass);
+    public Double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
+        return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
     }
 
-    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark){
-        adaptationParamBootBenchmark.put(adaptationParamSpecificationClass, benchmark);
+    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark) {
+        adaptationParamBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
     }
 
     @JsonIgnore

@@ -38,8 +38,8 @@ public class ExecuteService {
                 log.error("Unknown adaptation option type: " + adaptationOption.getClass());
             }
         });
+        log.info("Ending execute. Notifying Monitor module to continue the loop.");
         monitorClient.notifyFinishedIteration();
-        log.info("Execute step completed");
     }
 
     private void handleAddInstances(AddInstances addInstancesOption) {

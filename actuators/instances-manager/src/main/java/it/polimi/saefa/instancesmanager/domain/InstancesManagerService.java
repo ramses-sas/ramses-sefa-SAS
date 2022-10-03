@@ -81,6 +81,19 @@ public class InstancesManagerService {
 
     private List<String> buildContainerEnvVariables(int serverPort) {
         List<String> envVars = new LinkedList<>();
+        // TODO remove after local tests
+        String localIp;
+        try {
+            localIp = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        envVars.add("EUREKA_IP_PORT="+localIp+":58082");
+        envVars.add("API_GATEWAY_IP_PORT="+localIp+":58081");
+        envVars.add("MYSQL_IP_PORT="+localIp+":3306");
+        /*
         String eurekaIpPort = env.getProperty("EUREKA_IP_PORT");
         if (eurekaIpPort != null)
             envVars.add("EUREKA_IP_PORT="+eurekaIpPort);
@@ -90,6 +103,7 @@ public class InstancesManagerService {
         String mySqlIpPort = env.getProperty("MYSQL_IP_PORT");
         if (mySqlIpPort != null)
             envVars.add("MYSQL_IP_PORT="+mySqlIpPort);
+         */
         envVars.add("SERVER_PORT="+serverPort);
         envVars.add("HOST="+dockerIp);
 

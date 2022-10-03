@@ -22,7 +22,8 @@ public class ConfigurationParser {
 
     public ServiceConfiguration parseProperties(Service service) {
         InstanceInfo configInstance = getConfigServerInstance();
-        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + service.getServiceId() + ".properties";
+        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + service.getServiceId().toLowerCase() + ".properties";
+        log.debug("Fetching configuration from " + url);
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration(service.getServiceId());
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
         String[] lines = Arrays.stream(response.getBody().split("\n")).filter(line -> line.matches("([\\w\\.-])+=.+")).toArray(String[]::new);

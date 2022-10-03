@@ -173,6 +173,7 @@ public class AnalyseService {
 
 
         if (analysisIterationCounter == analysisWindowSize) {
+            log.debug("Analysis iteration: {}/{}. Computing adaptation options.", analysisWindowSize, analysisWindowSize);
             analysisIterationCounter = 0;
             // <serviceId>
             Set<String> analysedServices = new HashSet<>();
@@ -184,9 +185,10 @@ public class AnalyseService {
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(adaptationOptions);
         } else {
+            log.debug("Analysis iteration: {}/{}", analysisIterationCounter, analysisWindowSize);
             analysisIterationCounter++;
         }
-        log.warn("Ending analysis");
+        log.debug("Ending analysis. Notifying the Plan to start the next iteration.");
         planClient.start();
     }
 

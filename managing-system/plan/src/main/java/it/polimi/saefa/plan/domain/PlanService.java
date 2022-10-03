@@ -27,11 +27,7 @@ public class PlanService {
     @Autowired
     private ExecuteClient executeClient;
 
-    private Map<String, Service> servicesMap;
-    private Map<String, AdaptationOption> chosenAdaptationOptions;
-
     static {
-        log.debug("Current directory: {}", System.getProperty("user.dir"));
         try {
             System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
             System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
@@ -41,22 +37,26 @@ public class PlanService {
     }
 
     public void startPlan() {
+        log.info("Starting plan");
         Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
         Map<String, AdaptationOption> chosenAdaptationOptionMap = new HashMap<>();
-        servicesMap = knowledgeClient.getServicesMap();
+        Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
 
         for (String serviceId : proposedAdaptationOptions.keySet()) {
+            log.debug("\n\nAnalysing service: {}", serviceId);
             List<AdaptationOption> options = proposedAdaptationOptions.get(serviceId);
             for (AdaptationOption option : options) {
                 log.info("Adaptation option: {}", option.getDescription());
-                if(option.getClass().equals(ChangeLoadBalancerWeights.class)){
+                if (option.getClass().equals(ChangeLoadBalancerWeights.class)){
                     ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
                     changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
                     chosenAdaptationOptionMap.put(serviceId, changeLoadBalancerWeights); //TODO REMOVE IN FUTURO, solo per test
                 }
             }
+            log.debug("\n\nFor service '{}' the chosen adaptation option is: '{}'", serviceId, chosenAdaptationOptionMap.get(serviceId).getDescription());
         }
         knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionMap.values().stream().toList());
+        log.info("Ending plan. Notifying the Execute module to start the next iteration.");
         executeClient.start();
     }
 
