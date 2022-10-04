@@ -30,11 +30,7 @@ public abstract class AdaptationOption {
     private String serviceImplementationId;
 
     private String comment;
-
-    // Introdotta per astrarre il Plan
-    // TODO: verifica se va messa (ora le variabili nelle singole adapt options)
-    //@ElementCollection
-    //private Map<Class<? extends AdaptationParamSpecification>, Double> requiredValueMap = new HashMap<>();
+    private boolean forced = false;
 
     // Timestamp of acceptance (it is NOT NULL ONLY IF the adaptation option has been accepted by the Plan)
     @Temporal(TemporalType.TIMESTAMP)

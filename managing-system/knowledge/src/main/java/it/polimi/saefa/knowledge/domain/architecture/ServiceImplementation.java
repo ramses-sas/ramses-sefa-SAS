@@ -29,7 +29,7 @@ public class ServiceImplementation {
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
     private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
-    private double instanceLoadShutdownThreshold;// TODO spiegare cos'è
+    private double instanceLoadShutdownThreshold; // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
 
     public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor, double instanceLoadShutdownThreshold) {
         this.implementationId = implementationId;

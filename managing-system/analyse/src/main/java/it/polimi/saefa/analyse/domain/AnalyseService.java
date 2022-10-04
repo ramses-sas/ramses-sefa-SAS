@@ -240,7 +240,7 @@ public class AnalyseService {
             adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementation(), serviceStats.getAverageAvailability(), "Add instances to improve the availability of the service"));
             // Ha il senso di "proponi di rimuovere l'istanza con l'availability peggiore. Se il constraint sull'avail continua a essere soddisfatto, hai risparmiato un'istanza"
             // TODO non va qui, perché questa proposta l'analisi deve valutarla se il constraint è soddisfatto, non se non lo è
-            adaptationOptions.add(new RemoveInstances(service.getServiceId(), service.getCurrentImplementation(), worstInstance.getInstanceId(), "Remove the least available instance to improve the availability of the service"));
+            adaptationOptions.add(new RemoveInstances(service.getServiceId(), service.getCurrentImplementation(), List.of(worstInstance.getInstanceId()), "Remove the least available instance to improve the availability of the service"));
             // TODO mancano le considerazioni sul cambio di implementazione
 
             //TODO se parriamo a un modello con availability media e non in parallelo la media va calcolata come media pesata sui pesi del LB,

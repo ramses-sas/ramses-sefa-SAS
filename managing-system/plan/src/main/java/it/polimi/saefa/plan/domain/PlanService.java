@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,27 +40,42 @@ public class PlanService {
     public void startPlan() {
         log.info("Starting plan");
         Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
-        Map<String, AdaptationOption> chosenAdaptationOptionMap = new HashMap<>();
+        List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
         Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
 
-        for (String serviceId : proposedAdaptationOptions.keySet()) {
+        proposedAdaptationOptions.forEach((serviceId, options) -> {
+            boolean foundForcedOption = false;
             log.debug("\n\nAnalysing service: {}", serviceId);
-            List<AdaptationOption> options = proposedAdaptationOptions.get(serviceId);
+            List<AdaptationOption> optionsToCompare = new LinkedList<>();
             for (AdaptationOption option : options) {
-                log.info("Adaptation option: {}", option.getDescription());
-                if (option.getClass().equals(ChangeLoadBalancerWeights.class)){
-                    ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
-                    changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
-                    chosenAdaptationOptionMap.put(serviceId, changeLoadBalancerWeights); //TODO REMOVE IN FUTURO, solo per test
+                if (option.isForced()) {
+                    log.info("Forced adaptation option: {}", option.getDescription());
+                    chosenAdaptationOptionList.add(option);
+                    foundForcedOption = true;
+                }
+                if (!foundForcedOption) {
+                    log.info("Adaptation option: {}", option.getDescription());
+                    if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
+                        ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
+                        changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
+                        optionsToCompare.add(changeLoadBalancerWeights);
+                    }
                 }
             }
-            if (chosenAdaptationOptionMap.get(serviceId) != null) {
-                log.debug("\n\nFor service '{}' the chosen adaptation option is: '{}'", serviceId, chosenAdaptationOptionMap.get(serviceId).getDescription());
-            }
-        }
-        knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionMap.values().stream().toList());
+            AdaptationOption chosenOption = extractBestOption(optionsToCompare);
+            if (chosenOption != null)
+                chosenAdaptationOptionList.add(chosenOption);
+        });
+        knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
         log.info("Ending plan. Notifying the Execute module to start the next iteration.");
         executeClient.start();
+    }
+
+    public AdaptationOption extractBestOption(List<AdaptationOption> toCompare) {
+        if (toCompare.size() == 0)
+            return null;
+        // TODO: implementare algoritmo di selezione migliore opzione
+        return toCompare.get(0);
     }
 
     public Map<String, Double> handleChangeLoadBalancerWeights(ChangeLoadBalancerWeights option, Service service) {
@@ -78,7 +94,7 @@ public class PlanService {
 
         double serviceAvgRespTime = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
         double serviceAvgAvailability = option.getServiceAverageAvailability(); //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio
-        double k_s = serviceAvgAvailability/serviceAvgRespTime; //performance indicator
+        double k_s = serviceAvgAvailability/serviceAvgRespTime; // service performance indicator
 
         for (Instance instance : service.getInstances()) {
             MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");

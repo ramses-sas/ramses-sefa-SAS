@@ -19,15 +19,19 @@ public class RemoveInstances extends AdaptationOption {
     @ElementCollection
     private List<String> instanceIdList;
 
-    public RemoveInstances(String serviceId, String implementationId, String instanceIdList, String comment) {
-        super(serviceId, implementationId, comment);
-        this.instanceIdList = List.of(instanceIdList);
-    }
 
     public RemoveInstances(String serviceId, String serviceImplementationId, List<String> instanceIdList, String comment) {
         super(serviceId, serviceImplementationId, comment);
         this.instanceIdList = instanceIdList;
     }
+
+    public RemoveInstances(String serviceId, String serviceImplementationId, List<String> instanceIdList, String comment, boolean force) {
+        super(serviceId, serviceImplementationId, comment);
+        this.instanceIdList = instanceIdList;
+        this.setForced(force);
+    }
+
+
 
     @Override
     public String getDescription() {

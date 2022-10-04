@@ -52,7 +52,7 @@ public class AnalyseRestController {
     // TODO remove after test
     @GetMapping("/test")
     public String test() {
-        List<AdaptationOption> opt = List.of(new AddInstances("restaurant-service", "restaurant-service", 1, "test"), new RemoveInstances("restaurant-service", "restaurant-service", "restaurant-service@localhost:58085", "test"));
+        List<AdaptationOption> opt = List.of(new AddInstances("restaurant-service", "restaurant-service", 1, "test"), new RemoveInstances("restaurant-service", "restaurant-service", List.of("restaurant-service@localhost:58085"), "test"));
         knowledgeClient.proposeAdaptationOptions(opt);
         knowledgeClient.chooseAdaptationOptions(opt);
         return "OK";

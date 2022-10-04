@@ -33,7 +33,7 @@ public abstract class AdaptationParamSpecification {
 
     // True if in the list of values the ones that satisfy the constraint are above a certain percentage
     public boolean isSatisfied(List<Double> values, double percentage) {
-        if (values.size() == 0)
+        if (values == null || values.size() == 0)
             return false;
         int count = 0;
         for (Double d : values) {

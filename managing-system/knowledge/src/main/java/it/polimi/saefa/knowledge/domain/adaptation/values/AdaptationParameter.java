@@ -16,8 +16,7 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     private T specification;
     private List<Value> valuesStack = new LinkedList<>();
 
-    //@JsonCreator
-    public AdaptationParameter(/*@JsonProperty*/ T specification) {
+    public AdaptationParameter( T specification) {
         this.specification = specification;
     }
 
@@ -50,13 +49,23 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         return null;
     }
 
+
+
+    /*
     @JsonIgnore
     public boolean isCurrentlySatisfied() {
         return specification.isSatisfied(getLastValue());
     }
 
+    @JsonIgnore
+    public boolean isSatisfiedByPercentage(int n, double percentage) {
+        return specification.isSatisfied(getLastNValues(n), percentage);
+    }
+    */
+
     @Data
     public static class Value {
+        private boolean invalidatesPreviousValues = false;
         private double value;
         private Date timestamp;
 
