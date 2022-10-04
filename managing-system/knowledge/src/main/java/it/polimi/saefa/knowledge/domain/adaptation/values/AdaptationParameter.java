@@ -33,17 +33,6 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         return null;
     }
 
-    @JsonIgnore
-    public List<Double> getLastNValues(int n) {
-        List<Double> values = null;
-        if (valuesStack.size() >= n) {
-            values = new ArrayList<>(n);
-            for (int i = 0; i < n; i++)
-                values.add(valuesStack.get(i).getValue());
-        }
-        return values;
-    }
-
     // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
@@ -70,26 +59,10 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         return values;
     }
 
-    @JsonIgnore
-    public Value getLastValueObject() {
+    public void invalidateLatestAndPreviousValues() {
         if (valuesStack.size() > 0)
-            return valuesStack.get(0);
-        return null;
+            valuesStack.get(0).invalidatesThisAndPreviousValues = true;
     }
-
-
-
-    /*
-    @JsonIgnore
-    public boolean isCurrentlySatisfied() {
-        return specification.isSatisfied(getLastValue());
-    }
-
-    @JsonIgnore
-    public boolean isSatisfiedByPercentage(int n, double percentage) {
-        return specification.isSatisfied(getLastNValues(n), percentage);
-    }
-    */
 
     @Data
     public static class Value {
@@ -102,4 +75,35 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
             this.timestamp = timestamp;
         }
     }
+
+
+    /*
+    @JsonIgnore
+    public List<Double> getLastNValues(int n) {
+        List<Double> values = null;
+        if (valuesStack.size() >= n) {
+            values = new ArrayList<>(n);
+            for (int i = 0; i < n; i++)
+                values.add(valuesStack.get(i).getValue());
+        }
+        return values;
+    }
+
+    @JsonIgnore
+    public Value getLastValueObject() {
+        if (valuesStack.size() > 0)
+            return valuesStack.get(0);
+        return null;
+    }
+
+    @JsonIgnore
+    public boolean isCurrentlySatisfied() {
+        return specification.isSatisfied(getLastValue());
+    }
+
+    @JsonIgnore
+    public boolean isSatisfiedByPercentage(int n, double percentage) {
+        return specification.isSatisfied(getLastNValues(n), percentage);
+    }
+    */
 }

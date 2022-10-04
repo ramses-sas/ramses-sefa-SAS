@@ -94,8 +94,10 @@ public class PlanService {
         MPObjective objective = solver.objective();// min{∑(w_i/z_i) - ∑(a_i * z_i)}
         MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights"); //∑w_i = 1
 
-        double serviceAvgRespTime = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-        double serviceAvgAvailability = option.getServiceAverageAvailability(); //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio
+        double serviceAvgRespTime = service.getCurrentValueForParam(AverageResponseTime.class).getValue();
+        //double serviceAvgAvailability = service.getCurrentValueForParam(Availability.class).getValue();
+        //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio (decommenta la riga sopra)
+        double serviceAvgAvailability = option.getServiceAverageAvailability();
         double k_s = serviceAvgAvailability/serviceAvgRespTime; // service performance indicator
 
         for (Instance instance : service.getInstances()) {
@@ -117,10 +119,10 @@ public class PlanService {
             upperBoundConstraint.setCoefficient(weight, 1);
             upperBoundConstraint.setCoefficient(activation, -1);
 
-            if(emptyWeights)
+            if (emptyWeights)
                 previousWeights.put(instance.getInstanceId(), defaultWeight);
-            double instanceAvgRespTime = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-            double instanceAvailability = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double instanceAvgRespTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+            double instanceAvailability = instance.getCurrentValueForParam(Availability.class).getValue();
             double k_i = instanceAvailability/instanceAvgRespTime;
             double z_i = k_i/k_s;
 
@@ -130,8 +132,8 @@ public class PlanService {
 
         for (Instance instance_i : service.getInstances()) {
             MPVariable weight_i = weights.get(instance_i.getInstanceId());
-            double instanceAvgRespTime_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-            double instanceAvailability_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double instanceAvgRespTime_i = instance_i.getCurrentValueForParam(AverageResponseTime.class).getValue();
+            double instanceAvailability_i = instance_i.getCurrentValueForParam(Availability.class).getValue();
             double k_i = instanceAvailability_i/instanceAvgRespTime_i;
 
             double z_i = k_i/k_s;
@@ -141,8 +143,8 @@ public class PlanService {
             for(Instance instance_j : service.getInstances()){
                 if(!instance_i.getInstanceId().equals(instance_j.getInstanceId())){
                     MPVariable weight_j = weights.get(instance_j.getInstanceId());
-                    double instanceAvgRespTime_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-                    double instanceAvailability_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+                    double instanceAvgRespTime_j = instance_j.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                    double instanceAvailability_j = instance_j.getCurrentValueForParam(Availability.class).getValue();
                     firstConstraint.setCoefficient(activations.get(instance_j.getInstanceId()), z_i * previousWeights.get(instance_j.getInstanceId()));
 
                     double k_j = instanceAvailability_j /instanceAvgRespTime_j;
@@ -184,9 +186,9 @@ public class PlanService {
 
         for (String instanceId : previousWeights.keySet()) {
             String P_i = String.format("%.2f", previousWeights.get(instanceId));
-            double avail_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double avail_i_double = service.getOrCreateInstance(instanceId).getCurrentValueForParam(Availability.class).getValue();
             String avail_i = String.format("%.2f", avail_i_double);
-            double ART_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+            double ART_i_double = service.getOrCreateInstance(instanceId).getCurrentValueForParam(AverageResponseTime.class).getValue();
             String ART_i = String.format("%.2f", ART_i_double);
             double k_i_double = avail_i_double/ART_i_double;
             String k_i = String.format("%.2f", k_i_double);

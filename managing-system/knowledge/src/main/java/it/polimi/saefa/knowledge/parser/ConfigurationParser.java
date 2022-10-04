@@ -20,11 +20,11 @@ public class ConfigurationParser {
     private EurekaClient discoveryClient;
 
 
-    public ServiceConfiguration parseProperties(Service service) {
+    public ServiceConfiguration parsePropertiesAndCreateConfiguration(String serviceId) {
         InstanceInfo configInstance = getConfigServerInstance();
-        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + service.getServiceId().toLowerCase() + ".properties";
+        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId.toLowerCase() + ".properties";
         log.debug("Fetching configuration from " + url);
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(service.getServiceId());
+        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
         String[] lines = Arrays.stream(response.getBody().split("\n")).filter(line -> line.matches("([\\w\\.-])+=.+")).toArray(String[]::new);
         for (String line : lines) {
@@ -96,7 +96,7 @@ public class ConfigurationParser {
         new Thread( () -> {
             parseGlobalProperties();
             for (String serviceId : instancesSupplier.getServicesInstances().keySet()) {
-                parseProperties(serviceId);
+                parsePropertiesAndCreateConfiguration(serviceId);
             }
         }).start();
         return "OK";
@@ -112,7 +112,7 @@ public class ConfigurationParser {
                 if (modifiedFile.equals("application.properties"))
                     parseGlobalProperties();
                 else
-                    parseProperties(modifiedFile.replace(".properties", ""));
+                    parsePropertiesAndCreateConfiguration(modifiedFile.replace(".properties", ""));
             }
         }).start();
         return "OK";

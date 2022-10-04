@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -47,6 +48,11 @@ public class Service {
     @JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getCurrentImplementationObject().getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, false);
+    }
+
+    @JsonIgnore
+    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
+        return getCurrentImplementationObject().getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
     }
 
     @JsonIgnore

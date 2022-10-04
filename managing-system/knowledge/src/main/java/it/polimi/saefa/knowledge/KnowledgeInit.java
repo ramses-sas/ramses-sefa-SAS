@@ -55,7 +55,7 @@ public class KnowledgeInit implements InitializingBean {
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
                 service.getOrCreateInstance(instanceInfo.getInstanceId());
             });
-            service.setConfiguration(configurationParser.parseProperties(service));
+            service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
             knowledgeService.addService(service);
             servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
                 serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->

@@ -21,8 +21,12 @@ public class AdaptationParamCollection {
     }
 
     @JsonIgnore
-    public void setCurrentValueForParam(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, double value) {
+    public void changeCurrentValueForParam(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, double value) {
         currentAdaptationParamsValues.put(adaptationParamSpecificationClass, new AdaptationParameter.Value(value, new Date()));
+    }
+
+    public void invalidateLatestAndPreviousValuesForParam(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
+        adaptationParamValueHistories.get(adaptationParamSpecificationClass).invalidateLatestAndPreviousValues();
     }
 
     @JsonIgnore
@@ -58,17 +62,6 @@ public class AdaptationParamCollection {
     }
 
     @JsonIgnore
-    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getLatestAdaptationParamValue(Class<T> adaptationParamClass, int aaa) {
-        return adaptationParamValueHistories.get(adaptationParamClass).getLastValueObject();
-    }
-
-    @JsonIgnore
-    public <T extends AdaptationParamSpecification> List<Double> getLatestNAdaptationParamValues(Class<T> adaptationParamClass, int n) {
-        return adaptationParamValueHistories.get(adaptationParamClass).getLastNValues(n);
-    }
-
-    // TODO L'UNICA DA LASCIARE
-    @JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int windowSize, boolean replicateLastValue) {
         return adaptationParamValueHistories.get(adaptationParamClass).getLatestAnalysisWindow(windowSize, replicateLastValue);
     }
@@ -84,4 +77,17 @@ public class AdaptationParamCollection {
     public Collection<AdaptationParameter<? extends AdaptationParamSpecification>> getAdaptationParamHistories() {
         return adaptationParamValueHistories.values();
     }
+
+
+    /*
+    @JsonIgnore
+    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getLatestAdaptationParamValue(Class<T> adaptationParamClass) {
+        return adaptationParamValueHistories.get(adaptationParamClass).getLastValueObject();
+    }
+
+    @JsonIgnore
+    public <T extends AdaptationParamSpecification> List<Double> getLatestNAdaptationParamValues(Class<T> adaptationParamClass, int n) {
+        return adaptationParamValueHistories.get(adaptationParamClass).getLastNValues(n);
+    }
+     */
 }

@@ -84,7 +84,7 @@ public class AnalyseService {
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
                 // If there is at least one value in the stack of adaptation parameters, we do not compute a new one and the managing will use the last one (done in the instanceStats constructor)
-                // Otherwise, the instance is a new one and we assign to it the adapt params of the oracle or of the service (done in the createServiceStats method)
+                // Otherwise, the instance is a new one and we assign to it the adapt params of the oracle or of the service (done in the createServiceStatsAndFillJustBornInstances method)
                 if (metrics.size() != metricsWindowSize) {
                     // TODO se passiamo all'oracolo le empty stats vanno riempite con i dati dell'oracolo
                     instancesStats.add(new InstanceStats(instance)); // Add unavailable instance stats that will be filled with the average valuesStackHistory computed over the other instances
@@ -155,14 +155,14 @@ public class AnalyseService {
                 continue;
             }
             // Given the adaptation parameters of each service instance, compute the adaptation parameters for the service
-            ServiceStats serviceStats = createServiceStats(instancesStats);
+            ServiceStats serviceStats = createServiceStatsAndFillJustBornInstances(instancesStats);
             // The serviceStats are not available if all the instances of the service are just born.
             // In this case none of the instances have enough metrics to perform the analysis.
             if (serviceStats == null) {
                 log.debug("Service {} has no available stats", service.getServiceId());
                 continue;
             }
-            // Update the stats of the service and of its instances both locally and remotely
+            // Update the stats of the service and of its instances both locally and in the knowledge
             updateServiceAndInstancesWithStats(service, serviceStats, instancesStats);
             log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), serviceStats.getAverageAvailability(), serviceStats.getAverageResponseTime());
             servicesStatsMap.put(service.getServiceId(), serviceStats);
@@ -211,14 +211,22 @@ public class AnalyseService {
             return adaptationOptions;
 
         // Analisi del servizio corrente, se non ha dipendenze con problemi
-        // TODO
-        // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForParam(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) {
-            // TODO TODO TODO AGGIORNARE VALORE CORRENTE DELLE STATISTICHE DELLE ISTANZE.
-            service.getCurrentImplementationObject().getAdaptationParamCollection().setCurrentValueForParam(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.getCurrentImplementationObject().getAdaptationParamCollection().setCurrentValueForParam(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+            // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
+            // Update the current values for the adaptation parameters of the service and of its instances. Then invalidates the values in the values history
+            service.getCurrentImplementationObject().getAdaptationParamCollection().changeCurrentValueForParam(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+            service.getCurrentImplementationObject().getAdaptationParamCollection().changeCurrentValueForParam(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+            service.getCurrentImplementationObject().getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(Availability.class);
+            service.getCurrentImplementationObject().getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
+            service.getInstances().forEach(instance -> {
+                instance.getAdaptationParamCollection().changeCurrentValueForParam(Availability.class, instance.getLatestReplicatedAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                instance.getAdaptationParamCollection().changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestReplicatedAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                instance.getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(Availability.class);
+                instance.getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
+            });
+            // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory, serviceStats));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory, serviceStats));
         }
@@ -311,7 +319,7 @@ public class AnalyseService {
 
     // Fill the stats of the instances just born with the average of the other instances stats and create the stats for the service.
     // Return null if all the instances are just born
-    private ServiceStats createServiceStats(List<InstanceStats> instancesStats) {
+    private ServiceStats createServiceStatsAndFillJustBornInstances(List<InstanceStats> instancesStats) {
         Service service = currentArchitectureMap.get(instancesStats.get(0).getServiceId());
         Double averageAvailability, averageMaxResponseTime, averageResponseTime;
         List<InstanceStats> justBornInstancesStats = new LinkedList<>();

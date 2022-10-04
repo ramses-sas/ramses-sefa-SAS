@@ -37,8 +37,6 @@ public class InstanceStats {
             maxResponseTime = instance.getAdaptationParamCollection().getAdaptationParam(MaxResponseTime.class).getLastValue();
         }
         this.newStats = false;
-
-
     }
 
     public String getInstanceId() {

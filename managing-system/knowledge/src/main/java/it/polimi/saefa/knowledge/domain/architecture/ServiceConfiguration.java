@@ -36,7 +36,7 @@ public class ServiceConfiguration {
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    @ElementCollection // <instanceIdList, weight>
+    @ElementCollection // <instanceId, weight>
     private Map<String, Double> loadBalancerWeights;
     private LoadBalancerType loadBalancerType;
 
