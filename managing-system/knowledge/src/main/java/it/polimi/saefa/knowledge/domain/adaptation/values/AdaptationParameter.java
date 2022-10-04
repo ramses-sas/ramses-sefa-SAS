@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class AdaptationParameter<T extends AdaptationParamSpecification> {
+
     private T specification;
     private List<Value> valuesStack = new LinkedList<>();
 
@@ -23,6 +24,7 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     public void addValue(double value) {
         valuesStack.add(0, new Value(value, new Date()));
     }
+
 
     @JsonIgnore
     public Double getLastValue() {
@@ -38,6 +40,32 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
             values = new ArrayList<>(n);
             for (int i = 0; i < n; i++)
                 values.add(valuesStack.get(i).getValue());
+        }
+        return values;
+    }
+
+    // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
+    // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
+    // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
+    @JsonIgnore
+    public List<Double> getLatestAnalysisWindow(int size, boolean replicateLastValue) {
+        List<Double> values = new LinkedList<>();
+        int i = Math.min(valuesStack.size(), size) - 1;
+        int validValues = 0;
+        while (validValues < size) {
+            if (i < 0) {
+                if (!replicateLastValue || valuesStack.size() == 0)
+                    return null;
+                values.add(valuesStack.get(0).getValue());
+                validValues++;
+            } else {
+                Value v = valuesStack.get(i);
+                if (!v.invalidatesThisAndPreviousValues) {
+                    values.add(v.getValue());
+                    validValues++;
+                }
+                i--;
+            }
         }
         return values;
     }
@@ -65,11 +93,11 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
 
     @Data
     public static class Value {
-        private boolean invalidatesPreviousValues = false;
+        private boolean invalidatesThisAndPreviousValues = false;
         private double value;
         private Date timestamp;
 
-        private Value(double value, Date timestamp){
+        public Value(double value, Date timestamp){
             this.value = value;
             this.timestamp = timestamp;
         }

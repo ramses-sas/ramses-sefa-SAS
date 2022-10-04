@@ -48,7 +48,22 @@ public class KnowledgeService {
     @Getter @Setter
     private Map<String, AdaptationOption> chosenAdaptationOptions = new HashMap<>();
 
+    @Getter
+    private Modules activeModule = null;
 
+    @Getter
+    private Date lastAdaptationDate = new Date();
+
+    public void setActiveModule(Modules activeModule) {
+        this.activeModule = activeModule;
+        if (activeModule == Modules.MONITOR) {
+            // a new loop is started: reset the previous chosen options and the current proposed adaptation options
+            if (!chosenAdaptationOptions.isEmpty())
+                lastAdaptationDate = new Date();
+            proposedAdaptationOptions = new HashMap<>();
+            chosenAdaptationOptions = new HashMap<>();
+        }
+    }
 
     public void addService(Service service){
         services.put(service.getServiceId(), service);
@@ -168,7 +183,7 @@ public class KnowledgeService {
     }
 
     public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(String instanceId, int n) {
-        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, Pageable.ofSize(n)).stream().toList();
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, lastAdaptationDate, Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
@@ -197,14 +212,15 @@ public class KnowledgeService {
         return adaptationChoicesRepository.findAllByServiceIdOrderByTimestampDesc(serviceId, Pageable.ofSize(n)).stream().toList();
     }
 
+    public void proposeAdaptationOptions(Map<String, List<AdaptationOption>> proposedAdaptationOptions) {
+        this.proposedAdaptationOptions = proposedAdaptationOptions;
+    }
+
     // Called by the Plan module to choose the adaptation options
     public void chooseAdaptationOptions(List<AdaptationOption> options) {
-        // a new loop is started: reset the previous chosen options and the current proposed adaptation options
-        proposedAdaptationOptions = new HashMap<>();
-        chosenAdaptationOptions = new HashMap<>();
         // add the options both to the repository and to the map
         options.forEach(option -> {
-            // option.applyTimestamp(); MOVE to the method called by the Plan module
+            option.applyTimestamp();
             adaptationChoicesRepository.save(option);
             chosenAdaptationOptions.put(option.getServiceId(), option);
         });

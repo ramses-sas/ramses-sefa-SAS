@@ -1,8 +1,10 @@
 package it.polimi.saefa.monitor.externalinterfaces;
 
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,11 +13,15 @@ import java.util.Map;
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
+
+    @PostMapping("/notifyModuleStart")
+    ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
+
     @PostMapping("/rest/metrics/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
 
     @PostMapping("/rest/metrics/addMetricsList")
-    public void addMetrics(@RequestBody List<InstanceMetrics> metrics);
+    void addMetrics(@RequestBody List<InstanceMetrics> metrics);
 
     @GetMapping("/rest/metrics/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);

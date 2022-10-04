@@ -2,6 +2,7 @@ package it.polimi.saefa.execute.domain;
 
 import it.polimi.saefa.configparser.CustomPropertiesWriter;
 import it.polimi.saefa.execute.externalInterfaces.*;
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class ExecuteService {
 
     public void execute() {
         log.info("Starting Execute step");
+        knowledgeClient.notifyModuleStart(Modules.EXECUTE);
         List<AdaptationOption> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
         chosenAdaptationOptions.forEach(adaptationOption -> {
             log.info("Executing adaptation option: " + adaptationOption.getDescription());

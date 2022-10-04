@@ -1,9 +1,13 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +30,11 @@ public class Instance {
         this.serviceImplementationId = instanceId.split("@")[0];
         this.serviceId = serviceId;
         this.currentStatus = currentStatus;
+    }
+
+    @JsonIgnore
+    public <T extends AdaptationParamSpecification> List<Double> getLatestReplicatedAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
+        return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
     }
 
     public String getAddress(){

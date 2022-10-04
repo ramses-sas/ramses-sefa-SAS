@@ -45,6 +45,11 @@ public class Service {
     }
 
     @JsonIgnore
+    public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
+        return getCurrentImplementationObject().getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, false);
+    }
+
+    @JsonIgnore
     public ServiceImplementation getCurrentImplementationObject() {
         return possibleImplementations.get(currentImplementation);
     }

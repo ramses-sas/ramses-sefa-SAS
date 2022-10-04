@@ -1,6 +1,7 @@
 package it.polimi.saefa.monitor.domain;
 
 import com.netflix.appinfo.InstanceInfo;
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.monitor.InstancesSupplier;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MonitorService {
     private final Set<String> managedServices = new HashSet<>();
 
-    private KnowledgeClient knowledgeClient;
+    private final KnowledgeClient knowledgeClient;
     @Autowired
     private AnalyseClient analyseClient;
     @Autowired
@@ -34,7 +35,7 @@ public class MonitorService {
     @Value("${INTERNET_CONNECTION_CHECK_HOST}")
     private String internetConnectionCheckHost;
 
-    private AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
+    private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
     private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
     public MonitorService(KnowledgeClient knowledgeClient) {
@@ -104,7 +105,7 @@ public class MonitorService {
                 knowledgeClient.addMetrics(instanceMetricsList);
             }
             instanceMetricsListBuffer.clear();
-            setLoopIterationFinished(false);
+            loopIterationFinished.set(false);
             analyseClient.start();
         }
     }
@@ -114,6 +115,7 @@ public class MonitorService {
     }
 
     public void setLoopIterationFinished(boolean loopIterationFinished) {
+        knowledgeClient.notifyModuleStart(Modules.MONITOR);
         this.loopIterationFinished.set(loopIterationFinished);
     }
 }

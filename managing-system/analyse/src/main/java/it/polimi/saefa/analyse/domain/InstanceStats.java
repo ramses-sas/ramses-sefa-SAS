@@ -1,5 +1,8 @@
 package it.polimi.saefa.analyse.domain;
 
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.MaxResponseTime;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 
 import lombok.Getter;
@@ -12,18 +15,30 @@ public class InstanceStats {
     private Double averageResponseTime;
     private Double maxResponseTime;
     private Double availability;
-    private boolean dataUnavailable = false;
+    private boolean newInstance;
+    private boolean newStats;
 
     public InstanceStats(Instance instance, Double averageResponseTime, Double maxResponseTime, Double availability) {
         this.instance = instance;
         this.averageResponseTime = averageResponseTime;
         this.maxResponseTime = maxResponseTime;
         this.availability = availability;
+        newStats = true;
+        newInstance = false;
     }
 
     public InstanceStats(Instance instance) {
         this.instance = instance;
-        this.dataUnavailable = true;
+        if (instance.getAdaptationParamCollection().existsEmptyHistory())
+            this.newInstance = true;
+        else {
+            availability = instance.getAdaptationParamCollection().getAdaptationParam(Availability.class).getLastValue();
+            averageResponseTime = instance.getAdaptationParamCollection().getAdaptationParam(AverageResponseTime.class).getLastValue();
+            maxResponseTime = instance.getAdaptationParamCollection().getAdaptationParam(MaxResponseTime.class).getLastValue();
+        }
+        this.newStats = false;
+
+
     }
 
     public String getInstanceId() {
@@ -38,7 +53,7 @@ public class InstanceStats {
         return instance.getServiceImplementationId();
     }
 
-    public boolean isDataUnavailable() {
-        return dataUnavailable || averageResponseTime == null || maxResponseTime == null || availability == null;
+    public boolean isNewInstance() {
+        return newInstance || averageResponseTime == null || maxResponseTime == null || availability == null;
     }
 }

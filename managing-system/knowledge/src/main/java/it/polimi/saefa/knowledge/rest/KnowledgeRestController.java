@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.rest;
 
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -163,7 +164,7 @@ public class KnowledgeRestController {
                 servicesAdaptOptions.put(adaptationOption.getServiceId(), adaptationOptionsList);
             }
         });
-        knowledgeService.setProposedAdaptationOptions(servicesAdaptOptions);
+        knowledgeService.proposeAdaptationOptions(servicesAdaptOptions);
         return ResponseEntity.ok().body("Adaptation options correctly proposed");
     }
 
@@ -184,6 +185,12 @@ public class KnowledgeRestController {
             knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
         });
         return ResponseEntity.ok().body("Load balancer weights correctly set");
+    }
+
+    @PostMapping("/notifyModuleStart")
+    public ResponseEntity<String> notifyModuleStart(@RequestBody Modules module) {
+        knowledgeService.setActiveModule(module);
+        return ResponseEntity.ok().body("Module start correctly notified");
     }
 
     // TODO remove after test

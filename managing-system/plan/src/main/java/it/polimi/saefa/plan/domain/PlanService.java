@@ -1,6 +1,7 @@
 package it.polimi.saefa.plan.domain;
 
 import com.google.ortools.linearsolver.*;
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWeights;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
@@ -39,6 +40,7 @@ public class PlanService {
 
     public void startPlan() {
         log.info("Starting plan");
+        knowledgeClient.notifyModuleStart(Modules.PLAN);
         Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
         List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
         Map<String, Service> servicesMap = knowledgeClient.getServicesMap();

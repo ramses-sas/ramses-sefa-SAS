@@ -1,5 +1,6 @@
 package it.polimi.saefa.analyse.externalInterfaces;
 
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
@@ -13,6 +14,9 @@ import java.util.List;
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
+    @PostMapping("/notifyModuleStart")
+    ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
+
     @PostMapping("/rest/metrics/addMetrics")
     void addMetrics(@RequestBody InstanceMetrics metrics);
 
