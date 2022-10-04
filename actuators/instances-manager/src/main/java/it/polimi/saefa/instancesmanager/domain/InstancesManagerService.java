@@ -23,6 +23,7 @@ import static com.github.dockerjava.api.model.HostConfig.newHostConfig;
 @Service
 public class InstancesManagerService {
     Environment env;
+    String localIp;
     String dockerIp;
     DockerClient dockerClient;
 
@@ -31,11 +32,12 @@ public class InstancesManagerService {
 
 
     public InstancesManagerService(Environment env) throws UnknownHostException {
+        localIp = InetAddress.getLocalHost().getHostAddress();
         this.env = env;
         dockerIp = env.getProperty("DOCKER_IP");
         String dockerPort = env.getProperty("DOCKER_PORT");
         if (dockerIp == null || dockerIp.isEmpty())
-            dockerIp = InetAddress.getLocalHost().getHostAddress();
+            dockerIp = localIp;
         if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())
             throw new RuntimeException("Docker IP and port must be set");
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
@@ -102,41 +104,27 @@ public class InstancesManagerService {
 
     private List<String> buildContainerEnvVariables(int serverPort, SimulationInstanceParams simulationInstanceParams) {
         List<String> envVars = new LinkedList<>();
-        // TODO remove after local tests
-        String localIp;
-        try {
-            localIp = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
 
-
-        envVars.add("EUREKA_IP_PORT="+localIp+":58082");
-        envVars.add("API_GATEWAY_IP_PORT="+localIp+":58081");
-        envVars.add("MYSQL_IP_PORT="+localIp+":3306");
-        /*
+        // Get Eureka, Gateway and MySQL addresses from Environment. When null, use the local IP address and the default ports
         String eurekaIpPort = env.getProperty("EUREKA_IP_PORT");
-        if (eurekaIpPort != null)
-            envVars.add("EUREKA_IP_PORT="+eurekaIpPort);
+        envVars.add("EUREKA_IP_PORT=" + (eurekaIpPort == null ? localIp+":58082" : eurekaIpPort));
         String apiGatewayIpPort = env.getProperty("API_GATEWAY_IP_PORT");
-        if (apiGatewayIpPort != null)
-            envVars.add("API_GATEWAY_IP_PORT="+apiGatewayIpPort);
+        envVars.add("API_GATEWAY_IP_PORT="+(apiGatewayIpPort == null ? localIp+":58081" : apiGatewayIpPort));
         String mySqlIpPort = env.getProperty("MYSQL_IP_PORT");
-        if (mySqlIpPort != null)
-            envVars.add("MYSQL_IP_PORT="+mySqlIpPort);
-         */
+        envVars.add("MYSQL_IP_PORT="+(mySqlIpPort == null ? localIp+":3306" : mySqlIpPort));
         envVars.add("SERVER_PORT="+serverPort);
         envVars.add("HOST="+dockerIp);
 
-
+        /*
         // TO SIMULATE SOME SCENARIOS
-        /*double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
+        double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
         double sleepMean = sleepMeanSecondsPool[new Random().nextInt(sleepMeanSecondsPool.length)]*1000;
-        double sleepVariance = 1500;*/
-        envVars.add("SLEEP_MEAN="+simulationInstanceParams.getSleepDuration()*1000);
-        envVars.add("SLEEP_VARIANCE="+simulationInstanceParams.getSleepVariance());
+        double sleepVariance = 1500;
         double[] exceptionProbabilitiesPool = new double[]{0, 0.2, 0.65, 0.9};
         double exceptionProbability = exceptionProbabilitiesPool[new Random().nextInt(exceptionProbabilitiesPool.length)];
+        */
+        envVars.add("SLEEP_MEAN="+simulationInstanceParams.getSleepDuration()*1000);
+        envVars.add("SLEEP_VARIANCE="+simulationInstanceParams.getSleepVariance());
         envVars.add("EXCEPTION_PROBABILITY="+simulationInstanceParams.getExceptionProbability());
         return envVars;
     }
