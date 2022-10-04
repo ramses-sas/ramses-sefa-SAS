@@ -168,7 +168,7 @@ public class AnalyseService {
             servicesStatsMap.put(service.getServiceId(), serviceStats);
         }
 
-
+        // TODO IL COUNTER VA RIMOSSO
         if (analysisIterationCounter == analysisWindowSize) {
             log.debug("Analysis iteration: {}/{}. Computing adaptation options.", analysisWindowSize, analysisWindowSize);
             analysisIterationCounter = 0;
