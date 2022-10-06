@@ -71,8 +71,8 @@ public class ExecuteService {
         }
         String[] ipPort = instanceToRemove.getAddress().split(":");
         instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
-        //TODO: remove instance from knowledge with notify shutdown
         knowledgeClient.updateService(service);//todo magari alleggerire e magari mandare solo config
+        knowledgeClient.notifyShutdownInstance(instanceToRemove);
     }
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {

@@ -2,6 +2,7 @@ package it.polimi.saefa.execute.externalInterfaces;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -31,4 +32,7 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/service/update")
     void updateService(@RequestBody Service service);
+
+    @PostMapping("/rest/notifyShutdown")
+    ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance);
 }

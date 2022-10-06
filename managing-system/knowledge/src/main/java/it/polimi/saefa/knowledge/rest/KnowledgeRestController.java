@@ -131,7 +131,7 @@ public class KnowledgeRestController {
             return knowledgeService.getAllLatestByServiceId(serviceId);
     }
 
-    @PostMapping("/notifyShutdown")//todo per le rest vanno messi nello url gli ID anche se è una post? Poi avrebbe body vuoto, ma non voglio renderla get
+    @PostMapping("/notifyShutdown")
     public ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance) {
         knowledgeService.notifyShutdownInstance(shutDownInstance);
         return ResponseEntity.ok("Shutdown of instance" + shutDownInstance.getInstanceId() + " notified");

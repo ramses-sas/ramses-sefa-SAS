@@ -93,11 +93,11 @@ public class KnowledgeService {
                 instance.setCurrentStatus(metrics.getStatus());
             } else
                 log.warn("Metrics already saved: " + metrics);
-            if (metrics.isActive())
+            if (metrics.isActive() || metrics.isUnreachable())
                 currentlyActiveInstances.add(instance);
-
         });
 
+        //Failure detection of instances
         if (!previouslyActiveInstances.isEmpty()) {
             Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
             failedInstances.removeAll(currentlyActiveInstances);
@@ -106,13 +106,12 @@ public class KnowledgeService {
                 if(!currentlyActiveInstances.contains(shutdownInstance)) {
                     // the instance has been correctly shutdown
                     shutdownInstances.remove(shutdownInstance);
-                    shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
-                    services.get(shutdownInstance.getServiceId()).removeInstance(shutdownInstance);
-                    InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
-                    metrics.setStatus(InstanceStatus.SHUTDOWN);
-                    metrics.applyTimestamp();
-                    //shutdownInstance.addMetric(metrics);
-                    metricsRepository.save(metrics);
+                    // EXECUTOR shutdownInstance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+                    // EXECUTOR services.get(shutdownInstance.getServiceId()).removeInstance(shutdownInstance);
+                    // EXECUTOR InstanceMetrics metrics = new InstanceMetrics(shutdownInstance.getServiceId(), shutdownInstance.getInstanceId());
+                    // EXECUTOR metrics.setStatus(InstanceStatus.SHUTDOWN);
+                    // EXECUTOR metrics.applyTimestamp();
+                    // EXECUTOR metricsRepository.save(metrics);
                 }
             }
             //shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
@@ -138,13 +137,12 @@ public class KnowledgeService {
 
     public void notifyShutdownInstance(Instance instance) {
         shutdownInstances.add(instance);
-        //Codice rimosso perché può succedere che avvio lo shutdown di una macchina ma ricevo successivamente una
-        // richiesta dal monitor che la contiene ancora.
-        /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceId);
+        instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+        services.get(instance.getServiceId()).removeInstance(instance);
+        InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
         metrics.setStatus(InstanceStatus.SHUTDOWN);
         metrics.applyTimestamp();
         metricsRepository.save(metrics);
-        */
     }
 
     public InstanceMetrics getMetrics(long id) {
