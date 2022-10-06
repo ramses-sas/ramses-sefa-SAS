@@ -14,7 +14,7 @@ import java.util.List;
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
-    @PostMapping("/notifyModuleStart")
+    @PostMapping("/rest/notifyModuleStart")
     ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
 
     @PostMapping("/rest/metrics/addMetrics")
