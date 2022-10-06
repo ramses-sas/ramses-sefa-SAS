@@ -15,7 +15,7 @@ import java.util.Map;
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
 
-    @PostMapping("/notifyModuleStart")
+    @PostMapping("/rest/notifyModuleStart")
     ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
 
     @GetMapping("/rest/services")
