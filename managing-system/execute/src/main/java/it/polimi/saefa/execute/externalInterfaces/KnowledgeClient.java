@@ -20,9 +20,15 @@ public interface KnowledgeClient {
     @GetMapping("/rest/services")
     List<Service> getServices();
 
+    @GetMapping("/rest/servicesMap")
+    Map<String, Service> getServicesMap();
+
     @GetMapping("/rest/chosenAdaptationOptions")
     List<AdaptationOption> getChosenAdaptationOptions();
 
     @PostMapping("/rest/setLoadBalancerWeights")
     ResponseEntity<String> setLoadBalancerWeights(@RequestBody Map<String, Map<String, Double>> servicesWeights);
+
+    @PostMapping("/rest/service/update")
+    void updateService(@RequestBody Service service);
 }

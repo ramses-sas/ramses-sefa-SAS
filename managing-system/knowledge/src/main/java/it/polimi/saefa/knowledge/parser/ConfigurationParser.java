@@ -73,7 +73,7 @@ public class ConfigurationParser {
                                 case "type" ->
                                     serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue().equalsIgnoreCase("weighted_random") ? ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM : ServiceConfiguration.LoadBalancerType.UNKNOWN);
                                 case "weight" ->
-                                    serviceToBalanceConfiguration.addLoadBalancerWeight(services.get(serviceToBalanceConfiguration.getServiceId()).getCurrentImplementation() + "@" + customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
+                                    serviceToBalanceConfiguration.addLoadBalancerWeight(services.get(serviceToBalanceConfiguration.getServiceId()).getCurrentImplementationId() + "@" + customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
                             }
                         }
                     }

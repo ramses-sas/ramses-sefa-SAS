@@ -14,7 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @DiscriminatorValue("CHANGE_LOAD_BALANCER_WEIGHTS")
 public class ChangeLoadBalancerWeights extends AdaptationOption {
-    // <instanceIdList, newWeight>
+    // <instanceId, newWeight>
     @ElementCollection
     @Setter
     private Map<String, Double> newWeights;

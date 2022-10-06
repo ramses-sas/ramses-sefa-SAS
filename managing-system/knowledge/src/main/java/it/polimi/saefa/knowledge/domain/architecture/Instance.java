@@ -18,7 +18,7 @@ public class Instance {
     private String serviceImplementationId; //service implementation id
     private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
-    private InstanceMetrics lastMetrics;
+    private InstanceMetrics latestMetrics;
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;
@@ -43,8 +43,24 @@ public class Instance {
         return getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
     }
 
+    public <T extends AdaptationParamSpecification> void changeCurrentValueForParam(Class<T> adaptationParamClass, double newValue) {
+        getAdaptationParamCollection().changeCurrentValueForParam(adaptationParamClass, newValue);
+    }
+
+    public <T extends AdaptationParamSpecification> void invalidateLatestAndPreviousValuesForParam(Class<T> adaptationParamClass) {
+        getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
+    }
+
     public String getAddress(){
         return instanceId.split("@")[1];
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Instance instance = (Instance) o;
+        return instanceId.equals(instance.instanceId);
     }
 
 }

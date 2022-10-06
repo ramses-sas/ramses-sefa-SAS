@@ -51,7 +51,7 @@ public class KnowledgeInit implements InitializingBean {
             service.setCurrentImplementation(instances.get(0).getInstanceId().split("@")[0]);
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
             instances.forEach(instanceInfo -> {
-                if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementation()))
+                if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
                 service.getOrCreateInstance(instanceInfo.getInstanceId());
             });
@@ -75,7 +75,7 @@ public class KnowledgeInit implements InitializingBean {
                 if (configuration.getLoadBalancerWeights() == null) {
                     for (Instance instance : service.getInstances())
                         configuration.addLoadBalancerWeight(instance.getInstanceId(), 1.0/service.getInstances().size());
-                } else if (!configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementationObject().getInstances().keySet())) {
+                } else if (!configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementation().getInstances().keySet())) {
                     throw new RuntimeException("Service " + service.getServiceId() + " has a load balancer weights map with different keys than the current implementation instances");
                 }
             }

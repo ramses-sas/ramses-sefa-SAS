@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
@@ -73,7 +74,7 @@ public class KnowledgeRestController {
         if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
             return knowledgeService.getAllMetricsBetween(startDate, endDate);
 
-        // instanceIdList
+        // instanceId
         if (/*serviceId != null && */instanceId != null) {
             // + startDate + endDate
             if (startDate != null && endDate != null)
@@ -86,7 +87,7 @@ public class KnowledgeRestController {
             /* + timestamp
             if (timestamp != null && startDate == null && endDate == null)
                 try {
-                    return List.of(persistenceService.getMetrics(serviceId, instanceIdList, timestamp));
+                    return List.of(persistenceService.getMetrics(serviceId, instanceId, timestamp));
                 } catch (NullPointerException e) { return List.of(); }
              */
         }
@@ -103,6 +104,11 @@ public class KnowledgeRestController {
     @GetMapping("/servicesMap")
     public Map<String, Service> getServicesMap() {
         return knowledgeService.getServicesMap();
+    }
+
+    @PostMapping("/service/update")
+    public void updateService(@RequestBody Service service) {
+        knowledgeService.updateService(service);
     }
 
     @GetMapping("/service/{serviceId}")
@@ -193,6 +199,24 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Module start correctly notified");
     }
 
+    @PostMapping("/updateServicesAdaptationParamCollection")
+    public ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, AdaptationParamCollection> serviceAdaptationParameters) {
+        serviceAdaptationParameters.forEach((serviceId, adaptationParamCollection) -> {
+            knowledgeService.updateServiceAdaptationParamCollection(serviceId, adaptationParamCollection);
+        });
+        return ResponseEntity.ok().body("Service adaptation parameters correctly updated");
+    }
+
+    @PostMapping("/updateInstancesAdaptationParamCollection")
+    public ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, AdaptationParamCollection>> instanceAdaptationParameters) {
+        instanceAdaptationParameters.forEach((serviceId, instanceAdaptationParamCollection) -> {
+            instanceAdaptationParamCollection.forEach((instanceId, adaptationParamCollection) -> {
+                knowledgeService.updateInstanceParamAdaptationCollection(serviceId, instanceId, adaptationParamCollection);
+            });
+        });
+        return ResponseEntity.ok().body("Instance adaptation parameters correctly updated");
+    }
+
     // TODO remove after test
     @GetMapping("/")
     public String debug() {
@@ -220,9 +244,9 @@ public class KnowledgeRestController {
         return persistenceService.getMetrics();
     }
 
-    @GetMapping("/getAll/{instanceIdList}")
-    public List<InstanceMetrics> getAllMetricsOfInstance(@PathVariable String instanceIdList) {
-        return persistenceService.getMetrics(instanceIdList);
+    @GetMapping("/getAll/{instanceId}")
+    public List<InstanceMetrics> getAllMetricsOfInstance(@PathVariable String instanceId) {
+        return persistenceService.getMetrics(instanceId);
     }
 
     @GetMapping("/getAll/{serviceId}")
@@ -230,9 +254,9 @@ public class KnowledgeRestController {
         return persistenceService.getMetrics(serviceId);
     }
 
-    @GetMapping("/getRecent/instance/{instanceIdList}")
-    public InstanceMetrics getRecentMetricsOfInstance(@PathVariable String instanceIdList) {
-        return persistenceService.getLatestByInstanceId(instanceIdList);
+    @GetMapping("/getRecent/instance/{instanceId}")
+    public InstanceMetrics getRecentMetricsOfInstance(@PathVariable String instanceId) {
+        return persistenceService.getLatestByInstanceId(instanceId);
     }
 
     @GetMapping("/getRecent/service/{serviceId}")

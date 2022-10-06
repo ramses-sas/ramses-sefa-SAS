@@ -62,7 +62,7 @@ public class InstanceMetrics {
     @Override
     public int hashCode() {
         int result = serviceId.hashCode();
-        result = 31 * result + instanceIdList.hashCode();
+        result = 31 * result + instanceId.hashCode();
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (circuitBreakerMetrics != null ? circuitBreakerMetrics.hashCode() : 0);
         result = 31 * result + (httpMetrics != null ? httpMetrics.hashCode() : 0);
@@ -203,7 +203,7 @@ public class InstanceMetrics {
                 "Http metrics count: " + httpMetrics.values().stream().mapToInt(HttpRequestMetrics::getTotalCount).reduce(0, Integer::sum)+ "\n" +
                 "CircuitBreaker metrics: {\n" + circuitBreakerMetrics.get("payment") + "\n}";
         /*
-        return "\nMetrics for instance " + instanceIdList + " {\n" +
+        return "\nMetrics for instance " + instanceId + " {\n" +
                 "  date = " + timestamp + "\n" +
                 "  httpMetrics = " + httpMetrics + "\n" +
                 "  cpuUsage = " + cpuUsage + "\n" +

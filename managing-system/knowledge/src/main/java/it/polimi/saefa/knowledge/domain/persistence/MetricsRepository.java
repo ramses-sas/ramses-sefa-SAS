@@ -22,7 +22,7 @@ public interface MetricsRepository extends CrudRepository<InstanceMetrics, Long>
 
     Collection<InstanceMetrics> findAllByInstanceIdAndTimestampBetween(String instanceId, Date start, Date end);
 
-    // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceIdList, Date timestamp);
+    // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
 
     @Query("SELECT m FROM InstanceMetrics m WHERE m.instanceId = :instanceId AND " +
             "m.timestamp > IFNULL((SELECT MAX(m1.timestamp) FROM InstanceMetrics m1 WHERE m1.instanceId = :instanceId AND m.status="+SHUTDOWNSTATUS+"), it.polimi.saefa.knowledge.domain.persistence.MetricsRepository.MIN_TIMESTAMP) " +

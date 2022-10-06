@@ -2,6 +2,7 @@ package it.polimi.saefa.analyse.externalInterfaces;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
@@ -44,6 +46,9 @@ public interface KnowledgeClient {
     @GetMapping("/rest/services")
     List<Service> getServices();
 
+    @GetMapping("/rest/servicesMap")
+    Map<String, Service> getServicesMap();
+
     @GetMapping("/rest/metrics/getLatestNBefore")
     List<InstanceMetrics> getLatestNMetricsBeforeDate(
             @RequestParam String instanceId,
@@ -70,9 +75,16 @@ public interface KnowledgeClient {
     @PostMapping("/rest/proposeAdaptationOptions")
     ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
 
+    @PostMapping("/rest/updateServicesAdaptationParamCollection")
+    ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, AdaptationParamCollection> serviceAdaptationParameters);
+
+    @PostMapping("/rest/updateInstancesAdaptationParamCollection")
+    ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, AdaptationParamCollection>> instanceAdaptationParameters);
+
     // TODO remove after test
     @PostMapping("/rest/chooseAdaptationOptions")
     ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+
 
 
 }

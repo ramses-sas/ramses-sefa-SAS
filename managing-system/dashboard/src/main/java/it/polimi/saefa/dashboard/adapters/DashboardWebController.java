@@ -133,7 +133,7 @@ public class DashboardWebController {
 
 			// List <ParameterName, Value, Threshold, Weight>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
+			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementation().getAdaptationParamCollection().getAdaptationParamHistories()) {
 				serviceAdaptationParametersTable.add(new String[]{
 					ap.getSpecification().getClass().getSimpleName(),
 					ap.getLastValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", ap.getLastValue()),
@@ -143,7 +143,7 @@ public class DashboardWebController {
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
-			ServiceImplementation currentImplementation = s.getCurrentImplementationObject();
+			ServiceImplementation currentImplementation = s.getCurrentImplementation();
 			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});

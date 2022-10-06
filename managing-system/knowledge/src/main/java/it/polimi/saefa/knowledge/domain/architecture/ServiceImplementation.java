@@ -18,7 +18,7 @@ public class ServiceImplementation {
     private String serviceId; //implemented service name
     private String implementationId; //specific implementation id
 
-    // <instanceIdList, Instance>
+    // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
 
@@ -90,5 +90,9 @@ public class ServiceImplementation {
 
     public void removeInstance(Instance shutdownInstance) {
         instances.remove(shutdownInstance.getInstanceId());
+    }
+
+    public Instance getInstance(String instanceId) {
+        return instances.get(instanceId);
     }
 }

@@ -13,7 +13,7 @@ import javax.persistence.Entity;
 @Entity
 @DiscriminatorValue("ADD_INSTANCES")
 public class AddInstances extends AdaptationOption {
-    private double newInstanceAvailabilityEstimation;
+    private double newInstanceAvailabilityEstimation; //todo if oracle, not needed? Or still needed?
     private Double newInstanceAverageResponseTimeEstimation;
     private Integer numberOfInstancesToAdd;
 
@@ -22,9 +22,15 @@ public class AddInstances extends AdaptationOption {
         this.newInstanceAvailabilityEstimation = newInstanceAvailabilityEstimation;
     }
 
+    public AddInstances(String serviceId, String implementationId, double newInstanceAvailabilityEstimation, String comment, boolean isForced) {
+        super(serviceId, implementationId, comment);
+        this.newInstanceAvailabilityEstimation = newInstanceAvailabilityEstimation;
+        super.setForced(isForced);
+    }
+
     @Override
     public String getDescription() {
-        return "Add" + (numberOfInstancesToAdd == null ? "" : " "+numberOfInstancesToAdd) + " new instances of service " + super.getServiceId() + ". " + getComment();
+        return isForced() ? "FORCED " : "" + "Add" + (numberOfInstancesToAdd == null ? "" : " "+numberOfInstancesToAdd) + " new instances of service " + super.getServiceId() + ". " + getComment();
     }
 
 }

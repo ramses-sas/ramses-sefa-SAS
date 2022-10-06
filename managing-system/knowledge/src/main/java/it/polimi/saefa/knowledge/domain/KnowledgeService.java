@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.domain;
 
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -86,25 +87,22 @@ public class KnowledgeService {
         metricsList.forEach(metrics -> {
             Service service = services.get(metrics.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
             Instance instance = service.getOrCreateInstance(metrics.getInstanceId());
-            if (instance != null) {
-                if(!(instance.getLastMetrics() != null && instance.getLastMetrics().equals(metrics))) {
-                    metricsRepository.save(metrics);
-                    instance.setLastMetrics(metrics);
-                    instance.setCurrentStatus(metrics.getStatus());
-                } else
-                    log.warn("Metrics already saved: " + metrics);
-                if (metrics.isActive())
-                    currentlyActiveInstances.add(instance);
-            }
+            if(instance.getLatestMetrics() == null || !instance.getLatestMetrics().equals(metrics)) {//TODO la lista è fifo quindi non dobremmo avere problemi sulla lastMetrics, giusto? (nel senso che la last è X e nel buffer abbiamo Y Z K X)
+                metricsRepository.save(metrics);
+                instance.setLatestMetrics(metrics);
+                instance.setCurrentStatus(metrics.getStatus());
+            } else
+                log.warn("Metrics already saved: " + metrics);
+            if (metrics.isActive())
+                currentlyActiveInstances.add(instance);
+
         });
 
-        if (previouslyActiveInstances.isEmpty())
-            previouslyActiveInstances.addAll(currentlyActiveInstances);
-        else {
+        if (!previouslyActiveInstances.isEmpty()) {
             Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
             failedInstances.removeAll(currentlyActiveInstances);
             failedInstances.removeAll(shutdownInstances);
-            for(Instance shutdownInstance : shutdownInstances){
+            for(Instance shutdownInstance : shutdownInstances){ //TODO capire
                 if(!currentlyActiveInstances.contains(shutdownInstance)) {
                     // the instance has been correctly shutdown
                     shutdownInstances.remove(shutdownInstance);
@@ -134,16 +132,15 @@ public class KnowledgeService {
                 metrics.applyTimestamp();
                 metricsRepository.save(metrics);
             } );
-            previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
         }
-        currentlyActiveInstances.clear();
+        previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
     }
 
     public void notifyShutdownInstance(Instance instance) {
         shutdownInstances.add(instance);
         //Codice rimosso perché può succedere che avvio lo shutdown di una macchina ma ricevo successivamente una
         // richiesta dal monitor che la contiene ancora.
-        /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceIdList);
+        /*InstanceMetrics metrics = new InstanceMetrics(serviceId,instanceId);
         metrics.setStatus(InstanceStatus.SHUTDOWN);
         metrics.applyTimestamp();
         metricsRepository.save(metrics);
@@ -227,17 +224,29 @@ public class KnowledgeService {
     }
 
     public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        services.get(serviceId).getOrCreateInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+        services.get(serviceId).getInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
     }
 
     public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        services.get(serviceId).getCurrentImplementationObject().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+        services.get(serviceId).getCurrentImplementation().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
     }
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
         Service service = services.get(serviceId);
         service.getConfiguration().setLoadBalancerWeights(weights);
         configurationRepository.save(service.getConfiguration());
+    }
+
+    public void updateServiceAdaptationParamCollection(String serviceId, AdaptationParamCollection adaptationParamCollection) {
+        services.get(serviceId).getCurrentImplementation().setAdaptationParamCollection(adaptationParamCollection);
+    }
+
+    public void updateInstanceParamAdaptationCollection(String serviceId, String instanceId, AdaptationParamCollection adaptationParamCollection) {
+        services.get(serviceId).getInstance(instanceId).setAdaptationParamCollection(adaptationParamCollection);
+    }
+
+    public void updateService(Service service) {
+        services.put(service.getServiceId(), service);
     }
 
 }
@@ -249,14 +258,14 @@ public class KnowledgeService {
 
     Non più necessario per l'inserimento della seguente riga di codice al metodo addMetrics:
     shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
-    public void notifyBootInstance(String serviceId, String instanceIdList) {
-        shutdownInstances.remove(serviceId + "@" + instanceIdList);
+    public void notifyBootInstance(String serviceId, String instanceId) {
+        shutdownInstances.remove(serviceId + "@" + instanceId);
     }
 
-    public InstanceMetrics getMetrics(String serviceId, String instanceIdList, String timestamp) {
+    public InstanceMetrics getMetrics(String serviceId, String instanceId, String timestamp) {
         LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
         Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceIdList, date);
+        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceId, date);
     }
 
     public List<InstanceMetrics> getServiceMetrics(String serviceId) {

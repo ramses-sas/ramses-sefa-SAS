@@ -4,6 +4,8 @@ import it.polimi.saefa.configparser.CustomPropertiesWriter;
 import it.polimi.saefa.execute.externalInterfaces.*;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,8 +37,8 @@ public class ExecuteService {
             Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
             if (clazz.equals(AddInstances.class)) {
                 handleAddInstances((AddInstances) (adaptationOption));
-            } else if (clazz.equals(RemoveInstances.class)) {
-                handleRemoveInstance((RemoveInstances) (adaptationOption));
+            } else if (clazz.equals(RemoveInstance.class)) {
+                handleRemoveInstance((RemoveInstance) (adaptationOption));
             } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
                 handleChangeLBWeight((ChangeLoadBalancerWeights) (adaptationOption));
             } else {
@@ -51,11 +53,26 @@ public class ExecuteService {
         instancesManagerClient.addInstances(new AddInstancesRequest(addInstancesOption.getServiceImplementationId(), addInstancesOption.getNumberOfInstancesToAdd()));
     }
 
-    private void handleRemoveInstance(RemoveInstances removeInstancesOption) {
-        for (String instanceId : removeInstancesOption.getInstanceIdList()) {
-            String[] ipPort = instanceId.split("@")[0].split(":");
-            instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
+    private void handleRemoveInstance(RemoveInstance removeInstancesOption) {
+        String serviceId = removeInstancesOption.getServiceId();
+        Service service = knowledgeClient.getServicesMap().get(serviceId);
+        Map<String, Instance> instancesMap = service.getInstancesMap();
+        Instance instanceToRemove = instancesMap.get(removeInstancesOption.getInstanceId());
+        Double instanceWeight = service.getLoadBalancerWeight(instanceToRemove);
+
+        for(Instance instance : instancesMap.values()) {
+            double weight = service.getLoadBalancerWeight(instance);
+            if(!instance.equals(instanceToRemove)) {
+                weight += instanceWeight / (instancesMap.size() - 1);
+            }else {
+                weight = 0.0;
+            }
+            service.setLoadBalancerWeight(instance, weight);
         }
+        String[] ipPort = instanceToRemove.getAddress().split(":");
+        instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
+        //TODO: remove instance from knowledge with notify shutdown
+        knowledgeClient.updateService(service);//todo magari alleggerire e magari mandare solo config
     }
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {

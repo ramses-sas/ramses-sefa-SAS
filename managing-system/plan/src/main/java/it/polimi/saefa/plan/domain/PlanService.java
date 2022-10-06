@@ -82,7 +82,7 @@ public class PlanService {
 
     public Map<String, Double> handleChangeLoadBalancerWeights(ChangeLoadBalancerWeights option, Service service) {
         Map<String, Double> previousWeights = service.getConfiguration().getLoadBalancerWeights();
-        double shutdownThreshold = service.getCurrentImplementationObject().getInstanceLoadShutdownThreshold() / service.getInstances().size();
+        double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
         double defaultWeight = 1.0 / service.getInstances().size();
         boolean emptyWeights = previousWeights.isEmpty();
 
@@ -186,9 +186,9 @@ public class PlanService {
 
         for (String instanceId : previousWeights.keySet()) {
             String P_i = String.format("%.2f", previousWeights.get(instanceId));
-            double avail_i_double = service.getOrCreateInstance(instanceId).getCurrentValueForParam(Availability.class).getValue();
+            double avail_i_double = service.getInstance(instanceId).getCurrentValueForParam(Availability.class).getValue();
             String avail_i = String.format("%.2f", avail_i_double);
-            double ART_i_double = service.getOrCreateInstance(instanceId).getCurrentValueForParam(AverageResponseTime.class).getValue();
+            double ART_i_double = service.getInstance(instanceId).getCurrentValueForParam(AverageResponseTime.class).getValue();
             String ART_i = String.format("%.2f", ART_i_double);
             double k_i_double = avail_i_double/ART_i_double;
             String k_i = String.format("%.2f", k_i_double);
