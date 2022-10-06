@@ -18,13 +18,13 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
     @ElementCollection
     @Setter
     private Map<String, Double> newWeights;
-    private Double serviceAverageAvailability;
+    //private Double serviceAverageAvailability;
     //private Double serviceAverageResponseTime;
 
 
-    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, Double serviceAverageAvailability, String comment) {
+    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, String comment) {
         super(serviceId, serviceImplementationId, comment);
-        this.serviceAverageAvailability = serviceAverageAvailability;
+        //this.serviceAverageAvailability = serviceAverageAvailability;
     }
 
     @Override

@@ -43,7 +43,7 @@ public class AdaptationParamCollection {
     }
 
     @JsonIgnore
-    public Double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
+    public double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
         return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
     }
 

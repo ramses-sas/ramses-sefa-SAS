@@ -48,7 +48,7 @@ public class KnowledgeInit implements InitializingBean {
             List<InstanceInfo> instances = serviceApplication.getInstances();
             if (instances == null || instances.isEmpty())
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
-            service.setCurrentImplementation(instances.get(0).getInstanceId().split("@")[0]);
+            service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))

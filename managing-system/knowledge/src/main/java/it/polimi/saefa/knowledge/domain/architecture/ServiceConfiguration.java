@@ -57,14 +57,6 @@ public class ServiceConfiguration {
         this.serviceId = serviceId;
     }
 
-    /*
-    @ElementCollection
-    private Map<String, String> configuration = new HashMap<>();
-
-    public void addConfigurationItem(String key, String value){
-        configuration.put(key, value);
-    }
-     */
 
 
     public void addLoadBalancerWeight(String instanceId, Double value){
@@ -79,15 +71,6 @@ public class ServiceConfiguration {
         String setter = "set" + property.substring(0,1).toUpperCase() + property.substring(1);
         circuitBreakersConfiguration.get(cbName).getClass().getDeclaredMethod(setter, String.class).invoke(circuitBreakersConfiguration.get(cbName), value);
     }
-
-    /*
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ServiceConfiguration that = (ServiceConfiguration) o;
-        return serviceId.equals(that.serviceId);
-    }*/
 
     @Getter
     @Setter
@@ -165,5 +148,15 @@ public class ServiceConfiguration {
         }
 
     }
+
+
+    /*
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ServiceConfiguration that = (ServiceConfiguration) o;
+        return serviceId.equals(that.serviceId);
+    }*/
 }
 

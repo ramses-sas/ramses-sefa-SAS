@@ -95,9 +95,7 @@ public class PlanService {
         MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights"); //∑w_i = 1
 
         double serviceAvgRespTime = service.getCurrentValueForParam(AverageResponseTime.class).getValue();
-        //double serviceAvgAvailability = service.getCurrentValueForParam(Availability.class).getValue();
-        //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio (decommenta la riga sopra)
-        double serviceAvgAvailability = option.getServiceAverageAvailability();
+        double serviceAvgAvailability = service.getCurrentValueForParam(Availability.class).getValue();
         double k_s = serviceAvgAvailability/serviceAvgRespTime; // service performance indicator
 
         for (Instance instance : service.getInstances()) {

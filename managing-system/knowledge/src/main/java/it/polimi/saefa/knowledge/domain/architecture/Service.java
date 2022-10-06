@@ -3,7 +3,6 @@ package it.polimi.saefa.knowledge.domain.architecture;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,15 +14,14 @@ import java.util.*;
 public class Service {
     private String serviceId;
     @Setter
-    private String currentImplementation; //name of the current implementation of the service
+    private String currentImplementationId; //name of the current implementation of the service
     @Setter
     private ServiceConfiguration configuration;
     private List<String> dependencies; //names of services that this service depends on
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
-    @Getter
+    // <AdaptationParameter class, AdaptationParamSpecification>
     private Map<Class<? extends AdaptationParamSpecification>, AdaptationParamSpecification> adaptationParamSpecifications = new HashMap<>();
-    //private AdaptationParamSpecification[] adaptationParamSpecifications;
 
 
 
@@ -47,15 +45,14 @@ public class Service {
         return getCurrentImplementation().getInstances();
     }
 
-    public String getCurrentImplementationId() {
-        return currentImplementation;
-    }
-
     public Instance getOrCreateInstance(String instanceId) {
         return getCurrentImplementation().getOrCreateInstance(instanceId, adaptationParamSpecifications.values().stream().toList());
     }
 
     @JsonIgnore
+    // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
+    // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
+    // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getCurrentImplementation().getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, false);
     }
@@ -75,7 +72,7 @@ public class Service {
 
     @JsonIgnore
     public ServiceImplementation getCurrentImplementation() {
-        return possibleImplementations.get(currentImplementation);
+        return possibleImplementations.get(currentImplementationId);
     }
 
     @Override
@@ -88,7 +85,7 @@ public class Service {
         }
 
         return "\nService '" + serviceId + "'\n" +
-                "\tImplemented by: '" + currentImplementation + "'\n" +
+                "\tImplemented by: '" + currentImplementationId + "'\n" +
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +

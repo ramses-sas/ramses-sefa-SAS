@@ -74,6 +74,11 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
             this.value = value;
             this.timestamp = timestamp;
         }
+
+        @Override
+        public String toString() {
+            return String.format("%.3f", value);
+        }
     }
 
 
