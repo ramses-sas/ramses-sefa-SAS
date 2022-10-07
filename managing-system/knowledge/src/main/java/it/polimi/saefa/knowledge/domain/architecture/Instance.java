@@ -16,7 +16,7 @@ public class Instance {
     private String instanceId; //service implementation id @ ip : port
     private String serviceId; //serviceId
     private String serviceImplementationId; //service implementation id
-    private InstanceStatus currentStatus = InstanceStatus.ACTIVE;
+    private InstanceStatus currentStatus = InstanceStatus.BOOTING;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
     private InstanceMetrics latestMetrics;
 

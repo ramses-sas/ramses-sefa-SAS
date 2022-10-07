@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -213,6 +214,7 @@ public class KnowledgeRestController {
         });
         return ResponseEntity.ok().body("Instance adaptation parameters correctly updated");
     }
+
 
     // TODO remove after test
     @GetMapping("/")

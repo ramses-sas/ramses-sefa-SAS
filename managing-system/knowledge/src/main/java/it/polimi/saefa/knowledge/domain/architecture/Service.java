@@ -45,8 +45,8 @@ public class Service {
         return getCurrentImplementation().getInstances();
     }
 
-    public Instance getOrCreateInstance(String instanceId) {
-        return getCurrentImplementation().getOrCreateInstance(instanceId, adaptationParamSpecifications.values().stream().toList());
+    public Instance createInstance(String instanceAddress) {
+        return getCurrentImplementation().createInstance(instanceAddress, adaptationParamSpecifications.values().stream().toList());
     }
 
     @JsonIgnore
@@ -124,5 +124,9 @@ public class Service {
 
     public Instance getInstance(String instanceId) {
         return getCurrentImplementation().getInstance(instanceId);
+    }
+
+    public Map<String, Double> getLoadBalancerWeights() {
+        return configuration.getLoadBalancerWeights();
     }
 }

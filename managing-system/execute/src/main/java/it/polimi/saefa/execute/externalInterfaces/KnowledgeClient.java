@@ -4,6 +4,7 @@ import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.rest.CreateInstancesRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,4 +36,5 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/notifyShutdown")
     ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance);
+
 }
