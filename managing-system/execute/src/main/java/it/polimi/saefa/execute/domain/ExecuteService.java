@@ -125,7 +125,8 @@ public class ExecuteService {
             if (!instanceId.equals(instanceToRemoveId)) {
                 weight += instanceWeight / (weights.size() - 1);
                 newWeights.put(instanceId, weight);
-            }
+            } else
+                newWeights.put(instanceId, 0.0);
         }
         return newWeights;
     }
@@ -137,11 +138,16 @@ public class ExecuteService {
      * @param serviceId
      * @param weights
      */
-    private void updateLoadbalancerWeights(String serviceId, Map<String, Double> weights){
+    private void updateLoadbalancerWeights(String serviceId, Map<String, Double> weights) {
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
         weights.forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
-            propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
+            if (weight != 0.0) {
+                propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
+            } else {
+                propertyToChangeList.add(new PropertyToChange(null, propertyKey));
+                weights.remove(instanceId);
+            }
         });
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
         knowledgeClient.setLoadBalancerWeights(serviceId, weights);
