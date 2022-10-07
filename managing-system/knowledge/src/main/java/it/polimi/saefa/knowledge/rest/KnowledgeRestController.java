@@ -24,32 +24,16 @@ public class KnowledgeRestController {
     @Autowired
     private KnowledgeService knowledgeService;
 
+
+    @PostMapping("/notifyModuleStart")
+    public ResponseEntity<String> notifyModuleStart(@RequestBody Modules module) {
+        knowledgeService.setActiveModule(module);
+        return ResponseEntity.ok().body("Module start correctly notified");
+    }
+
     @PostMapping("/metrics/addMetricsBuffer")
     public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetrics>> metricsSnapshotBuffer) {
         knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
-    }
-
-    @GetMapping("/metrics/{metricsId}")
-    public InstanceMetrics getMetrics(@PathVariable long metricsId) {
-        return knowledgeService.getMetrics(metricsId);
-    }
-
-    @GetMapping("/metrics/getLatestNBefore")
-    public List<InstanceMetrics> getLatestNMetricsBeforeDate(
-            @RequestParam String instanceId,
-            @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
-            @RequestParam int n
-    ) {
-        return knowledgeService.getNMetricsBefore(instanceId, timestamp, n);
-    }
-
-    @GetMapping("/metrics/getLatestNAfter")
-    public List<InstanceMetrics> getLatestNMetricsAfterDate(
-            @RequestParam String instanceId,
-            @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
-            @RequestParam int n
-    ) {
-        return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
     }
 
     @GetMapping("/metrics/getLatestNOfCurrentInstance")
@@ -183,18 +167,14 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
     }
 
+
+
     @PostMapping("/setLoadBalancerWeights")
     public ResponseEntity<String> setLoadBalancerWeights(@RequestBody Map<String, Map<String, Double>> servicesWeights) {
         servicesWeights.forEach((serviceId, instanceWeights) -> {
             knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
         });
         return ResponseEntity.ok().body("Load balancer weights correctly set");
-    }
-
-    @PostMapping("/notifyModuleStart")
-    public ResponseEntity<String> notifyModuleStart(@RequestBody Modules module) {
-        knowledgeService.setActiveModule(module);
-        return ResponseEntity.ok().body("Module start correctly notified");
     }
 
     @PostMapping("/updateServicesAdaptationParamCollection")
@@ -214,6 +194,42 @@ public class KnowledgeRestController {
         });
         return ResponseEntity.ok().body("Instance adaptation parameters correctly updated");
     }
+
+
+
+
+
+
+
+
+
+
+
+    // Inspection endpoints
+
+    @GetMapping("/metrics/{metricsId}")
+    public InstanceMetrics getMetrics(@PathVariable long metricsId) {
+        return knowledgeService.getMetrics(metricsId);
+    }
+
+    @GetMapping("/metrics/getLatestNBefore")
+    public List<InstanceMetrics> getLatestNMetricsBeforeDate(
+            @RequestParam String instanceId,
+            @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
+            @RequestParam int n
+    ) {
+        return knowledgeService.getNMetricsBefore(instanceId, timestamp, n);
+    }
+
+    @GetMapping("/metrics/getLatestNAfter")
+    public List<InstanceMetrics> getLatestNMetricsAfterDate(
+            @RequestParam String instanceId,
+            @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
+            @RequestParam int n
+    ) {
+        return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
+    }
+
 
 
     // TODO remove after test
