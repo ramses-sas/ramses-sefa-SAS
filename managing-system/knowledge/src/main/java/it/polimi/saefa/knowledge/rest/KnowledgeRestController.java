@@ -167,13 +167,9 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
     }
 
-
-
-    @PostMapping("/setLoadBalancerWeights")
-    public ResponseEntity<String> setLoadBalancerWeights(@RequestBody Map<String, Map<String, Double>> servicesWeights) {
-        servicesWeights.forEach((serviceId, instanceWeights) -> {
-            knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
-        });
+    @PostMapping("/service/{serviceId}/setLoadBalancerWeights")
+    public ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights) {
+        knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
         return ResponseEntity.ok().body("Load balancer weights correctly set");
     }
 

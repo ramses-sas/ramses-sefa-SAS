@@ -3,7 +3,6 @@ package it.polimi.saefa.execute.externalInterfaces;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.rest.CreateInstancesRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +23,14 @@ public interface KnowledgeClient {
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
 
+    @GetMapping("/service/{serviceId}")
+    Service getService(@PathVariable String serviceId);
+
     @GetMapping("/rest/chosenAdaptationOptions")
     List<AdaptationOption> getChosenAdaptationOptions();
 
-    @PostMapping("/rest/setLoadBalancerWeights")
-    ResponseEntity<String> setLoadBalancerWeights(@RequestBody Map<String, Map<String, Double>> servicesWeights);
+    @PostMapping("/rest/service/{serviceId}/setLoadBalancerWeights")
+    ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights);
 
     @PostMapping("/rest/service/update")
     void updateService(@RequestBody Service service);

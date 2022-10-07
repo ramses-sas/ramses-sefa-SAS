@@ -6,7 +6,6 @@ import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.rest.CreateInstancesRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,9 +35,9 @@ public class ExecuteService {
             if (clazz.equals(AddInstances.class)) {
                 handleAddInstances((AddInstances) (adaptationOption));
             } else if (clazz.equals(RemoveInstance.class)) {
-                handleRemoveInstance((RemoveInstance) (adaptationOption));
+                handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
             } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
-                handleChangeLBWeight((ChangeLoadBalancerWeights) (adaptationOption));
+                handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
             } else {
                 log.error("Unknown adaptation option type: " + adaptationOption.getClass());
             }
@@ -73,46 +72,78 @@ public class ExecuteService {
                 service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
             }
         }
-        changeWeightsConfiguration(service.getServiceId(), service.getLoadBalancerWeights());
+        updateLoadbalancerWeights(service.getServiceId(), service.getLoadBalancerWeights());
         knowledgeClient.updateService(service);
     }
 
-    private void handleRemoveInstance(RemoveInstance removeInstancesOption) {
-        Service service = knowledgeClient.getServicesMap().get(removeInstancesOption.getServiceId());
-        Map<String, Instance> instancesMap = service.getInstancesMap();
-        Instance instanceToRemove = instancesMap.get(removeInstancesOption.getInstanceId());
-        Double instanceWeight = service.getLoadBalancerWeight(instanceToRemove);
-
-        for(Instance instance : instancesMap.values()) {
-            double weight = service.getLoadBalancerWeight(instance);
-            if(!instance.equals(instanceToRemove)) {
-                weight += instanceWeight / (instancesMap.size() - 1);
-            }else {
-                weight = 0.0;
-            }
-            service.setLoadBalancerWeight(instance, weight);
-        }
-        String[] ipPort = instanceToRemove.getAddress().split(":");
-        instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
-        changeWeightsConfiguration(service.getServiceId(), service.getLoadBalancerWeights());
-        knowledgeClient.updateService(service);//todo magari alleggerire e magari mandare solo config
-        knowledgeClient.notifyShutdownInstance(Map.of("serviceId", instanceToRemove.getServiceId(), "instanceId", instanceToRemove.getInstanceId()));
+    private void handleRemoveInstanceOption(RemoveInstance removeInstancesOption) {
+        String serviceId = removeInstancesOption.getServiceId();
+        Service service = knowledgeClient.getService(serviceId);
+        Map<String, Double> newWeights = redistributeWeight(service.getLoadBalancerWeights(), removeInstancesOption.getInstanceId());
+        removeInstance(serviceId, removeInstancesOption.getInstanceId());
+        updateLoadbalancerWeights(service.getServiceId(), newWeights);
     }
 
-    private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
+    private void handleChangeLBWeights(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
         String serviceId = changeLoadBalancerWeightsOption.getServiceId();
-        changeWeightsConfiguration(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
-        Map<String, Map<String, Double>> servicesWeights = new HashMap<>();
-        servicesWeights.put(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
-        knowledgeClient.setLoadBalancerWeights(servicesWeights);
+        Map<String, Double> newWeights = changeLoadBalancerWeightsOption.getNewWeights();
+        updateLoadbalancerWeights(serviceId, newWeights);
+        newWeights.forEach((instanceId, weight) -> {
+            if (weight == 0.0) {
+                removeInstance(serviceId, instanceId);
+            }
+        });
     }
 
-    private void changeWeightsConfiguration(String serviceId, Map<String, Double> weights){
+
+    /**
+     * Removes an instance from a service.
+     * Contacts the instanceManager actuator to shut down the instance.
+     * Then, it notifies the knowledge.
+     *
+     * @param serviceId
+     * @param instanceToRemoveId
+     */
+    private void removeInstance(String serviceId, String instanceToRemoveId) {
+        String[] ipPort = instanceToRemoveId.split("@")[1].split(":");
+        instancesManagerClient.removeInstance(new RemoveInstanceRequest(instanceToRemoveId.split("@")[0], ipPort[0], Integer.parseInt(ipPort[1])));
+        knowledgeClient.notifyShutdownInstance(Map.of("serviceId", serviceId, "instanceId", instanceToRemoveId));
+    }
+
+    /**
+     * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.
+     *
+     * @param weights
+     * @param instanceToRemoveId
+     * @return the new weights map
+     */
+    private Map<String, Double> redistributeWeight(Map<String, Double> weights, String instanceToRemoveId) {
+        Map<String, Double> newWeights = new HashMap<>();
+        double instanceWeight = weights.get(instanceToRemoveId);
+        for(String instanceId : weights.keySet()) {
+            double weight = weights.get(instanceId);
+            if (!instanceId.equals(instanceToRemoveId)) {
+                weight += instanceWeight / (weights.size() - 1);
+                newWeights.put(instanceId, weight);
+            }
+        }
+        return newWeights;
+    }
+
+    /**
+     * Contacts the config manager to change the weights of the load balancer of the specified service.
+     * Then, it updates the weights in the knowledge.
+     *
+     * @param serviceId
+     * @param weights
+     */
+    private void updateLoadbalancerWeights(String serviceId, Map<String, Double> weights){
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
         weights.forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
             propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
         });
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
+        knowledgeClient.setLoadBalancerWeights(serviceId, weights);
     }
 }
