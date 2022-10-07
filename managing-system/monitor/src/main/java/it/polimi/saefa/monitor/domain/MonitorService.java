@@ -101,9 +101,7 @@ public class MonitorService {
 
         instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
         if (getLoopIterationFinished()) {
-            for (List<InstanceMetrics> instanceMetricsList : instanceMetricsListBuffer) {
-                knowledgeClient.addMetrics(instanceMetricsList);
-            }
+            knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
             instanceMetricsListBuffer.clear();
             loopIterationFinished.set(false);
             analyseClient.start();

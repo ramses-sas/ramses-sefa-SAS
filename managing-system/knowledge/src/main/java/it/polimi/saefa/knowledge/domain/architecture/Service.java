@@ -115,6 +115,13 @@ public class Service {
         getCurrentImplementation().removeInstance(shutdownInstance);
     }
 
+    public void removeShutdownInstances() {
+        getCurrentImplementation().getInstances().values().forEach(instance -> {
+            if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
+                removeInstance(instance);
+        });
+    }
+
     public Instance getInstance(String instanceId) {
         return getCurrentImplementation().getInstance(instanceId);
     }

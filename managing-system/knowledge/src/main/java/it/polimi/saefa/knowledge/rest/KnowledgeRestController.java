@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -26,9 +23,9 @@ public class KnowledgeRestController {
     @Autowired
     private KnowledgeService knowledgeService;
 
-    @PostMapping("/metrics/addMetricsList")
-    public void addMetrics(@RequestBody List<InstanceMetrics> metrics) {
-        knowledgeService.addMetrics(metrics);
+    @PostMapping("/metrics/addMetricsBuffer")
+    public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetrics>> metricsSnapshotBuffer) {
+        knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
     }
 
     @GetMapping("/metrics/{metricsId}")

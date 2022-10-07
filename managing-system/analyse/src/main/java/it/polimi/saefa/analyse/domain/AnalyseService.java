@@ -94,7 +94,7 @@ public class AnalyseService {
             // Analyze all the instances
             for (Instance instance : service.getInstances()) {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
-                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
+                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) // TODO: quando aggiungi lo stato di BOOTING, va skippata come le SHUTDOWN
                     continue;
 
                 List<InstanceMetrics> metrics = new LinkedList<>(

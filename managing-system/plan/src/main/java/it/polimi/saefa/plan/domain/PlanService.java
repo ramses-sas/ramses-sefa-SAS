@@ -46,16 +46,11 @@ public class PlanService {
         Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
 
         proposedAdaptationOptions.forEach((serviceId, options) -> {
-            boolean foundForcedOption = false;
             log.debug("\n\nAnalysing service: {}", serviceId);
-            List<AdaptationOption> optionsToCompare = new LinkedList<>();
-            for (AdaptationOption option : options) {
-                if (option.isForced()) {
-                    log.info("Forced adaptation option: {}", option.getDescription());
-                    chosenAdaptationOptionList.add(option);
-                    foundForcedOption = true;
-                }
-                if (!foundForcedOption) {
+            // Initialized with all the forced options
+            List<AdaptationOption> optionsToCompare = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
+            if (optionsToCompare.isEmpty()) {
+                for (AdaptationOption option : options) {
                     log.info("Adaptation option: {}", option.getDescription());
                     if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
                         ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
@@ -63,10 +58,14 @@ public class PlanService {
                         optionsToCompare.add(changeLoadBalancerWeights);
                     }
                 }
+                AdaptationOption chosenOption = extractBestOption(optionsToCompare);
+                if (chosenOption != null)
+                    chosenAdaptationOptionList.add(chosenOption);
+            } else {
+                // If there is at least a forced option, all the other options are ignored
+                log.info("Forced adaptation options: {}", optionsToCompare);
+                chosenAdaptationOptionList.addAll(optionsToCompare);
             }
-            AdaptationOption chosenOption = extractBestOption(optionsToCompare);
-            if (chosenOption != null)
-                chosenAdaptationOptionList.add(chosenOption);
         });
         knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
         log.info("Ending plan. Notifying the Execute module to start the next iteration.");

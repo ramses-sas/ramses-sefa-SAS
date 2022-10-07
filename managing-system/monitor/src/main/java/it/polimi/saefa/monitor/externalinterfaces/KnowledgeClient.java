@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
@@ -17,11 +18,8 @@ public interface KnowledgeClient {
     @PostMapping("/rest/notifyModuleStart")
     ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
 
-    @PostMapping("/rest/metrics/addMetrics")
-    void addMetrics(@RequestBody InstanceMetrics metrics);
-
-    @PostMapping("/rest/metrics/addMetricsList")
-    void addMetrics(@RequestBody List<InstanceMetrics> metrics);
+    @PostMapping("/rest/metrics/addMetricsBuffer")
+    void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetrics>> metricsSnapshotBuffer);
 
     @GetMapping("/rest/metrics/{metricsId}")
     InstanceMetrics getMetrics(@PathVariable long metricsId);
