@@ -54,8 +54,7 @@ public class ExecuteService {
     }
 
     private void handleRemoveInstance(RemoveInstance removeInstancesOption) {
-        String serviceId = removeInstancesOption.getServiceId();
-        Service service = knowledgeClient.getServicesMap().get(serviceId);
+        Service service = knowledgeClient.getServicesMap().get(removeInstancesOption.getServiceId());
         Map<String, Instance> instancesMap = service.getInstancesMap();
         Instance instanceToRemove = instancesMap.get(removeInstancesOption.getInstanceId());
         Double instanceWeight = service.getLoadBalancerWeight(instanceToRemove);
@@ -72,7 +71,7 @@ public class ExecuteService {
         String[] ipPort = instanceToRemove.getAddress().split(":");
         instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
         knowledgeClient.updateService(service);//todo magari alleggerire e magari mandare solo config
-        knowledgeClient.notifyShutdownInstance(instanceToRemove);
+        knowledgeClient.notifyShutdownInstance(Map.of("serviceId", instanceToRemove.getServiceId(), "instanceId", instanceToRemove.getInstanceId()));
     }
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {

@@ -10,7 +10,6 @@ import java.util.*;
 public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamValueHistories = new HashMap<>();
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter.Value> currentAdaptationParamsValues = new HashMap<>();
-    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmarks = new HashMap<>();
 
     public List<AdaptationParamSpecification> getAdaptationParameterSpecification() {
         List<AdaptationParamSpecification> toReturn = new LinkedList<>();
@@ -20,7 +19,6 @@ public class AdaptationParamCollection {
         return toReturn;
     }
 
-    @JsonIgnore
     public void changeCurrentValueForParam(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, double value) {
         currentAdaptationParamsValues.put(adaptationParamSpecificationClass, new AdaptationParameter.Value(value, new Date()));
     }
@@ -29,7 +27,6 @@ public class AdaptationParamCollection {
         adaptationParamValueHistories.get(adaptationParamSpecificationClass).invalidateLatestAndPreviousValues();
     }
 
-    @JsonIgnore
     public AdaptationParameter.Value getCurrentValueForParam(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
         return currentAdaptationParamsValues.get(adaptationParamSpecificationClass);
     }
@@ -42,16 +39,6 @@ public class AdaptationParamCollection {
         return false;
     }
 
-    @JsonIgnore
-    public double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
-        return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
-    }
-
-    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark) {
-        adaptationParamBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
-    }
-
-    @JsonIgnore
     public <T extends AdaptationParamSpecification> AdaptationParameter<T> getAdaptationParam(Class<T> adaptationParamClass) {
         return (AdaptationParameter<T>) adaptationParamValueHistories.get(adaptationParamClass);
     }
@@ -61,7 +48,6 @@ public class AdaptationParamCollection {
         adaptationParameter.addValue(value);
     }
 
-    @JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int windowSize, boolean replicateLastValue) {
         return adaptationParamValueHistories.get(adaptationParamClass).getLatestAnalysisWindow(windowSize, replicateLastValue);
     }

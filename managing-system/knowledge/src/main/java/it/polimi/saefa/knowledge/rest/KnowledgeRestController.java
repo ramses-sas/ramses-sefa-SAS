@@ -129,9 +129,9 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/notifyShutdown")
-    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Instance shutDownInstance) {
-        knowledgeService.notifyShutdownInstance(shutDownInstance);
-        return ResponseEntity.ok("Shutdown of instance" + shutDownInstance.getInstanceId() + " notified");
+    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Map<String, String> request) {
+        knowledgeService.notifyShutdownInstance(request.get("serviceId"), request.get("instanceId"));
+        return ResponseEntity.ok("Shutdown of instance " + request.get("instanceId") + " notified");
     }
 
     @PostMapping("/changeConfiguration")

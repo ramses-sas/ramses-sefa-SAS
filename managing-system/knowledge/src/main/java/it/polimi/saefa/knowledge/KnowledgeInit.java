@@ -61,7 +61,6 @@ public class KnowledgeInit implements InitializingBean {
                 serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
                         service.getPossibleImplementations()
                                 .get(serviceImplementationBenchmarks.getServiceImplementationId())
-                                .getAdaptationParamCollection()
                                 .setBootBenchmark(adaptationClass, value));
             });
 

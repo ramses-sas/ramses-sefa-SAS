@@ -5,12 +5,14 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationPara
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Instance {
     private String instanceId; //service implementation id @ ip : port
@@ -33,11 +35,13 @@ public class Instance {
         this.currentStatus = currentStatus;
     }
 
+    // TODO verifica di poter togliere il JsonIgnore
     @JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestReplicatedAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
     }
 
+    // TODO verifica di poter togliere il JsonIgnore
     @JsonIgnore
     public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
         return getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
@@ -49,6 +53,11 @@ public class Instance {
 
     public <T extends AdaptationParamSpecification> void invalidateLatestAndPreviousValuesForParam(Class<T> adaptationParamClass) {
         getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
+    }
+
+    @JsonIgnore
+    public boolean isJustBorn() {
+        return this.getAdaptationParamCollection().existsEmptyHistory();
     }
 
     public String getAddress(){

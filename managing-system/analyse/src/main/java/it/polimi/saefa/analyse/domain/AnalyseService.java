@@ -32,19 +32,12 @@ import java.util.*;
 @org.springframework.stereotype.Service
 public class AnalyseService {
     //Number of analysis iterations to do before choosing the best adaptation options
-    @Value("${ANALYSIS_WINDOW_SIZE}")
     private int analysisWindowSize;
     //Number of new metrics to analyse for each instance of each service
-    @Value("${METRICS_WINDOW_SIZE}")
     private int metricsWindowSize;
-    @Value("${FAILURE_RATE_THRESHOLD}")
     private double failureRateThreshold;
-    @Value("${UNREACHABLE_RATE_THRESHOLD}")
     private double unreachableRateThreshold;
-    @Value("${PARAMETERS_SATISFACTION_RATE}")
     private double parametersSatisfactionRate;
-
-    private int analysisIterationCounter = 0;
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
     private Integer newMetricsWindowSize;
@@ -54,8 +47,6 @@ public class AnalyseService {
 
     // <serviceId, Service>
     private Map<String, Service> currentArchitectureMap;
-    // <serviceId, ServiceStats>
-    // private Map<String, ServiceStats> servicesStatsMap;
 
 
     @Autowired
@@ -64,6 +55,33 @@ public class AnalyseService {
     @Autowired
     private PlanClient planClient;
 
+    public AnalyseService(
+        @Value("${ANALYSIS_WINDOW_SIZE}") int analysisWindowSize,
+        @Value("${METRICS_WINDOW_SIZE}") int metricsWindowSize,
+        @Value("${FAILURE_RATE_THRESHOLD}") double failureRateThreshold,
+        @Value("${UNREACHABLE_RATE_THRESHOLD}") double unreachableRateThreshold,
+        @Value("${PARAMETERS_SATISFACTION_RATE}") double parametersSatisfactionRate
+    ) {
+        if (analysisWindowSize < 1)
+            throw new IllegalArgumentException("Analysis window size must be greater than 0");
+        if (metricsWindowSize < 3)
+            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
+            // Quindi comunque metricsWindowSize>=3
+            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        if (failureRateThreshold < 0 || failureRateThreshold > 1)
+            throw new IllegalArgumentException("Failure rate threshold must be between 0 and 1.");
+        if (unreachableRateThreshold < 0 || unreachableRateThreshold > 1)
+            throw new IllegalArgumentException("Unreachable rate threshold must be between 0 and 1.");
+        if (failureRateThreshold + unreachableRateThreshold >= 1)
+            throw new IllegalArgumentException("Failure rate threshold + unreachable rate threshold must be less than 1.");
+        if (parametersSatisfactionRate < 0 || parametersSatisfactionRate > 1)
+            throw new IllegalArgumentException("Parameters satisfaction rate must be between 0 and 1.");
+        this.analysisWindowSize = analysisWindowSize;
+        this.metricsWindowSize = metricsWindowSize;
+        this.failureRateThreshold = failureRateThreshold;
+        this.unreachableRateThreshold = unreachableRateThreshold;
+        this.parametersSatisfactionRate = parametersSatisfactionRate;
+    }
 
     public void startAnalysis() {
         log.debug("Starting analysis");
@@ -84,8 +102,7 @@ public class AnalyseService {
     // Given the available metrics, creates a new AdaptationParameterValue for all the instances when possible, and uses
     // their value to compute each new AdaptationParameterValue of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
-    public List<AdaptationOption> analyse(){
-        //servicesStatsMap = new HashMap<>();
+    public List<AdaptationOption> analyse() {
         Collection<Service> currentArchitecture = currentArchitectureMap.values();
         List<AdaptationOption> adaptationOptions = new ArrayList<>();
         for (Service service : currentArchitecture) {
@@ -97,16 +114,16 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) // TODO: quando aggiungi lo stato di BOOTING, va skippata come le SHUTDOWN
                     continue;
 
-                List<InstanceMetrics> metrics = new LinkedList<>(
-                        knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
+                List<InstanceMetrics> metrics = new LinkedList<>(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
-                // If there is at least one value in the stack of adaptation parameters, we do not compute a new one and the managing will use the last one (done in the instanceStats constructor)
-                // Otherwise, the instance is a new one, and we assign to it the adaptation parameters of the oracle or of the service (done in the fillJustBornInstances method)
                 if (metrics.size() != metricsWindowSize) {
-                    // If it's a new instance, it will have the adaptation parameters of the service or of the oracle.
-                    // If it's not a new instance, it will have the latest available adaptation parameters
-                    instancesStats.add(new InstanceStats(instance));
+                    if (instance.isJustBorn())
+                        // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
+                        instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
+                    else
+                        // If it's not a new instance, the adaptation parameters will have the latest available value
+                        instancesStats.add(new InstanceStats(instance));
                     continue;
                 }
 
@@ -120,62 +137,60 @@ public class AnalyseService {
                 Caso last metric active: tutto ok, a meno di conti sul tasso di faild e unreachable
                  */
 
-                failureRateThreshold = Math.min(failureRateThreshold, 1.0);
-                unreachableRateThreshold = Math.min(unreachableRateThreshold, 1.0);
-
                 double failureRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isFailed() ? 1:0), Double::sum) / metrics.size();
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
 
                 InstanceMetrics latestMetrics = metrics.get(0);
                 if (latestMetrics.isFailed() || unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
-                    //Tries to force shutdown the instance
                     adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instances failed or unreachable", true));
                     continue;
                     /*
-                    Se l'utlima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo deve
-                    fare l'executor notificando alla knoledge il set di istanze spente, che verranno marcate come SHUTDOWN) per non
+                    Se l'utlima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
                     confonderla con una potenziale nuova istanza con stesso identificatore.
-
                     Inoltre, per evitare comportamenti oscillatori, scegliamo di terminare istanze poco reliable che
                     sono spesso unreachable o failed.
-                     */
+                    */
                 }
 
                 List<InstanceMetrics> activeMetrics = metrics.stream().filter(InstanceMetrics::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
-                if (activeMetrics.size() < 2) { //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come istanza attiva (con parametri medi). Al massimo prima o poi verrà punita.
-                    instancesStats.add(new InstanceStats(instance)); // This behaviour is the same adopted when the metric window for the instance is not full
-                    continue;
+                if (activeMetrics.size() < 3) {
+                    //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
+                    // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
+                    if (instance.isJustBorn())
+                        // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
+                        instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
+                    else
+                        // If it's not a new instance, the adaptation parameters will have the latest available value
+                        instancesStats.add(new InstanceStats(instance));
+                } else {
+                    InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
+                    InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
+
+                    // <endpoint, value>
+                    Map<String, Double> endpointAvgRespTime = new HashMap<>();
+                    Map<String, Double> endpointMaxRespTime = new HashMap<>();
+                    for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
+                        double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+                        double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+                        if (requestDifference != 0)
+                            endpointAvgRespTime.put(endpoint, durationDifference / requestDifference);
+                        endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
+                    }
+
+                    existsInstanceWithNewMetricsWindow = true;
+                    // Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
+                    // (perché il CB può cambiare spontaneamente solo una volta)
+                    // Di conseguenza le computeInstanceXXX non possono restituire null
+                    InstanceStats instanceStats = new InstanceStats(instance,
+                            computeInstanceAvgResponseTime(endpointAvgRespTime),
+                            computeInstanceMaxResponseTime(endpointMaxRespTime),
+                            computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics));
+                    instancesStats.add(instanceStats);
                 }
-                InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
-                InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
-
-                // <endpoint, value>
-                Map<String, Double> endpointAvgRespTime = new HashMap<>();
-                Map<String, Double> endpointMaxRespTime = new HashMap<>();
-
-                for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-                    double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
-                    double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
-                    if (requestDifference != 0)
-                        endpointAvgRespTime.put(endpoint, durationDifference / requestDifference);
-                    endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
-                }
-
-                existsInstanceWithNewMetricsWindow = true;
-                // Single instance statistics (i.e., latest value of the valuesStackHistory that the analysis uses to compute adaptation options)
-                // Se assumiamo che METRICS_WINDOW_SIZE>=3 su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
-                // (perché il CB può cambiare spontaneamente solo una volta)
-                // Di conseguenza le computeInstanceXXX non possono restituire null
-                InstanceStats instanceStats = new InstanceStats(instance,
-                        computeInstanceAvgResponseTime(endpointAvgRespTime),
-                        computeInstanceMaxResponseTime(endpointMaxRespTime),
-                        computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics));
-                instancesStats.add(instanceStats);
             }
 
             if (instancesStats.isEmpty()) {
-                Map<Class<? extends AdaptationParamSpecification>, Double> benchmarks = service.getCurrentImplementation().getAdaptationParamCollection().getAdaptationParamBootBenchmarks();
                 adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
                 log.warn("Service {} has no active instances", service.getServiceId());
                 continue;
@@ -190,7 +205,6 @@ public class AnalyseService {
             // In this case none of the instances have enough metrics to perform the analysis.
             // Update the adaptation parameters of the service and of its instances ONLY LOCALLY.
             updateAdaptationParametersHistory(service, instancesStats);
-            log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForParam(Availability.class), service.getCurrentValueForParam(AverageResponseTime.class));
             //servicesStatsMap.put(service.getServiceId(), serviceStats);
         }
         return adaptationOptions;
@@ -245,6 +259,7 @@ public class AnalyseService {
                 instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
                 instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
             });
+            log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForParam(Availability.class), service.getCurrentValueForParam(AverageResponseTime.class));
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
@@ -363,7 +378,7 @@ public class AnalyseService {
         currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, availabilityAccumulator / count);
     }
 
-    public void updateAdaptationParamCollectionsInKnowledge(){
+    public void updateAdaptationParamCollectionsInKnowledge() {
         Map<String, Map<String, AdaptationParamCollection>> serviceInstancesNewAdaptationParamCollections = new HashMap<>();
         Map<String, AdaptationParamCollection> serviceNewAdaptationParamCollections = new HashMap<>();
         for(Service service : currentArchitectureMap.values()){
@@ -376,6 +391,33 @@ public class AnalyseService {
         }
         knowledgeClient.updateInstancesAdaptationParamCollection(serviceInstancesNewAdaptationParamCollections);
         knowledgeClient.updateServicesAdaptationParamCollection(serviceNewAdaptationParamCollections);
+    }
+
+
+    public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
+        if (newMetricsWindowSize < 3)
+            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
+            // Quindi comunque metricsWindowSize>=3
+            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        this.newMetricsWindowSize = newMetricsWindowSize;
+    }
+
+    public void setNewAnalysisWindowSize(Integer newAnalysisWindowSize) throws IllegalArgumentException {
+        if (newAnalysisWindowSize < 1)
+            throw new IllegalArgumentException("Analysis window size must be greater than 0");
+        this.newAnalysisWindowSize = newAnalysisWindowSize;
+    }
+
+    public void setNewFailureRateThreshold(Double newFailureRateThreshold) throws IllegalArgumentException {
+        if (newFailureRateThreshold < 0 || newFailureRateThreshold > 1)
+            throw new IllegalArgumentException("Failure rate threshold must be between 0 and 1.");
+        this.newFailureRateThreshold = newFailureRateThreshold;
+    }
+
+    public void setNewUnreachableRateThreshold(Double newUnreachableRateThreshold) throws IllegalArgumentException {
+        if (newUnreachableRateThreshold < 0 || newUnreachableRateThreshold > 1)
+            throw new IllegalArgumentException("Unreachable rate threshold must be between 0 and 1.");
+        this.newUnreachableRateThreshold = newUnreachableRateThreshold;
     }
 
     private void updateWindowAndThresholds() {
@@ -396,8 +438,6 @@ public class AnalyseService {
             newAnalysisWindowSize = null;
         }
     }
-
-
 
 
     /*
