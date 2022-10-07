@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class AddInstancesResponse {
+public class StartNewInstancesResponse {
 
     private final List<SingleInstanceResponse> dockerizedInstances = new ArrayList<>();
 
@@ -19,7 +19,7 @@ public class AddInstancesResponse {
 
     @AllArgsConstructor
     @Getter
-    static class SingleInstanceResponse {
+    public static class SingleInstanceResponse {
         private String imageName;
         private String containerId;
         private String containerName;

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddInstancesRequest {
+public class StartNewInstancesRequest {
     private String serviceImplementationName;
     private int numberOfInstances;
 }

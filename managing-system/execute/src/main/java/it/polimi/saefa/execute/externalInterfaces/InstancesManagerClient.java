@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface InstancesManagerClient {
 
     @PostMapping(path = "/rest/addInstances")
-    AddInstancesResponse addInstances(@RequestBody AddInstancesRequest request);
+    StartNewInstancesResponse addInstances(@RequestBody StartNewInstancesRequest request);
 
     @PostMapping(path = "/rest/removeInstance")
     RemoveInstanceResponse removeInstance(@RequestBody RemoveInstanceRequest request);

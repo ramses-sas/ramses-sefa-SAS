@@ -53,7 +53,7 @@ public class KnowledgeInit implements InitializingBean {
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
-                service.getOrCreateInstance(instanceInfo.getInstanceId());
+                service.createInstance(instanceInfo.getInstanceId().split("@")[1]);
             });
             service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
             knowledgeService.addService(service);

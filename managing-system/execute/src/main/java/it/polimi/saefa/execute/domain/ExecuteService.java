@@ -6,13 +6,11 @@ import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.rest.CreateInstancesRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -50,7 +48,33 @@ public class ExecuteService {
     }
 
     private void handleAddInstances(AddInstances addInstancesOption) {
-        instancesManagerClient.addInstances(new AddInstancesRequest(addInstancesOption.getServiceImplementationId(), addInstancesOption.getNumberOfInstancesToAdd()));
+        String serviceId = addInstancesOption.getServiceId();
+        Service service = knowledgeClient.getServicesMap().get(serviceId);
+        if (!service.getCurrentImplementationId().equals(addInstancesOption.getServiceImplementationId()))
+            throw new RuntimeException("Service implementation id mismatch. Expected: " + service.getCurrentImplementationId() + " Actual: " + addInstancesOption.getServiceImplementationId());
+        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(addInstancesOption.getServiceImplementationId(), addInstancesOption.getNumberOfInstancesToAdd()));
+
+        if (instancesResponse.getDockerizedInstances().isEmpty())
+            throw new RuntimeException("No instances were added");
+
+        Set<String> newInstancesIds = new HashSet<>();
+        instancesResponse.getDockerizedInstances().forEach(instance -> {
+            log.info("Adding instance to service" + addInstancesOption.getServiceId() + " with new instance " + instance.getAddress());
+            newInstancesIds.add(service.createInstance(instance.getAddress()).getInstanceId());
+        });
+
+        int newNumberOfInstances = service.getInstances().size();
+        int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();
+
+        for (Instance instance : service.getInstances()) {
+            if (newInstancesIds.contains(instance.getInstanceId())) {
+                service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
+            } else {
+                service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
+            }
+        }
+        changeWeightsConfiguration(service.getServiceId(), service.getLoadBalancerWeights());
+        knowledgeClient.updateService(service);
     }
 
     private void handleRemoveInstance(RemoveInstance removeInstancesOption) {
@@ -70,20 +94,25 @@ public class ExecuteService {
         }
         String[] ipPort = instanceToRemove.getAddress().split(":");
         instancesManagerClient.removeInstance(new RemoveInstanceRequest(removeInstancesOption.getServiceImplementationId(), ipPort[0], Integer.parseInt(ipPort[1])));
+        changeWeightsConfiguration(service.getServiceId(), service.getLoadBalancerWeights());
         knowledgeClient.updateService(service);//todo magari alleggerire e magari mandare solo config
         knowledgeClient.notifyShutdownInstance(Map.of("serviceId", instanceToRemove.getServiceId(), "instanceId", instanceToRemove.getInstanceId()));
     }
 
     private void handleChangeLBWeight(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
         String serviceId = changeLoadBalancerWeightsOption.getServiceId();
+        changeWeightsConfiguration(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
+        Map<String, Map<String, Double>> servicesWeights = new HashMap<>();
+        servicesWeights.put(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
+        knowledgeClient.setLoadBalancerWeights(servicesWeights);
+    }
+
+    private void changeWeightsConfiguration(String serviceId, Map<String, Double> weights){
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
-        changeLoadBalancerWeightsOption.getNewWeights().forEach((instanceId, weight) -> {
+        weights.forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
             propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
         });
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
-        Map<String, Map<String, Double>> servicesWeights = new HashMap<>();
-        servicesWeights.put(serviceId, changeLoadBalancerWeightsOption.getNewWeights());
-        knowledgeClient.setLoadBalancerWeights(servicesWeights);
     }
 }

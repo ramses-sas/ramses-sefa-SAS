@@ -88,16 +88,15 @@ public class KnowledgeService {
             Set<Instance> shutdownInstances = new HashSet<>();
             for (InstanceMetrics metricsSnapshot : metricsList) {
                 Service service = services.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
-                // TODO getOrCreateInstance da cambiare in get
-                Instance instance = service.getOrCreateInstance(metricsSnapshot.getInstanceId());
-                // If the instance has been shutdown, skip its metrics
+                Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
+                // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
                 if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
                     if (instance.getLatestMetrics() == null || !instance.getLatestMetrics().equals(metricsSnapshot)) {
                         metricsRepository.save(metricsSnapshot);
                         instance.setLatestMetrics(metricsSnapshot);
                         instance.setCurrentStatus(metricsSnapshot.getStatus());
                     } else
-                        log.warn("Metrics already saved: " + metricsSnapshot);
+                        log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
                     if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
                         currentlyActiveInstances.add(instance);
                 } else
@@ -244,6 +243,29 @@ public class KnowledgeService {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
+    /*public Service createNewInstances(String serviceId, String implementationId, List<String> instanceIds) {
+        Service service = services.get(serviceId);
+        int oldNumberOfInstances = service.getInstances().size();
+        int newNumberOfInstances = oldNumberOfInstances + instanceIds.size();
+        if(!service.getCurrentImplementationId().equals(implementationId)) {
+            throw new RuntimeException("Implementation id mismatch");
+        }
+
+        for (String instanceId : instanceIds) {
+                service.createInstance(instanceId);
+        }
+
+        for (Instance instance : service.getInstances()) {
+            if (instanceIds.contains(instance.getInstanceId())) {
+                service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
+            } else {
+                service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
+            }
+        }
+        return service;
+    }
+
+     */
 }
 
 

@@ -58,17 +58,19 @@ public class ServiceImplementation {
         return false;
     }
 
-    public Instance getOrCreateInstance(String instanceId, List<AdaptationParamSpecification> adaptationParamSpecifications) {
-        Instance instance = instances.get(instanceId);
-        if (instance == null) {
-            if (instanceId.split("@")[0].equalsIgnoreCase(implementationId)) {
-                instance = new Instance(instanceId, serviceId);
-                for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
-                    instance.getAdaptationParamCollection().createHistory(specification);
-                }
-                instances.put(instanceId, instance);
-            }
+    public boolean hasInstance(String instanceId){
+        return instances.containsKey(instanceId);
+    }
+
+    public Instance createInstance(String instanceAddress, List<AdaptationParamSpecification> adaptationParamSpecifications) {
+        String instanceId = implementationId + "@" + instanceAddress;
+        if(instances.containsKey(instanceId))
+            throw new RuntimeException("Instance already exists");
+        Instance instance = new Instance(instanceId, serviceId);
+        for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
+            instance.getAdaptationParamCollection().createHistory(specification);
         }
+        instances.put(instanceId, instance);
         return instance;
     }
 
