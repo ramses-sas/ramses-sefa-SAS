@@ -40,37 +40,43 @@ public class PlanService {
     }
 
     public void startPlan() {
-        log.info("Starting plan");
-        knowledgeClient.notifyModuleStart(Modules.PLAN);
-        Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
-        List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
-        Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
+        try {
+            log.info("Starting plan");
+            knowledgeClient.notifyModuleStart(Modules.PLAN);
+            Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
+            List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
+            Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
 
-        proposedAdaptationOptions.forEach((serviceId, options) -> {
-            log.debug("\n\nAnalysing service: {}", serviceId);
-            // Initialized with all the forced options
-            List<AdaptationOption> optionsToCompare = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
-            if (optionsToCompare.isEmpty()) {
-                for (AdaptationOption option : options) {
-                    log.info("Adaptation option: {}", option.getDescription());
-                    if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
-                        ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
-                        changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
-                        optionsToCompare.add(changeLoadBalancerWeights);
+            proposedAdaptationOptions.forEach((serviceId, options) -> {
+                log.debug("\n\nAnalysing service: {}", serviceId);
+                // Initialized with all the forced options
+                List<AdaptationOption> optionsToCompare = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
+                if (optionsToCompare.isEmpty()) {
+                    for (AdaptationOption option : options) {
+                        log.info("Adaptation option: {}", option.getDescription());
+                        if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
+                            ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
+                            changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
+                            optionsToCompare.add(changeLoadBalancerWeights);
+                        }
                     }
+                    AdaptationOption chosenOption = extractBestOption(optionsToCompare);
+                    if (chosenOption != null)
+                        chosenAdaptationOptionList.add(chosenOption);
+                } else {
+                    // If there is at least a forced option, all the other options are ignored
+                    log.info("Forced adaptation options: {}", optionsToCompare);
+                    chosenAdaptationOptionList.addAll(optionsToCompare);
                 }
-                AdaptationOption chosenOption = extractBestOption(optionsToCompare);
-                if (chosenOption != null)
-                    chosenAdaptationOptionList.add(chosenOption);
-            } else {
-                // If there is at least a forced option, all the other options are ignored
-                log.info("Forced adaptation options: {}", optionsToCompare);
-                chosenAdaptationOptionList.addAll(optionsToCompare);
-            }
-        });
-        knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
-        log.info("Ending plan. Notifying the Execute module to start the next iteration.");
-        executeClient.start();
+            });
+            knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
+            log.info("Ending plan. Notifying the Execute module to start the next iteration.");
+            executeClient.start();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error during the plan execution", e);
+        }
     }
 
     public AdaptationOption extractBestOption(List<AdaptationOption> toCompare) {
@@ -218,6 +224,10 @@ public class PlanService {
         log.debug(sb.toString());
 
         return newWeights;
+    }
+
+    public void breakpoint(){
+        log.info("breakpoint");
     }
 
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {

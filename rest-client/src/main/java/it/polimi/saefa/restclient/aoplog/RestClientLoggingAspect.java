@@ -51,20 +51,20 @@ public class RestClientLoggingAspect {
     //public void logBeforeExecuteMethod(JoinPoint joinPoint) { logInvocation(joinPoint); }
 
     /* Eseguito quando il metodo è terminato (con successo) */
-    @AfterReturning(value="restClientMethods() &&! restClientVoidMethods()", returning="retValue")
+    //@AfterReturning(value="restClientMethods() &&! restClientVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         logTermination(joinPoint, retValue);
     }
 
     /* Eseguito quando il metodo (void) è terminato (con successo) */
-    @AfterReturning("restClientVoidMethods()")
+    //@AfterReturning("restClientVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         logVoidTermination(joinPoint);
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
     //@AfterThrowing(value="restClientMethods()", throwing="exception")
-    @Around("restClientMethods()")
+    @Around("restClientMethods() || restClientVoidMethods()")
     public Object logErrorApplication(ProceedingJoinPoint joinPoint) {
         try {
             return joinPoint.proceed();

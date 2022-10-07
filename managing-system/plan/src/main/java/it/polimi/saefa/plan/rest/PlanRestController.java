@@ -13,12 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlanRestController {
 
     @Autowired
-    private PlanService service;
+    private PlanService planService;
 
     @GetMapping(path="/start")
     public String start() {
-        new Thread(() -> service.startPlan()).start();
+        new Thread(() -> planService.startPlan()).start();
         return "OK";
+    }
+
+    // TODO remove after test
+    @GetMapping("/")
+    public String debug() {
+        planService.breakpoint();
+        return "Hello from Plan Service";
     }
 
 }

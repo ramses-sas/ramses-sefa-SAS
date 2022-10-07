@@ -16,4 +16,11 @@ public class MonitorRestController {
     public void notifyFinishedIteration() {
         monitorService.setLoopIterationFinished(true);
     }
+
+    // TODO remove after test
+    @GetMapping("/")
+    public String debug() {
+        monitorService.breakpoint();
+        return "Hello from Monitor Service";
+    }
 }

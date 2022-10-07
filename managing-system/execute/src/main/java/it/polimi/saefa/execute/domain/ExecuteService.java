@@ -26,24 +26,30 @@ public class ExecuteService {
 
 
     public void execute() {
-        log.info("Starting Execute step");
-        knowledgeClient.notifyModuleStart(Modules.EXECUTE);
-        List<AdaptationOption> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
-        chosenAdaptationOptions.forEach(adaptationOption -> {
-            log.info("Executing adaptation option: " + adaptationOption.getDescription());
-            Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
-            if (clazz.equals(AddInstances.class)) {
-                handleAddInstances((AddInstances) (adaptationOption));
-            } else if (clazz.equals(RemoveInstance.class)) {
-                handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
-            } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
-                handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
-            } else {
-                log.error("Unknown adaptation option type: " + adaptationOption.getClass());
-            }
-        });
-        log.info("Ending execute. Notifying Monitor module to continue the loop.");
-        monitorClient.notifyFinishedIteration();
+        try {
+            log.info("Starting Execute step");
+            knowledgeClient.notifyModuleStart(Modules.EXECUTE);
+            List<AdaptationOption> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
+            chosenAdaptationOptions.forEach(adaptationOption -> {
+                log.info("Executing adaptation option: " + adaptationOption.getDescription());
+                Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
+                if (clazz.equals(AddInstances.class)) {
+                    handleAddInstances((AddInstances) (adaptationOption));
+                } else if (clazz.equals(RemoveInstance.class)) {
+                    handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
+                } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
+                    handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
+                } else {
+                    log.error("Unknown adaptation option type: " + adaptationOption.getClass());
+                }
+            });
+            log.info("Ending execute. Notifying Monitor module to continue the loop.");
+            monitorClient.notifyFinishedIteration();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private void handleAddInstances(AddInstances addInstancesOption) {
@@ -87,12 +93,11 @@ public class ExecuteService {
     private void handleChangeLBWeights(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
         String serviceId = changeLoadBalancerWeightsOption.getServiceId();
         Map<String, Double> newWeights = changeLoadBalancerWeightsOption.getNewWeights();
-        updateLoadbalancerWeights(serviceId, newWeights);
         newWeights.forEach((instanceId, weight) -> {
-            if (weight == 0.0) {
+            if (weight == 0.0)
                 removeInstance(serviceId, instanceId);
-            }
         });
+        updateLoadbalancerWeights(serviceId, newWeights);
     }
 
 
@@ -140,16 +145,23 @@ public class ExecuteService {
      */
     private void updateLoadbalancerWeights(String serviceId, Map<String, Double> weights) {
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
+        List<String> weightsToRemove = new LinkedList<>();
         weights.forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
             if (weight != 0.0) {
                 propertyToChangeList.add(new PropertyToChange(null, propertyKey, weight.toString()));
             } else {
                 propertyToChangeList.add(new PropertyToChange(null, propertyKey));
-                weights.remove(instanceId);
+                weightsToRemove.add(instanceId);
             }
         });
+        weightsToRemove.forEach(weights::remove);
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
         knowledgeClient.setLoadBalancerWeights(serviceId, weights);
+    }
+
+
+    public void breakpoint(){
+        log.info("breakpoint");
     }
 }

@@ -82,43 +82,49 @@ public class KnowledgeService {
     }
 
     public void addMetricsFromBuffer(Queue<List<InstanceMetrics>> metricsBuffer) {
-        log.info("Saving new set of metrics");
-        for (List<InstanceMetrics> metricsList : metricsBuffer) {
-            Set<Instance> currentlyActiveInstances = new HashSet<>();
-            Set<Instance> shutdownInstances = new HashSet<>();
-            for (InstanceMetrics metricsSnapshot : metricsList) {
-                Service service = services.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
-                Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
-                // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
-                if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
-                    if (instance.getLatestMetrics() == null || !instance.getLatestMetrics().equals(metricsSnapshot)) {
-                        metricsRepository.save(metricsSnapshot);
-                        instance.setLatestMetrics(metricsSnapshot);
-                        instance.setCurrentStatus(metricsSnapshot.getStatus());
+        try {
+            log.info("Saving new set of metrics");
+            for (List<InstanceMetrics> metricsList : metricsBuffer) {
+                Set<Instance> currentlyActiveInstances = new HashSet<>();
+                Set<Instance> shutdownInstances = new HashSet<>();
+                for (InstanceMetrics metricsSnapshot : metricsList) {
+                    Service service = services.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
+                    Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
+                    // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
+                    if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
+                        if (instance.getLatestMetrics() == null || !instance.getLatestMetrics().equals(metricsSnapshot)) {
+                            metricsRepository.save(metricsSnapshot);
+                            instance.setLatestMetrics(metricsSnapshot);
+                            instance.setCurrentStatus(metricsSnapshot.getStatus());
+                        } else
+                            log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
+                        if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
+                            currentlyActiveInstances.add(instance);
                     } else
-                        log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
-                    if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
-                        currentlyActiveInstances.add(instance);
-                } else
-                    shutdownInstances.add(instance);
+                        shutdownInstances.add(instance);
+                }
+                // Failure detection of instances
+                if (!previouslyActiveInstances.isEmpty()) {
+                    Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
+                    failedInstances.removeAll(currentlyActiveInstances);
+                    failedInstances.removeAll(shutdownInstances);
+                    failedInstances.forEach(instance -> {
+                        instance.setCurrentStatus(InstanceStatus.FAILED);
+                        InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
+                        metrics.setStatus(InstanceStatus.FAILED);
+                        metrics.applyTimestamp();
+                        metricsRepository.save(metrics);
+                    });
+                }
+                previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
             }
-            // Failure detection of instances
-            if (!previouslyActiveInstances.isEmpty()) {
-                Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
-                failedInstances.removeAll(currentlyActiveInstances);
-                failedInstances.removeAll(shutdownInstances);
-                failedInstances.forEach(instance -> {
-                    instance.setCurrentStatus(InstanceStatus.FAILED);
-                    InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
-                    metrics.setStatus(InstanceStatus.FAILED);
-                    metrics.applyTimestamp();
-                    metricsRepository.save(metrics);
-                } );
-            }
-            previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
+            // For each service, remove from the map of instances the instances that have been shutdown and their weights in the service configuration
+            services.values().forEach(Service::removeShutdownInstances);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        // For each service, remove from the map of instances the instances that have been shutdown
-        services.values().forEach(Service::removeShutdownInstances);
     }
 
     public void notifyShutdownInstance(String serviceId, String instanceId) {
@@ -243,7 +249,12 @@ public class KnowledgeService {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
-    /*public Service createNewInstances(String serviceId, String implementationId, List<String> instanceIds) {
+}
+
+
+
+/*
+    public Service createNewInstances(String serviceId, String implementationId, List<String> instanceIds) {
         Service service = services.get(serviceId);
         int oldNumberOfInstances = service.getInstances().size();
         int newNumberOfInstances = oldNumberOfInstances + instanceIds.size();
@@ -264,14 +275,6 @@ public class KnowledgeService {
         }
         return service;
     }
-
-     */
-}
-
-
-
-/*
-
 
     Non più necessario per l'inserimento della seguente riga di codice al metodo addMetricsFromBuffer:
     shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,

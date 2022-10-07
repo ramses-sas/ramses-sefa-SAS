@@ -54,8 +54,6 @@ public class ConfigManagerService {
         if (!propertyFound) {
             if (value != null)
                 fileContent.add(property+"="+value);
-            else
-                throw new Exception("Impossible to remove property. Property "+property+" not found in file "+fileName);
         }
         Files.write(propFile, fileContent, StandardCharsets.UTF_8);
     }
@@ -71,7 +69,7 @@ public class ConfigManagerService {
     }
 
     public void rollback() throws Exception {
-        gitClient.checkout().call();
+        gitClient.checkout().setName("HEAD").call();
     }
 }
 

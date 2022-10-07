@@ -108,11 +108,15 @@ public class Service {
     }
 
     public void setLoadBalancerWeight(Instance instance, double value) {
-        configuration.getLoadBalancerWeights().put(instance.getInstanceId(), value);
+        if (value == 0)
+            configuration.getLoadBalancerWeights().remove(instance.getInstanceId());
+        else
+            configuration.getLoadBalancerWeights().put(instance.getInstanceId(), value);
     }
 
     public void removeInstance(Instance shutdownInstance) {
         getCurrentImplementation().removeInstance(shutdownInstance);
+        getConfiguration().getLoadBalancerWeights().remove(shutdownInstance.getInstanceId());
     }
 
     public void removeShutdownInstances() {

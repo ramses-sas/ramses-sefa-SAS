@@ -47,64 +47,70 @@ public class MonitorService {
     // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)
     @Scheduled(fixedDelayString = "${SCHEDULING_PERIOD}") //delay in milliseconds
     public void scheduleFixedDelayTask() {
-        Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
-        log.debug("SERVICES: " + services);
-        List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
-        List<Thread> threads = new LinkedList<>();
-        AtomicBoolean invalidIteration = new AtomicBoolean(false);
+        try {
+            Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
+            log.debug("SERVICES: " + services);
+            List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
+            List<Thread> threads = new LinkedList<>();
+            AtomicBoolean invalidIteration = new AtomicBoolean(false);
 
-        services.forEach((serviceId, serviceInstances) -> {
-            if (managedServices.contains(serviceId)) {
-                serviceInstances.forEach(instance -> {
-                    Thread thread = new Thread(() -> {
-                        InstanceMetrics instanceMetrics;
-                        try {
-                            instanceMetrics = prometheusParser.parse(instance);
-                            instanceMetrics.applyTimestamp();
-                            log.debug("Adding metric for instance {}", instanceMetrics.getInstanceId());
-                            metricsList.add(instanceMetrics);
-                        } catch (Exception e) {
-                            log.error("Error adding metrics for {}. Considering it as unreachable", instance.getInstanceId());
-                            log.error("The exception is: " + e.getMessage());
-                            instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
-                            instanceMetrics.setStatus(InstanceStatus.UNREACHABLE);
-                            instanceMetrics.applyTimestamp();
-                            metricsList.add(instanceMetrics);
+            services.forEach((serviceId, serviceInstances) -> {
+                if (managedServices.contains(serviceId)) {
+                    serviceInstances.forEach(instance -> {
+                        Thread thread = new Thread(() -> {
+                            InstanceMetrics instanceMetrics;
                             try {
-                                if (!InetAddress.getByName(internetConnectionCheckHost).isReachable(5000))
-                                    invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
-                            } catch (Exception e1) {
-                                log.error("Error checking internet connection");
-                                log.error(e1.getMessage());
-                                invalidIteration.set(true);
+                                instanceMetrics = prometheusParser.parse(instance);
+                                instanceMetrics.applyTimestamp();
+                                log.debug("Adding metric for instance {}", instanceMetrics.getInstanceId());
+                                metricsList.add(instanceMetrics);
+                            } catch (Exception e) {
+                                log.error("Error adding metrics for {}. Considering it as unreachable", instance.getInstanceId());
+                                log.error("The exception is: " + e.getMessage());
+                                instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
+                                instanceMetrics.setStatus(InstanceStatus.UNREACHABLE);
+                                instanceMetrics.applyTimestamp();
+                                metricsList.add(instanceMetrics);
+                                try {
+                                    if (!InetAddress.getByName(internetConnectionCheckHost).isReachable(5000))
+                                        invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
+                                } catch (Exception e1) {
+                                    log.error("Error checking internet connection");
+                                    log.error(e1.getMessage());
+                                    invalidIteration.set(true);
+                                }
                             }
-                        }
+                        });
+                        threads.add(thread);
+                        thread.start();
                     });
-                    threads.add(thread);
-                    thread.start();
-                });
+                }
+            });
+
+            threads.forEach(thread -> {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
+                }
+            });
+
+            if (invalidIteration.get()) {
+                log.error("Invalid iteration. Skipping");
+                return;
             }
-        });
 
-        threads.forEach(thread -> {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                log.error(e.getMessage());
+            instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
+            if (getLoopIterationFinished()) {
+                knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
+                instanceMetricsListBuffer.clear();
+                loopIterationFinished.set(false);
+                analyseClient.start();
             }
-        });
-
-        if(invalidIteration.get()){
-            log.error("Invalid iteration. Skipping");
-            return;
-        }
-
-        instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
-        if (getLoopIterationFinished()) {
-            knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
-            instanceMetricsListBuffer.clear();
-            loopIterationFinished.set(false);
-            analyseClient.start();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error during the monitor execution", e);
         }
     }
 
@@ -115,5 +121,9 @@ public class MonitorService {
     public void setLoopIterationFinished(boolean loopIterationFinished) {
         knowledgeClient.notifyModuleStart(Modules.MONITOR);
         this.loopIterationFinished.set(loopIterationFinished);
+    }
+
+    public void breakpoint(){
+        log.info("breakpoint");
     }
 }

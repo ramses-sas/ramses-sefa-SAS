@@ -7,7 +7,6 @@ import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
 import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWeights;
 import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.MaxResponseTime;
@@ -84,25 +83,31 @@ public class AnalyseService {
     }
 
     public void startAnalysis() {
-        log.debug("Starting analysis");
-        knowledgeClient.notifyModuleStart(Modules.ANALYSE);
-        updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
-        currentArchitectureMap = knowledgeClient.getServicesMap();
-        List<AdaptationOption> forcedAdaptationOptions, proposedAdaptationOptions;
-        forcedAdaptationOptions = analyse();
-        proposedAdaptationOptions = adapt();
-        proposedAdaptationOptions.addAll(forcedAdaptationOptions);
-        // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
-        knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
-        updateAdaptationParamCollectionsInKnowledge();
-        log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.");
-        planClient.start();
+        try {
+            log.debug("Starting analysis");
+            knowledgeClient.notifyModuleStart(Modules.ANALYSE);
+            updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
+            currentArchitectureMap = knowledgeClient.getServicesMap();
+            List<AdaptationOption> forcedAdaptationOptions, proposedAdaptationOptions;
+            forcedAdaptationOptions = analyse();
+            proposedAdaptationOptions = adapt();
+            proposedAdaptationOptions.addAll(forcedAdaptationOptions);
+            // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
+            knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
+            updateAdaptationParamCollectionsInKnowledge();
+            log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.");
+            planClient.start();
+        }  catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error during the Analyse execution");
+        }
     }
 
     // Given the available metrics, creates a new AdaptationParameterValue for all the instances when possible, and uses
     // their value to compute each new AdaptationParameterValue of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
-    public List<AdaptationOption> analyse() {
+    private List<AdaptationOption> analyse() {
         Collection<Service> currentArchitecture = currentArchitectureMap.values();
         List<AdaptationOption> adaptationOptions = new ArrayList<>();
         for (Service service : currentArchitecture) {
@@ -168,25 +173,48 @@ public class AnalyseService {
                     InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
 
                     // <endpoint, value>
-                    Map<String, Double> endpointAvgRespTime = new HashMap<>();
-                    Map<String, Double> endpointMaxRespTime = new HashMap<>();
+                    //Map<String, Double> endpointAvgRespTime = new HashMap<>();
+                    //Map<String, Double> endpointMaxRespTime = new HashMap<>();
+                    double successfulRequestsDuration = 0;
+                    double successfulRequestsCount = 0;
+                    double totalRequestsCount = 0;
+                    double maxRespTime = 0;
                     for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-                        double durationDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
-                        double requestDifference = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
-                        if (requestDifference != 0)
-                            endpointAvgRespTime.put(endpoint, durationDifference / requestDifference);
-                        endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
+                        double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+                        totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
+                        // TODO QUI IL PROBLEMA: SE NON CI SONO RICHIESTE SUCCESSFUL, NON POSSIAMO CALCOLARE IL TEMPO MEDIO
+                        // TODO RISOLTO CON L'ATTUALE CODICE.
+                        if (endpointSuccessfulRequestsCount != 0) {
+                            double endpointSuccessfulRequestsDuration = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+                            //endpointAvgRespTime.put(endpoint, endpointSuccessfulRequestsDuration / endpointSuccessfulRequestsCount);
+                            //endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
+                            successfulRequestsDuration += endpointSuccessfulRequestsDuration;
+                            successfulRequestsCount += endpointSuccessfulRequestsCount;
+                            maxRespTime = Math.max(maxRespTime, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
+                        }
+                    }
+                    if (successfulRequestsCount == 0) {
+                        // non ci sono nuove successful requests per questa istanza.
+                        if (instance.isJustBorn())
+                            // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
+                            instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
+                        else
+                            // If it's not a new instance, the adaptation parameters will have the latest available value
+                            instancesStats.add(new InstanceStats(instance));
+                    } else {
+                        instancesStats.add(new InstanceStats(instance, successfulRequestsDuration/successfulRequestsCount, maxRespTime, successfulRequestsCount/totalRequestsCount));
                     }
 
                     existsInstanceWithNewMetricsWindow = true;
-                    // Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
-                    // (perché il CB può cambiare spontaneamente solo una volta)
-                    // Di conseguenza le computeInstanceXXX non possono restituire null
+                    /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
+                    (perché il CB può cambiare spontaneamente solo una volta)
+                    Di conseguenza le computeInstanceXXX non possono restituire null
                     InstanceStats instanceStats = new InstanceStats(instance,
                             computeInstanceAvgResponseTime(endpointAvgRespTime),
                             computeInstanceMaxResponseTime(endpointMaxRespTime),
                             computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics));
                     instancesStats.add(instanceStats);
+                     */
                 }
             }
 
@@ -215,7 +243,7 @@ public class AnalyseService {
     // is computed for each AdaptationParamSpecification. For each of them, this value is (by this time) the average of
     // the values in the analysis window, and it is used as the reference value for that AdaptationParamSpecification
     // for the service.
-    public List<AdaptationOption> adapt() {
+    private List<AdaptationOption> adapt() {
         Set<String> analysedServices = new HashSet<>();
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
@@ -254,10 +282,17 @@ public class AnalyseService {
             service.invalidateLatestAndPreviousValuesForParam(Availability.class);
             service.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
             service.getInstances().forEach(instance -> {
-                instance.changeCurrentValueForParam(Availability.class, instance.getLatestReplicatedAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestReplicatedAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
-                instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
+                try {
+                    instance.changeCurrentValueForParam(Availability.class, instance.getLatestReplicatedAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                    instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestReplicatedAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                    instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
+                    instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                    throw new RuntimeException(e);
+                }
+
             });
             log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForParam(Availability.class), service.getCurrentValueForParam(AverageResponseTime.class));
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
@@ -314,6 +349,7 @@ public class AnalyseService {
     }
 
 
+
     private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) {
         double successfulRequests = 0;
         double failedRequests = 0;
@@ -348,8 +384,8 @@ public class AnalyseService {
     }
 
     private Double computeInstanceAvgResponseTime(Map<String, Double> endpointAvgRespTime) {
-        double toReturn =  endpointAvgRespTime.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        return toReturn == 0.0 ? null : toReturn;
+        double toReturn =  endpointAvgRespTime.values().stream().mapToDouble(Double::doubleValue).average().orElse(-1.0);
+        return toReturn == -1.0 ? null : toReturn;
     }
 
 
@@ -378,7 +414,7 @@ public class AnalyseService {
         currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, availabilityAccumulator / count);
     }
 
-    public void updateAdaptationParamCollectionsInKnowledge() {
+    private void updateAdaptationParamCollectionsInKnowledge() {
         Map<String, Map<String, AdaptationParamCollection>> serviceInstancesNewAdaptationParamCollections = new HashMap<>();
         Map<String, AdaptationParamCollection> serviceNewAdaptationParamCollections = new HashMap<>();
         for(Service service : currentArchitectureMap.values()){
@@ -439,6 +475,10 @@ public class AnalyseService {
         }
     }
 
+
+    public void breakpoint(){
+        log.info("breakpoint");
+    }
 
     /*
 

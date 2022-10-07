@@ -20,4 +20,11 @@ public class ExecuteRestController {
         (new Thread(() -> executeService.execute())).start();
         return "OK";
     }
+
+    // TODO remove after test
+    @GetMapping("/")
+    public String debug() {
+        executeService.breakpoint();
+        return "Hello from Execute Service";
+    }
 }

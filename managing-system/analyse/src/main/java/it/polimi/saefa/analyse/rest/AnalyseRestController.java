@@ -41,4 +41,11 @@ public class AnalyseRestController {
         return "OK";
     }
 
+    // TODO remove after test
+    @GetMapping("/")
+    public String debug() {
+        analyseService.breakpoint();
+        return "Hello from Analysis Service";
+    }
+
 }

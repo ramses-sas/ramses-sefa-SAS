@@ -36,5 +36,9 @@ public class DashboardWebService {
 			return null;
 		return l.get(0);
 	}
+
+	public void breakpoint(){
+		log.info("breakpoint");
+	}
 }
 
