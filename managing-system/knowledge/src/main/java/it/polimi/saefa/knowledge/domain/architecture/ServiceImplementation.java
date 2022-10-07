@@ -21,6 +21,8 @@ public class ServiceImplementation {
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
+    // <adaptParamClass, paramBenchmark>
+    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmarks = new HashMap<>();
 
     private double costPerInstance;
     private double costPerRequest; // tipo scatto alla risposta
@@ -31,15 +33,12 @@ public class ServiceImplementation {
     private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
     private double instanceLoadShutdownThreshold; // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
 
-    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor, double instanceLoadShutdownThreshold) {
-        this.implementationId = implementationId;
-        this.costPerInstance = costPerInstance;
-        this.costPerRequest = costPerRequest;
-        this.costPerSecond = costPerSecond;
-        this.costPerBoot = costPerBoot;
-        this.score = score;
-        this.riskFactor = riskFactor;
-        this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
+    public double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
+        return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
+    }
+
+    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark) {
+        adaptationParamBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
     }
 
     public boolean addInstance(Instance instance) {
@@ -92,5 +91,18 @@ public class ServiceImplementation {
 
     public Instance getInstance(String instanceId) {
         return instances.get(instanceId);
+    }
+
+
+
+    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor, double instanceLoadShutdownThreshold) {
+        this.implementationId = implementationId;
+        this.costPerInstance = costPerInstance;
+        this.costPerRequest = costPerRequest;
+        this.costPerSecond = costPerSecond;
+        this.costPerBoot = costPerBoot;
+        this.score = score;
+        this.riskFactor = riskFactor;
+        this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
     }
 }

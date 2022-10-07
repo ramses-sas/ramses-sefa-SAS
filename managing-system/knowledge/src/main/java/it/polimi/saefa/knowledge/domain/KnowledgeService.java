@@ -121,7 +121,8 @@ public class KnowledgeService {
         services.values().forEach(Service::removeShutdownInstances);
     }
 
-    public void notifyShutdownInstance(Instance instance) {
+    public void notifyShutdownInstance(String serviceId, String instanceId) {
+        Instance instance = services.get(serviceId).getInstance(instanceId);
         instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
         InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
         metrics.setStatus(InstanceStatus.SHUTDOWN);
