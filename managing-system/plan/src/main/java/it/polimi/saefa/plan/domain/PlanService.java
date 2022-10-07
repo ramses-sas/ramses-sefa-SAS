@@ -7,6 +7,7 @@ import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWei
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.plan.externalInterfaces.ExecuteClient;
 import it.polimi.saefa.plan.externalInterfaces.KnowledgeClient;
@@ -91,41 +92,49 @@ public class PlanService {
         Map<String, MPVariable> weights = new HashMap<>();
         Map<String, MPVariable> activations = new HashMap<>();
         MPObjective objective = solver.objective();// min{∑(w_i/z_i) - ∑(a_i * z_i)}
-        MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights"); //∑w_i = 1
+        double sumOfWeightsValue = 1.0;
 
         double serviceAvgRespTime = service.getCurrentValueForParam(AverageResponseTime.class).getValue();
         double serviceAvgAvailability = service.getCurrentValueForParam(Availability.class).getValue();
         double k_s = serviceAvgAvailability/serviceAvgRespTime; // service performance indicator
+        MPConstraint sumOfWeights = solver.makeConstraint("sumOfWeights"); //∑w_i = 1 - b/n
 
         for (Instance instance : service.getInstances()) {
-            MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
-            MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
-            weights.put(instance.getInstanceId(), weight);
-            activations.put(instance.getInstanceId(), activation);
-            sumOfWeights.setCoefficient(weight, 1);
+            if (instance.getCurrentStatus() != InstanceStatus.BOOTING){// TODO && instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
+                MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
+                MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
+                weights.put(instance.getInstanceId(), weight);
+                activations.put(instance.getInstanceId(), activation);
+                sumOfWeights.setCoefficient(weight, 1);
 
-            // w_i - a_i*shutdownThreshold >= 0 OVVERO
-            // w_i >= a_i * shutdownThreshold
-            MPConstraint lowerBoundConstraint = solver.makeConstraint(0, Double.POSITIVE_INFINITY, instance.getInstanceId() + "_activation_lowerBoundConstraint");
-            lowerBoundConstraint.setCoefficient(weight, 1);
-            lowerBoundConstraint.setCoefficient(activation, -shutdownThreshold);
+                // w_i - a_i*shutdownThreshold >= 0 OVVERO
+                // w_i >= a_i * shutdownThreshold
+                MPConstraint lowerBoundConstraint = solver.makeConstraint(0, Double.POSITIVE_INFINITY, instance.getInstanceId() + "_activation_lowerBoundConstraint");
+                lowerBoundConstraint.setCoefficient(weight, 1);
+                lowerBoundConstraint.setCoefficient(activation, -shutdownThreshold);
 
-            // w_i - a_i<=0 OVVERO
-            // w_i <= a_i
-            MPConstraint upperBoundConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, instance.getInstanceId() + "_activation_upperBoundConstraint");
-            upperBoundConstraint.setCoefficient(weight, 1);
-            upperBoundConstraint.setCoefficient(activation, -1);
+                // w_i - a_i<=0 OVVERO
+                // w_i <= a_i
+                MPConstraint upperBoundConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, instance.getInstanceId() + "_activation_upperBoundConstraint");
+                upperBoundConstraint.setCoefficient(weight, 1);
+                upperBoundConstraint.setCoefficient(activation, -1);
 
-            if (emptyWeights)
-                previousWeights.put(instance.getInstanceId(), defaultWeight);
-            double instanceAvgRespTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
-            double instanceAvailability = instance.getCurrentValueForParam(Availability.class).getValue();
-            double k_i = instanceAvailability/instanceAvgRespTime;
-            double z_i = k_i/k_s;
+                if (emptyWeights)
+                    previousWeights.put(instance.getInstanceId(), defaultWeight);
+                double instanceAvgRespTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                double instanceAvailability = instance.getCurrentValueForParam(Availability.class).getValue();
+                double k_i = instanceAvailability / instanceAvgRespTime;
+                double z_i = k_i / k_s;
 
-            objective.setCoefficient(weight, 1/z_i);
-            objective.setCoefficient(activation, -z_i);
+                objective.setCoefficient(weight, 1 / z_i);
+                objective.setCoefficient(activation, -z_i);
+            }
+            else{
+                sumOfWeightsValue -= defaultWeight;
+            }
         }
+        sumOfWeights.setBounds(sumOfWeightsValue, sumOfWeightsValue);
+
 
         for (Instance instance_i : service.getInstances()) {
             MPVariable weight_i = weights.get(instance_i.getInstanceId());
