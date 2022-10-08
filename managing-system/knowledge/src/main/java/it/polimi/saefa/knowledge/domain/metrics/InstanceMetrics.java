@@ -110,6 +110,8 @@ public class InstanceMetrics {
     }
 
     public void addCircuitBreakerFailureRate(String circuitBreakerName, double failureRate) {
+        if (Double.isNaN(failureRate))
+            failureRate = 0;
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
         circuitBreakerMetrics.setFailureRate(failureRate);
     }
@@ -120,6 +122,8 @@ public class InstanceMetrics {
     }
 
     public void addCircuitBreakerSlowCallRate(String circuitBreakerName, double rate) {
+        if (Double.isNaN(rate))
+            rate = 0;
         CircuitBreakerMetrics circuitBreakerMetrics = getOrInitCircuitBreakerMetrics(circuitBreakerName);
         circuitBreakerMetrics.setSlowCallRate(rate);
     }
@@ -155,64 +159,9 @@ public class InstanceMetrics {
         return status.equals(InstanceStatus.UNREACHABLE);
     }
 
-    /*
-
-    public void addHttpMetrics(HttpRequestMetrics metrics) {
-        if (!httpMetrics.containsKey(metrics.endpoint)) {
-            httpMetrics.put(metrics.endpoint, new LinkedList<>());
-        }
-        httpMetrics.get(metrics.endpoint).add(metrics);
-    }
-
-    public Map<String, List<HttpRequestMetrics>> getHttpMetrics() {
-        return this.httpMetrics;
-    }
-
-    public List<HttpRequestMetrics> getHttpMetrics(String endpoint) {
-        try {
-            return httpMetrics.get(endpoint);
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
-    public List<HttpRequestMetrics> getHttpMetrics(String endpoint, String method) {
-        try {
-            return httpMetrics.get(endpoint).stream()
-                    .filter(elem -> elem.httpMethod.equals(method))
-                    .toList();
-        } catch (NullPointerException e) {
-            return null;
-        }
-
-    }
-
-    public List<HttpRequestMetrics> getHttpMetrics(String endpoint, String method, String outcome) {
-        try {
-            return httpMetrics.get(endpoint).stream()
-                    .filter(elem -> elem.httpMethod.equals(method) && elem.outcome.equals(outcome))
-                    .toList();
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }*/
-
     @Override
     public String toString() {
-        return "Metric id: " + timestamp + " - " + instanceId + " - " + status + "\n" +
-                "Http metrics count: " + httpMetrics.values().stream().mapToInt(HttpEndpointMetrics::getTotalCount).reduce(0, Integer::sum)+ "\n" +
-                "CircuitBreaker metrics: {\n" + circuitBreakerMetrics.get("payment") + "\n}";
-        /*
-        return "\nMetrics for instance " + instanceId + " {\n" +
-                "  date = " + timestamp + "\n" +
-                "  httpMetrics = " + httpMetrics + "\n" +
-                "  cpuUsage = " + cpuUsage + "\n" +
-                "  diskTotalSpace = " + diskTotalSpace + "\n" +
-                "  diskFreeSpace = " + diskFreeSpace + "\n" +
-                "  circuitBreakerMetrics = " + circuitBreakerMetrics +
-                "\n}";
-
-         */
+        return "Metric id: " + timestamp + " - " + instanceId + " - " + status;
     }
 
 
