@@ -57,7 +57,9 @@ public class PlanService {
                         if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
                             ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
                             changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
-                            optionsToCompare.add(changeLoadBalancerWeights);
+                            if(changeLoadBalancerWeights.getNewWeights() != null) { //If it's null it means that the problem has no solution
+                                optionsToCompare.add(changeLoadBalancerWeights);
+                            }
                         }
                     }
                     AdaptationOption chosenOption = extractBestOption(optionsToCompare);

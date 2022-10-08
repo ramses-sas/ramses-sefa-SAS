@@ -8,7 +8,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 import it.polimi.saefa.knowledge.domain.metrics.CircuitBreakerMetrics;
-import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -71,7 +71,7 @@ public class DashboardWebController {
 			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
 			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
 			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
-			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
+			for (HttpEndpointMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
 				for(String outcome : httpMetrics.getOutcomes())
 					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
 						outcome, httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});

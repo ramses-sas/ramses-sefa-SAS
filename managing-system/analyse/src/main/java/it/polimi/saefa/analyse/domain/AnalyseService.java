@@ -15,7 +15,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
-import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.Getter;
 import lombok.Setter;
@@ -354,8 +354,8 @@ public class AnalyseService {
         double successfulRequests = 0;
         double failedRequests = 0;
 
-        for (HttpRequestMetrics httpMetric : lastMetrics.getHttpMetrics().values()) {
-            for (HttpRequestMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
+        for (HttpEndpointMetrics httpMetric : lastMetrics.getHttpMetrics().values()) {
+            for (HttpEndpointMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
                 // We consider "successful" requests every request with a response code not in the 5xx range
                 if (outcomeMetric.getStatus() < 500) {
                     successfulRequests += outcomeMetric.getCount();
@@ -365,8 +365,8 @@ public class AnalyseService {
             }
         }
 
-        for (HttpRequestMetrics httpMetric : firstMetrics.getHttpMetrics().values()) {
-            for (HttpRequestMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
+        for (HttpEndpointMetrics httpMetric : firstMetrics.getHttpMetrics().values()) {
+            for (HttpEndpointMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
                 // We consider "successful" requests every request with a response code not in the 5xx range
                 if (outcomeMetric.getStatus() < 500) {
                     successfulRequests -= outcomeMetric.getCount();

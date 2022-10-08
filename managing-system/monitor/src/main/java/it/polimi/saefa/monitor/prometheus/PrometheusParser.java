@@ -1,7 +1,7 @@
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +33,7 @@ public class PrometheusParser {
             throw new RuntimeException(e);
         }
 
-        Map<String, HttpRequestMetrics> httpMetricsMap = new HashMap<>();
+        Map<String, HttpEndpointMetrics> httpMetricsMap = new HashMap<>();
 
         metricFamilies.forEach(metricFamily -> {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
@@ -79,20 +79,20 @@ public class PrometheusParser {
         return url.contains("/actuator/");
     }
 
-    private void handleHttpServerRequestsSeconds(Map<String, HttpRequestMetrics> httpMetricsMap, Histogram metric) {
+    private void handleHttpServerRequestsSeconds(Map<String, HttpEndpointMetrics> httpMetricsMap, Histogram metric) {
         Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
         if (isAnExcludedUrl(labels.get("uri")))
             return;
-        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
+        HttpEndpointMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpEndpointMetrics(labels.get("uri"), labels.get("method")));
         metrics.addOrSetOutcomeMetricsDetails(labels.get("outcome"), Integer.parseInt(labels.get("status")), (int) metric.getSampleCount(), metric.getSampleSum());
         httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
     }
 
-    private void handleHttpServerRequestsMaxDuration(Map<String, HttpRequestMetrics> httpMetricsMap, Gauge metric) {
+    private void handleHttpServerRequestsMaxDuration(Map<String, HttpEndpointMetrics> httpMetricsMap, Gauge metric) {
         Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
         if (isAnExcludedUrl(labels.get("uri")))
             return;
-        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
+        HttpEndpointMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpEndpointMetrics(labels.get("uri"), labels.get("method")));
         metrics.addOrSetOutcomeMetricsMaxDuration(labels.get("outcome"), metric.getValue());
         httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
     }

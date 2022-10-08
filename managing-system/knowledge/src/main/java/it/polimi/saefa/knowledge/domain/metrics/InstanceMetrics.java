@@ -30,7 +30,7 @@ public class InstanceMetrics {
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     // Map<HTTP-Method@endpoint, HttpRequestMetrics>
     @OneToMany(cascade = CascadeType.ALL)
-    Map<String, HttpRequestMetrics> httpMetrics = new HashMap<>();
+    Map<String, HttpEndpointMetrics> httpMetrics = new HashMap<>();
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
@@ -74,7 +74,7 @@ public class InstanceMetrics {
     public String getServiceImplementationId(){
         return instanceId.split("@")[0];
     }
-    public void addHttpMetrics(HttpRequestMetrics metrics) {
+    public void addHttpMetrics(HttpEndpointMetrics metrics) {
         httpMetrics.put( metrics.getHttpMethod() + "@" + metrics.getEndpoint(), metrics);
     }
     public void applyTimestamp() {
@@ -200,7 +200,7 @@ public class InstanceMetrics {
     @Override
     public String toString() {
         return "Metric id: " + timestamp + " - " + instanceId + " - " + status + "\n" +
-                "Http metrics count: " + httpMetrics.values().stream().mapToInt(HttpRequestMetrics::getTotalCount).reduce(0, Integer::sum)+ "\n" +
+                "Http metrics count: " + httpMetrics.values().stream().mapToInt(HttpEndpointMetrics::getTotalCount).reduce(0, Integer::sum)+ "\n" +
                 "CircuitBreaker metrics: {\n" + circuitBreakerMetrics.get("payment") + "\n}";
         /*
         return "\nMetrics for instance " + instanceId + " {\n" +

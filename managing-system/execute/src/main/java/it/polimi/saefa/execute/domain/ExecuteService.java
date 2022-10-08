@@ -68,6 +68,8 @@ public class ExecuteService {
             newInstancesIds.add(service.createInstance(instance.getAddress()).getInstanceId());
         });
 
+        //todo vedere se usare il nuovo metodo redistribute weights
+
         int newNumberOfInstances = service.getInstances().size();
         int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();
 
