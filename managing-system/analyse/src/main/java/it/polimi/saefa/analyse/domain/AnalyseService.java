@@ -132,16 +132,6 @@ public class AnalyseService {
                     continue;
                 }
 
-                /*
-                se c'è una metrica unreachable abbiamo 4 casi, riassumibili con la seguente regex: UNREACHABLE+ FAILED* ACTIVE*
-                Se c'è una failed di mezzo, la consideriamo come il caso di sotto.
-                Se finisce con active, tutto a posto a meno di anomalie nell'unreachable rate
-
-                //se c'è una failed ma non una unreachable, abbiamo 2 casi, riassumibili con la seguente regex: FAILED+ ACTIVE*.
-                Caso solo failed: considerare l'istanza come spenta, ignorarla nel calcolo degli adaptation parameters.
-                Caso last metric active: tutto ok, a meno di conti sul tasso di faild e unreachable
-                 */
-
                 double failureRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isFailed() ? 1:0), Double::sum) / metrics.size();
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
@@ -155,6 +145,14 @@ public class AnalyseService {
                     confonderla con una potenziale nuova istanza con stesso identificatore.
                     Inoltre, per evitare comportamenti oscillatori, scegliamo di terminare istanze poco reliable che
                     sono spesso unreachable o failed.
+
+                    se c'è una metrica unreachable abbiamo 4 casi, riassumibili con la seguente regex: UNREACHABLE+ FAILED* ACTIVE*
+                    Se c'è una failed di mezzo, la consideriamo come il caso di sotto.
+                    Se finisce con active, tutto a posto a meno di anomalie nell'unreachable rate
+
+                    //se c'è una failed ma non una unreachable, abbiamo 2 casi, riassumibili con la seguente regex: FAILED+ ACTIVE*.
+                    Caso solo failed: considerare l'istanza come spenta, ignorarla nel calcolo degli adaptation parameters.
+                    Caso last metric active: tutto ok, a meno di conti sul tasso di faild e unreachable
                     */
                 }
 
@@ -224,7 +222,7 @@ public class AnalyseService {
                 continue;
             }
             if (!existsInstanceWithNewMetricsWindow) {
-                log.warn("Service {} has no instances with enough metrics to compute new stats", service.getServiceId());
+                log.warn("Service {} has no instances with enough metrics to compute new values for the Adaptation Parameters", service.getServiceId());
                 continue;
             }
 
@@ -232,6 +230,7 @@ public class AnalyseService {
             // The stats of the service are not available if all the instances of the service are just born.
             // In this case none of the instances have enough metrics to perform the analysis.
             // Update the adaptation parameters of the service and of its instances ONLY LOCALLY.
+            log.warn("UPDATING SERVICE {} STATS", service.getServiceId());
             updateAdaptationParametersHistory(service, instancesStats);
             //servicesStatsMap.put(service.getServiceId(), serviceStats);
         }
@@ -339,10 +338,8 @@ public class AnalyseService {
             //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0)));
 
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
-            if(slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)) {
+            if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), "At least one instance satisfies the avg Response time specifications: change the LB weights"));
-            }
-            //TODO SE USIAMO L'ORACOLO, NON VA PASSATA LA AVG AVAILABILITY BENSì LA STIMA DELL'AVAILABILITY DELL'ORACOLO (anche sopra nell'if, e va tolto serviceStats da mezzo)
             adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementationId(), "The service avg response time specification is not satisfied: add instances"));
         }
         return adaptationOptions;
@@ -389,8 +386,12 @@ public class AnalyseService {
     }
 
 
-    //Pushes in the instances and service ValueStackHistory the new values computed from the Instances stats built on the metrics window.
-    //The update is performed ONLY LOCALLY.
+    /** Writes in the instances and service ValueStackHistory the new values computed from the Instances stats built on the metrics window.
+     * The update is NOT pushed in the Knowledge.
+     *
+     * @param service: the service analysed
+     * @param instancesStats: InstanceStats list, one for each instance
+     */
     private void updateAdaptationParametersHistory(Service service, List<InstanceStats> instancesStats) {
         double availabilityAccumulator = 0;
         double maxResponseTimeAccumulator = 0;

@@ -50,23 +50,24 @@ public class PrometheusParser {
                             instanceMetrics.setDiskFreeSpace(((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
                             instanceMetrics.setDiskTotalSpace(((Gauge) metric).getValue());
-                    case PrometheusMetrics.CPU_USAGE -> instanceMetrics.setCpuUsage(((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_BUFFERED_CALLS -> instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"),
-                                    labels.get("kind"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_STATE -> instanceMetrics.addCircuitBreakerState(labels.get("name"),
-                            labels.get("state"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_CALLS_SECONDS -> instanceMetrics.addCircuitBreakerCallCountAndDurationSum(labels.get("name"),
-                            labels.get("kind"), (int) ((Summary) metric).getSampleCount(), ((Summary) metric).getSampleSum());
-                    case PrometheusMetrics.CB_CALLS_SECONDS_MAX ->  instanceMetrics.addCircuitBreakerCallMaxDuration(labels.get("name"),
-                            labels.get("kind"), ((Gauge)metric).getValue());
-                    case PrometheusMetrics.CB_NOT_PERMITTED_CALLS_TOTAL -> instanceMetrics.addCircuitBreakerNotPermittedCallsCount(labels.get("name"),
-                            (int) ((Counter) metric).getValue());
-                    case PrometheusMetrics.CB_SLOW_CALL_RATE -> instanceMetrics.addCircuitBreakerSlowCallRate(labels.get("name"),
-                            ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_SLOW_CALLS -> instanceMetrics.addCircuitBreakerSlowCallCount(labels.get("name"),
-                            labels.get("kind"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_FAILURE_RATE -> instanceMetrics.addCircuitBreakerFailureRate(labels.get("name"),
-                            ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CPU_USAGE ->
+                            instanceMetrics.setCpuUsage(((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_BUFFERED_CALLS ->
+                            instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"), labels.get("kind"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_STATE ->
+                            instanceMetrics.addCircuitBreakerState(labels.get("name"), labels.get("state"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_CALLS_SECONDS ->
+                            instanceMetrics.addCircuitBreakerCallCountAndDurationSum(labels.get("name"), labels.get("kind"), (int) ((Summary) metric).getSampleCount(), ((Summary) metric).getSampleSum());
+                    case PrometheusMetrics.CB_CALLS_SECONDS_MAX ->
+                            instanceMetrics.addCircuitBreakerCallMaxDuration(labels.get("name"), labels.get("kind"), ((Gauge)metric).getValue());
+                    case PrometheusMetrics.CB_NOT_PERMITTED_CALLS_TOTAL ->
+                            instanceMetrics.addCircuitBreakerNotPermittedCallsCount(labels.get("name"), (int) ((Counter) metric).getValue());
+                    case PrometheusMetrics.CB_SLOW_CALL_RATE ->
+                            instanceMetrics.addCircuitBreakerSlowCallRate(labels.get("name"), ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_SLOW_CALLS ->
+                            instanceMetrics.addCircuitBreakerSlowCallCount(labels.get("name"), labels.get("kind"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_FAILURE_RATE ->
+                            instanceMetrics.addCircuitBreakerFailureRate(labels.get("name"), ((Gauge) metric).getValue());
                     default -> { }
                 }
             });
