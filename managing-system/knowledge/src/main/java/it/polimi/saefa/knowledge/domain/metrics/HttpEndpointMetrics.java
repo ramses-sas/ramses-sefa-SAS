@@ -116,7 +116,7 @@ public class HttpEndpointMetrics {
     public double getTotalDurationOfSuccessful(){
         double total = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.status<400)
+            if(outcomeMetrics.status<500)
                 total += outcomeMetrics.getTotalDuration();
         }
         return total;
@@ -135,7 +135,7 @@ public class HttpEndpointMetrics {
     public int getTotalCountOfSuccessful(){
         int total = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.status<400)
+            if(outcomeMetrics.status<500)
                 total += outcomeMetrics.getCount();
         }
         return total;
@@ -145,7 +145,7 @@ public class HttpEndpointMetrics {
     public double getMaxDuration(){
         double max = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.getMaxDuration() > max)
+            if(outcomeMetrics.getStatus()<500 && outcomeMetrics.getMaxDuration() > max)
                 max = outcomeMetrics.getMaxDuration();
         }
         return max;

@@ -3,7 +3,7 @@ package it.polimi.saefa.monitor.domain;
 import com.netflix.appinfo.InstanceInfo;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.monitor.InstancesSupplier;
 import it.polimi.saefa.monitor.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
@@ -36,7 +36,7 @@ public class MonitorService {
     private String internetConnectionCheckHost;
 
     private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
-    private final Queue<List<InstanceMetrics>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
+    private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
     public MonitorService(KnowledgeClient knowledgeClient) {
         this.knowledgeClient = knowledgeClient;
@@ -50,7 +50,7 @@ public class MonitorService {
         try {
             Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
             log.debug("SERVICES: " + services);
-            List<InstanceMetrics> metricsList = Collections.synchronizedList(new LinkedList<>());
+            List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
             List<Thread> threads = new LinkedList<>();
             AtomicBoolean invalidIteration = new AtomicBoolean(false);
 
@@ -58,19 +58,19 @@ public class MonitorService {
                 if (managedServices.contains(serviceId)) {
                     serviceInstances.forEach(instance -> {
                         Thread thread = new Thread(() -> {
-                            InstanceMetrics instanceMetrics;
+                            InstanceMetricsSnapshot instanceMetricsSnapshot;
                             try {
-                                instanceMetrics = prometheusParser.parse(instance);
-                                instanceMetrics.applyTimestamp();
-                                log.debug("Adding metric for instance {}", instanceMetrics.getInstanceId());
-                                metricsList.add(instanceMetrics);
+                                instanceMetricsSnapshot = prometheusParser.parse(instance);
+                                instanceMetricsSnapshot.applyTimestamp();
+                                log.debug("Adding metric for instance {}", instanceMetricsSnapshot.getInstanceId());
+                                metricsList.add(instanceMetricsSnapshot);
                             } catch (Exception e) {
                                 log.error("Error adding metrics for {}. Considering it as unreachable", instance.getInstanceId());
                                 log.error("The exception is: " + e.getMessage());
-                                instanceMetrics = new InstanceMetrics(instance.getAppName(), instance.getInstanceId());
-                                instanceMetrics.setStatus(InstanceStatus.UNREACHABLE);
-                                instanceMetrics.applyTimestamp();
-                                metricsList.add(instanceMetrics);
+                                instanceMetricsSnapshot = new InstanceMetricsSnapshot(instance.getAppName(), instance.getInstanceId());
+                                instanceMetricsSnapshot.setStatus(InstanceStatus.UNREACHABLE);
+                                instanceMetricsSnapshot.applyTimestamp();
+                                metricsList.add(instanceMetricsSnapshot);
                                 try {
                                     if (!InetAddress.getByName(internetConnectionCheckHost).isReachable(5000))
                                         invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host

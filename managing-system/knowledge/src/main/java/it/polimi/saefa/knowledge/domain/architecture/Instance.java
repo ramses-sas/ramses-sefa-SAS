@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +20,7 @@ public class Instance {
     private String serviceImplementationId; //service implementation id
     private InstanceStatus currentStatus = InstanceStatus.BOOTING;
     private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
-    private InstanceMetrics latestMetrics;
+    private InstanceMetricsSnapshot latestMetrics;
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;
@@ -36,13 +36,13 @@ public class Instance {
     }
 
     // TODO verifica di poter togliere il JsonIgnore
-    @JsonIgnore
+    //@JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestReplicatedAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
     }
 
     // TODO verifica di poter togliere il JsonIgnore
-    @JsonIgnore
+    //@JsonIgnore
     public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
         return getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
     }

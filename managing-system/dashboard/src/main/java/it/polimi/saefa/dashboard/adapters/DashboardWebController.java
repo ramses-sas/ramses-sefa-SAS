@@ -9,7 +9,7 @@ import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 import it.polimi.saefa.knowledge.domain.metrics.CircuitBreakerMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ public class DashboardWebController {
 
 	@GetMapping("/service/{serviceId}/{instanceId}/metrics")
 	public String instanceMetrics(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
-		InstanceMetrics latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
+		InstanceMetricsSnapshot latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
 		log.debug("Latest metrics: " + latestMetrics);
 		List<String[]> resourceTable = new ArrayList<>();
 		List<String[]> httpMetricsTable = new ArrayList<>();

@@ -2,7 +2,7 @@ package it.polimi.saefa.dashboard.domain;
 
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,8 +30,8 @@ public class DashboardWebService {
 		return currentArchitecture;
 	}
 
-	public InstanceMetrics getLatestMetrics(String serviceId, String instanceId) {
-		List<InstanceMetrics> l = knowledgeClient.getLatestMetrics(serviceId, instanceId);
+	public InstanceMetricsSnapshot getLatestMetrics(String serviceId, String instanceId) {
+		List<InstanceMetricsSnapshot> l = knowledgeClient.getLatestMetrics(serviceId, instanceId);
 		if (l == null || l.isEmpty())
 			return null;
 		return l.get(0);

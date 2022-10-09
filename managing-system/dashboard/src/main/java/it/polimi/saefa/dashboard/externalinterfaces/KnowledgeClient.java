@@ -1,7 +1,7 @@
 package it.polimi.saefa.dashboard.externalinterfaces;
 
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,16 +11,16 @@ import java.util.List;
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
     @PostMapping("/rest/metrics/addMetrics")
-    void addMetrics(@RequestBody InstanceMetrics metrics);
+    void addMetrics(@RequestBody InstanceMetricsSnapshot metrics);
 
     @PostMapping("/rest/metrics/addMetricsList")
-    public void addMetrics(@RequestBody List<InstanceMetrics> metrics);
+    public void addMetrics(@RequestBody List<InstanceMetricsSnapshot> metrics);
 
     @GetMapping("/rest/metrics/{metricsId}")
-    InstanceMetrics getMetrics(@PathVariable long metricsId);
+    InstanceMetricsSnapshot getMetrics(@PathVariable long metricsId);
 
     @GetMapping("/rest/metrics/get")
-    List<InstanceMetrics> getMetrics(
+    List<InstanceMetricsSnapshot> getMetrics(
             //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp, // The timestamp MUST be in the format yyyy-MM-dd'T'HH:mm:ss
@@ -29,7 +29,7 @@ public interface KnowledgeClient {
     );
 
     @GetMapping("/rest/metrics/getLatest")
-    List<InstanceMetrics> getLatestMetrics(
+    List<InstanceMetricsSnapshot> getLatestMetrics(
             @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId
     );
