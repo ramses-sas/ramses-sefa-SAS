@@ -12,7 +12,7 @@ import java.util.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class InstanceMetrics {
+public class InstanceMetricsSnapshot {
     @Id
     @GeneratedValue//(strategy = GenerationType.TABLE)
     private Long id;
@@ -38,7 +38,7 @@ public class InstanceMetrics {
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    public InstanceMetrics(String serviceId, String instanceId) {
+    public InstanceMetricsSnapshot(String serviceId, String instanceId) {
         this.serviceId = serviceId;
         this.instanceId = instanceId;
     }
@@ -48,7 +48,7 @@ public class InstanceMetrics {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        InstanceMetrics that = (InstanceMetrics) o;
+        InstanceMetricsSnapshot that = (InstanceMetricsSnapshot) o;
 
         if (!serviceId.equals(that.serviceId)) return false;
         if (!instanceId.equals(that.instanceId)) return false;

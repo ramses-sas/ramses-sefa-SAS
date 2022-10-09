@@ -3,9 +3,8 @@ package it.polimi.saefa.knowledge.rest;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
-import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.knowledge.domain.KnowledgeService;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -32,12 +30,12 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/metrics/addMetricsBuffer")
-    public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetrics>> metricsSnapshotBuffer) {
+    public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer) {
         knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
     }
 
     @GetMapping("/metrics/getLatestNOfCurrentInstance")
-    public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(
+    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(
             @RequestParam String instanceId,
             @RequestParam int n
     ) {
@@ -45,7 +43,7 @@ public class KnowledgeRestController {
     }
 
     @GetMapping("/metrics/get")
-    public List<InstanceMetrics> getMetrics(
+    public List<InstanceMetricsSnapshot> getMetrics(
             //@RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId,
             //@RequestParam(required = false, name = "at") String timestamp,
@@ -99,7 +97,7 @@ public class KnowledgeRestController {
     }
 
     @GetMapping("/metrics/getLatest")
-    public List<InstanceMetrics> getLatestMetrics(
+    public List<InstanceMetricsSnapshot> getLatestMetrics(
             @RequestParam(required = false) String serviceId,
             @RequestParam(required = false) String instanceId
     ) {
@@ -204,12 +202,12 @@ public class KnowledgeRestController {
     // Inspection endpoints
 
     @GetMapping("/metrics/{metricsId}")
-    public InstanceMetrics getMetrics(@PathVariable long metricsId) {
+    public InstanceMetricsSnapshot getMetrics(@PathVariable long metricsId) {
         return knowledgeService.getMetrics(metricsId);
     }
 
     @GetMapping("/metrics/getLatestNBefore")
-    public List<InstanceMetrics> getLatestNMetricsBeforeDate(
+    public List<InstanceMetricsSnapshot> getLatestNMetricsBeforeDate(
             @RequestParam String instanceId,
             @RequestParam(name = "before") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
             @RequestParam int n
@@ -218,7 +216,7 @@ public class KnowledgeRestController {
     }
 
     @GetMapping("/metrics/getLatestNAfter")
-    public List<InstanceMetrics> getLatestNMetricsAfterDate(
+    public List<InstanceMetricsSnapshot> getLatestNMetricsAfterDate(
             @RequestParam String instanceId,
             @RequestParam(name = "after") String timestamp, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
             @RequestParam int n

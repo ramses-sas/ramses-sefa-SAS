@@ -16,7 +16,7 @@ import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +119,12 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN || instance.getCurrentStatus() == InstanceStatus.BOOTING )
                     continue;
 
-                List<InstanceMetrics> metrics = new LinkedList<>(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
+                if(instance.getCurrentStatus() == InstanceStatus.FAILED){
+                    adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instances failed", true));
+                    continue;
+                }
+
+                List<InstanceMetricsSnapshot> metrics = new LinkedList<>(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
                 if (metrics.size() != metricsWindowSize) {
@@ -127,7 +132,7 @@ public class AnalyseService {
                         // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
                         instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
                     else
-                        // If it's not a new instance, the adaptation parameters will have the latest available value
+                        // If it's not a new instance, the adaptation parameters will have the latest available value present in the value stack
                         instancesStats.add(new InstanceStats(instance));
                     continue;
                 }
@@ -136,8 +141,8 @@ public class AnalyseService {
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
 
-                InstanceMetrics latestMetrics = metrics.get(0);
-                if (latestMetrics.isFailed() || unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
+                //InstanceMetrics latestMetrics = metrics.get(0);
+                if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
                     adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instances failed or unreachable", true));
                     continue;
                     /*
@@ -156,7 +161,7 @@ public class AnalyseService {
                     */
                 }
 
-                List<InstanceMetrics> activeMetrics = metrics.stream().filter(InstanceMetrics::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
+                List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(InstanceMetricsSnapshot::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
                 if (activeMetrics.size() < 3) {
                     //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
                     // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
@@ -167,41 +172,10 @@ public class AnalyseService {
                         // If it's not a new instance, the adaptation parameters will have the latest available value
                         instancesStats.add(new InstanceStats(instance));
                 } else {
-                    InstanceMetrics oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
-                    InstanceMetrics latestActiveMetrics = activeMetrics.get(0);
+                    InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
+                    InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
 
-                    // <endpoint, value>
-                    //Map<String, Double> endpointAvgRespTime = new HashMap<>();
-                    //Map<String, Double> endpointMaxRespTime = new HashMap<>();
-                    double successfulRequestsDuration = 0;
-                    double successfulRequestsCount = 0;
-                    double totalRequestsCount = 0;
-                    double maxRespTime = 0;
-                    for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-                        double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
-                        totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
-                        // TODO QUI IL PROBLEMA: SE NON CI SONO RICHIESTE SUCCESSFUL, NON POSSIAMO CALCOLARE IL TEMPO MEDIO
-                        // TODO RISOLTO CON L'ATTUALE CODICE.
-                        if (endpointSuccessfulRequestsCount != 0) {
-                            double endpointSuccessfulRequestsDuration = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
-                            //endpointAvgRespTime.put(endpoint, endpointSuccessfulRequestsDuration / endpointSuccessfulRequestsCount);
-                            //endpointMaxRespTime.put(endpoint, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
-                            successfulRequestsDuration += endpointSuccessfulRequestsDuration;
-                            successfulRequestsCount += endpointSuccessfulRequestsCount;
-                            maxRespTime = Math.max(maxRespTime, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
-                        }
-                    }
-                    if (successfulRequestsCount == 0) {
-                        // non ci sono nuove successful requests per questa istanza.
-                        if (instance.isJustBorn())
-                            // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
-                            instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
-                        else
-                            // If it's not a new instance, the adaptation parameters will have the latest available value
-                            instancesStats.add(new InstanceStats(instance));
-                    } else {
-                        instancesStats.add(new InstanceStats(instance, successfulRequestsDuration/successfulRequestsCount, maxRespTime, successfulRequestsCount/totalRequestsCount));
-                    }
+                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTimeNEW(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTimeNew(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailabilityNEW(oldestActiveMetrics, latestActiveMetrics)));
 
                     existsInstanceWithNewMetricsWindow = true;
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
@@ -301,25 +275,9 @@ public class AnalyseService {
         return adaptationOptions;
     }
 
-    //TODO da rivedere completamente dopo cambio ad analisi media
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, List<Double> serviceAvailabilityHistory) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
-        if (!service.getAdaptationParamSpecifications().get(Availability.class).isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)) {
-            // Order the instances by average availability (ascending)
-            List<Instance> instances = service.getInstances().stream()
-                    .sorted(Comparator.comparingDouble(i -> i.getLatestReplicatedAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow())).toList();
-            Instance worstInstance = instances.get(0);
-            // 2 adaptation options: add N instances and remove the worst instance. Their benefits will be evaluated by the Plan
-            //TODO SE USIAMO L'ORACOLO, NON VA PASSATA LA AVG AVAILABILITY BENSì LA STIMA DELL'AVAILABILITY DELL'ORACOLO
-            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementationId(), "Add instances to improve the availability of the service"));
-            // Ha il senso di "proponi di rimuovere l'istanza con l'availability peggiore. Se il constraint sull'avail continua a essere soddisfatto, hai risparmiato un'istanza"
-            // TODO non va qui, perché questa proposta l'analisi deve valutarla se il constraint è soddisfatto, non se non lo è
-            //adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), List.of(worstInstance.getInstanceId()), "Remove the least available instance to improve the availability of the service"));
-            // TODO mancano le considerazioni sul cambio di implementazione
 
-            //TODO se parriamo a un modello con availability media e non in parallelo la media va calcolata come media pesata sui pesi del LB,
-            //TODO e quindi va aggiunta l'opione di adattamento change LB weights anche qui
-        }
         return adaptationOptions;
     }
 
@@ -334,7 +292,6 @@ public class AnalyseService {
                     )
             ).toList();
 
-            //Todo next
             //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0)));
 
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
@@ -347,7 +304,7 @@ public class AnalyseService {
 
 
 
-    private Double computeInstanceAvailability(InstanceMetrics firstMetrics, InstanceMetrics lastMetrics) {
+    private Double computeInstanceAvailability(InstanceMetricsSnapshot firstMetrics, InstanceMetricsSnapshot lastMetrics) {
         double successfulRequests = 0;
         double failedRequests = 0;
 
@@ -385,6 +342,50 @@ public class AnalyseService {
         return toReturn == -1.0 ? null : toReturn;
     }
 
+    private double computeInstanceAvgResponseTimeNEW(Service service, Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
+        double successfulRequestsDuration = 0;
+        double successfulRequestsCount = 0;
+
+        for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
+            double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+            if (endpointSuccessfulRequestsCount != 0) {
+                double endpointSuccessfulRequestsDuration = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+                successfulRequestsDuration += endpointSuccessfulRequestsDuration;
+                successfulRequestsCount += endpointSuccessfulRequestsCount;
+            }
+        }
+        if(successfulRequestsCount == 0) {
+            if (instance.isJustBorn())
+                return service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
+            else
+                return instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+        }
+        return successfulRequestsDuration/successfulRequestsCount;
+    }
+
+    private double computeInstanceAvailabilityNEW(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics){
+        double successfulRequestsCount = 0;
+        double totalRequestsCount = 0;
+
+        for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
+            double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+            totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
+            successfulRequestsCount += endpointSuccessfulRequestsCount;
+        }
+        return successfulRequestsCount/totalRequestsCount;
+    }
+
+    private double computeMaxResponseTimeNew(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
+        double maxRespTime = 0;
+
+        for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
+            double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+            if (endpointSuccessfulRequestsCount != 0) {
+                maxRespTime = Math.max(maxRespTime, latestActiveMetrics.getHttpMetrics().get(endpoint).getMaxDuration());
+            }
+        }
+        return maxRespTime;
+    }
 
     /** Writes in the instances and service ValueStackHistory the new values computed from the Instances stats built on the metrics window.
      * The update is NOT pushed in the Knowledge.

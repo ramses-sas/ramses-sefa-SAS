@@ -7,7 +7,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.knowledge.domain.persistence.AdaptationChoicesRepository;
 import it.polimi.saefa.knowledge.domain.persistence.ConfigurationRepository;
 import it.polimi.saefa.knowledge.domain.persistence.MetricsRepository;
@@ -81,13 +81,13 @@ public class KnowledgeService {
         log.info("breakpoint");
     }
 
-    public void addMetricsFromBuffer(Queue<List<InstanceMetrics>> metricsBuffer) {
+    public void addMetricsFromBuffer(Queue<List<InstanceMetricsSnapshot>> metricsBuffer) {
         try {
             log.info("Saving new set of metrics");
-            for (List<InstanceMetrics> metricsList : metricsBuffer) {
+            for (List<InstanceMetricsSnapshot> metricsList : metricsBuffer) {
                 Set<Instance> currentlyActiveInstances = new HashSet<>();
                 Set<Instance> shutdownInstances = new HashSet<>();
-                for (InstanceMetrics metricsSnapshot : metricsList) {
+                for (InstanceMetricsSnapshot metricsSnapshot : metricsList) {
                     Service service = services.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
@@ -110,7 +110,7 @@ public class KnowledgeService {
                     failedInstances.removeAll(shutdownInstances);
                     failedInstances.forEach(instance -> {
                         instance.setCurrentStatus(InstanceStatus.FAILED);
-                        InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
+                        InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
                         metrics.setStatus(InstanceStatus.FAILED);
                         metrics.applyTimestamp();
                         metricsRepository.save(metrics);
@@ -130,13 +130,13 @@ public class KnowledgeService {
     public void notifyShutdownInstance(String serviceId, String instanceId) {
         Instance instance = services.get(serviceId).getInstance(instanceId);
         instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
-        InstanceMetrics metrics = new InstanceMetrics(instance.getServiceId(), instance.getInstanceId());
+        InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
         metrics.setStatus(InstanceStatus.SHUTDOWN);
         metrics.applyTimestamp();
         metricsRepository.save(metrics);
     }
 
-    public InstanceMetrics getMetrics(long id) {
+    public InstanceMetricsSnapshot getMetrics(long id) {
         return metricsRepository.findById(id).orElse(null);
     }
 
@@ -150,23 +150,23 @@ public class KnowledgeService {
 
 
 
-    public List<InstanceMetrics> getLatestNMetricsOfCurrentInstance(String instanceId, int n) {
+    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String instanceId, int n) {
         return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, lastAdaptationDate, Pageable.ofSize(n)).stream().toList();
     }
 
-    public List<InstanceMetrics> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
+    public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
         Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
         Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByInstanceIdAndTimestampBetween(instanceId, startDate, endDate).stream().toList();
     }
 
-    public InstanceMetrics getLatestByInstanceId(String instanceId) {
+    public InstanceMetricsSnapshot getLatestByInstanceId(String instanceId) {
         return metricsRepository.findLatestByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
 
 
-    public List<InstanceMetrics> getAllLatestByServiceId(String serviceId) {
+    public List<InstanceMetricsSnapshot> getAllLatestByServiceId(String serviceId) {
         return metricsRepository.findLatestByServiceId(serviceId).stream().toList();
     }
 
@@ -225,27 +225,27 @@ public class KnowledgeService {
 
     // Useful methods to investigate the metrics of the instances
 
-    public List<InstanceMetrics> getAllInstanceMetrics(String instanceId) {
+    public List<InstanceMetricsSnapshot> getAllInstanceMetrics(String instanceId) {
         return metricsRepository.findAllByInstanceId(instanceId).stream().toList();
     }
 
-    public List<InstanceMetrics> getAllMetricsBetween(String startDateStr, String endDateStr) {
+    public List<InstanceMetricsSnapshot> getAllMetricsBetween(String startDateStr, String endDateStr) {
         Date startDate = Date.from(LocalDateTime.parse(startDateStr).toInstant(ZoneOffset.UTC));
         Date endDate = Date.from(LocalDateTime.parse(endDateStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByTimestampBetween(startDate, endDate).stream().toList();
     }
 
-    public List<InstanceMetrics> getNMetricsBefore(String instanceId, String timestampStr, int n) {
+    public List<InstanceMetricsSnapshot> getNMetricsBefore(String instanceId, String timestampStr, int n) {
         Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByInstanceIdAndTimestampBeforeOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
     }
 
-    public List<InstanceMetrics> getNMetricsAfter(String instanceId, String timestampStr, int n) {
+    public List<InstanceMetricsSnapshot> getNMetricsAfter(String instanceId, String timestampStr, int n) {
         Date timestamp = Date.from(LocalDateTime.parse(timestampStr).toInstant(ZoneOffset.UTC));
         return metricsRepository.findAllByInstanceIdAndTimestampAfterOrderByTimestampDesc(instanceId, timestamp, Pageable.ofSize(n)).stream().toList();
     }
 
-    public InstanceMetrics getLatestActiveByInstanceId(String instanceId) {
+    public InstanceMetricsSnapshot getLatestActiveByInstanceId(String instanceId) {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
