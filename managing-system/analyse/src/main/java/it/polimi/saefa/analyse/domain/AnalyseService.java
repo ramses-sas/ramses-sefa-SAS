@@ -15,7 +15,6 @@ import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
-import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.Getter;
 import lombok.Setter;
@@ -188,7 +187,7 @@ public class AnalyseService {
                     InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
 
-                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTimeNEW(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTimeNew(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailabilityNEW(oldestActiveMetrics, latestActiveMetrics)));
+                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTimeNew(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
 
                     existsInstanceWithNewMetricsWindow = true;
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
@@ -329,47 +328,7 @@ public class AnalyseService {
         return adaptationOptions;
     }
 
-
-
-    private Double computeInstanceAvailability(InstanceMetricsSnapshot firstMetrics, InstanceMetricsSnapshot lastMetrics) {
-        double successfulRequests = 0;
-        double failedRequests = 0;
-
-        for (HttpEndpointMetrics httpMetric : lastMetrics.getHttpMetrics().values()) {
-            for (HttpEndpointMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
-                // We consider "successful" requests every request with a response code not in the 5xx range
-                if (outcomeMetric.getStatus() < 500) {
-                    successfulRequests += outcomeMetric.getCount();
-                } else {
-                    failedRequests += outcomeMetric.getCount();
-                }
-            }
-        }
-
-        for (HttpEndpointMetrics httpMetric : firstMetrics.getHttpMetrics().values()) {
-            for (HttpEndpointMetrics.OutcomeMetrics outcomeMetric : httpMetric.getOutcomeMetrics().values()) {
-                // We consider "successful" requests every request with a response code not in the 5xx range
-                if (outcomeMetric.getStatus() < 500) {
-                    successfulRequests -= outcomeMetric.getCount();
-                } else {
-                    failedRequests -= outcomeMetric.getCount();
-                }
-            }
-        }
-
-        return (successfulRequests + failedRequests) == 0 ? null : successfulRequests / (successfulRequests + failedRequests);
-    }
-
-    private Double computeInstanceMaxResponseTime(Map<String, Double> endpointMaxRespTime) {
-        return endpointMaxRespTime.values().stream().max(Double::compareTo).orElse(null);
-    }
-
-    private Double computeInstanceAvgResponseTime(Map<String, Double> endpointAvgRespTime) {
-        double toReturn =  endpointAvgRespTime.values().stream().mapToDouble(Double::doubleValue).average().orElse(-1.0);
-        return toReturn == -1.0 ? null : toReturn;
-    }
-
-    private double computeInstanceAvgResponseTimeNEW(Service service, Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
+    private double computeInstanceAvgResponseTime(Service service, Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
         double successfulRequestsDuration = 0;
         double successfulRequestsCount = 0;
 
@@ -390,7 +349,7 @@ public class AnalyseService {
         return successfulRequestsDuration/successfulRequestsCount;
     }
 
-    private double computeInstanceAvailabilityNEW(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics){
+    private double computeInstanceAvailability(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics){
         double successfulRequestsCount = 0;
         double totalRequestsCount = 0;
 
