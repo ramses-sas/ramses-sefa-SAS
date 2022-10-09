@@ -108,7 +108,7 @@ public class PlanService {
         MPConstraint sumOfWeights = solver.makeConstraint("sumOfWeights"); //∑w_i = 1 - b/n
 
         for (Instance instance : service.getInstances()) {
-            if (instance.getCurrentStatus() != InstanceStatus.BOOTING){// TODO && instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
+            if (instance.getCurrentStatus() != InstanceStatus.BOOTING){
                 MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
                 MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
                 weights.put(instance.getInstanceId(), weight);

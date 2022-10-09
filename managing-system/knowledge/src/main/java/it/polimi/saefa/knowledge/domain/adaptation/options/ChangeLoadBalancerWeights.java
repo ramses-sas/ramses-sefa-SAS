@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,16 +11,14 @@ import javax.persistence.Entity;
 import java.util.Map;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @DiscriminatorValue("CHANGE_LOAD_BALANCER_WEIGHTS")
 public class ChangeLoadBalancerWeights extends AdaptationOption {
-    // <instanceId, newWeight>
     @ElementCollection
-    @Setter
+    // <instanceId, newWeight>
     private Map<String, Double> newWeights;
-    //private Double serviceAverageAvailability;
-    //private Double serviceAverageResponseTime;
 
 
     public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, String comment) {

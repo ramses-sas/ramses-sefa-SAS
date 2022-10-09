@@ -104,7 +104,7 @@ public class AnalyseService {
         }  catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Error during the Analyse execution");
+            throw new RuntimeException("Error during the Analyse execution: " + e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class AnalyseService {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
 
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
-                    continue;
+                    throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
 
                 if(instance.getCurrentStatus() == InstanceStatus.BOOTING )
                     if((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
@@ -322,7 +322,7 @@ public class AnalyseService {
                     )
             ).toList();
 
-            //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0)));
+            //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0))); todo
 
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
