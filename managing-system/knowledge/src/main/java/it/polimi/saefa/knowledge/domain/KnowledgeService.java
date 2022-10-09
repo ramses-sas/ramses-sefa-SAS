@@ -92,9 +92,9 @@ public class KnowledgeService {
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
                     if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
-                        if (instance.getLatestMetrics() == null || !instance.getLatestMetrics().equals(metricsSnapshot)) {
+                        if (!instance.getLatestInstanceMetricsSnapshot().equals(metricsSnapshot)) {
                             metricsRepository.save(metricsSnapshot);
-                            instance.setLatestMetrics(metricsSnapshot);
+                            instance.setLatestInstanceMetricsSnapshot(metricsSnapshot);
                             instance.setCurrentStatus(metricsSnapshot.getStatus());
                         } else
                             log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
