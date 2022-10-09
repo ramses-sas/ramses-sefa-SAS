@@ -68,7 +68,7 @@ public class ExecuteService {
             log.info("Adding instance to service" + addInstancesOption.getServiceId() + " with new instance " + instance.getAddress());
             newInstancesIds.add(service.createInstance(instance.getAddress()).getInstanceId());
         });
-        
+
         if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             int newNumberOfInstances = service.getInstances().size();
             int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();

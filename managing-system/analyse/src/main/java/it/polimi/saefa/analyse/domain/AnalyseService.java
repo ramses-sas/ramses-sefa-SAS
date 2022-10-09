@@ -187,7 +187,7 @@ public class AnalyseService {
                     InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
 
-                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTimeNew(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
+                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
 
                     existsInstanceWithNewMetricsWindow = true;
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
@@ -233,8 +233,12 @@ public class AnalyseService {
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
             computeServiceAndInstancesCurrentValues(service);
-            proposedAdaptationOptions.addAll(computeAdaptationOptionsAndCurrentValueForParams(service, analysedServices));
         }
+
+        for(Service service : currentArchitectureMap.values()){
+            proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
+        }
+
         for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
             log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
         }
@@ -272,14 +276,14 @@ public class AnalyseService {
      * @param analysedServices: the map of services that have already been analysed, to avoid circular dependencies
      * @return the list of adaptation options for the service
      */
-    private List<AdaptationOption> computeAdaptationOptionsAndCurrentValueForParams(Service service, Set<String> analysedServices) {
+    private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         if (analysedServices.contains(service.getServiceId()))
             return adaptationOptions;
         analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
         List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
         for (Service s : serviceDependencies) {
-            adaptationOptions.addAll(computeAdaptationOptionsAndCurrentValueForParams(s, analysedServices));
+            adaptationOptions.addAll(computeAdaptationOptions(s, analysedServices));
         }
 
         // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
@@ -361,7 +365,7 @@ public class AnalyseService {
         return successfulRequestsCount/totalRequestsCount;
     }
 
-    private double computeMaxResponseTimeNew(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
+    private double computeMaxResponseTime(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
         double maxRespTime = 0;
 
         for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
@@ -380,7 +384,7 @@ public class AnalyseService {
      * @param instancesStats: InstanceStats list, one for each instance
      */
     private void updateAdaptationParametersHistory(Service service, List<InstanceStats> instancesStats) {
-        double availabilityAccumulator = 0;
+        double availability = 0;
         double maxResponseTimeAccumulator = 0;
         double averageResponseTime = 0;
         double count = 0;
@@ -391,15 +395,17 @@ public class AnalyseService {
                 currentInstanceParamCollection.addNewAdaptationParamValue(MaxResponseTime.class, instanceStats.getMaxResponseTime());
                 currentInstanceParamCollection.addNewAdaptationParamValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
             }
-            availabilityAccumulator += instanceStats.getAvailability();
+            double weight = service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM ?
+                    service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
+            availability += instanceStats.getAvailability() * weight;
             maxResponseTimeAccumulator += instanceStats.getMaxResponseTime();
-            averageResponseTime += instanceStats.getAverageResponseTime() * service.getLoadBalancerWeight(instanceStats.getInstance());
+            averageResponseTime += instanceStats.getAverageResponseTime() * weight;
             count++;
         }
         AdaptationParamCollection currentImplementationParamCollection = service.getCurrentImplementation().getAdaptationParamCollection();
         currentImplementationParamCollection.addNewAdaptationParamValue(AverageResponseTime.class, averageResponseTime);
         currentImplementationParamCollection.addNewAdaptationParamValue(MaxResponseTime.class, maxResponseTimeAccumulator / count);
-        currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, availabilityAccumulator / count);
+        currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, availability);
     }
 
     private void updateAdaptationParamCollectionsInKnowledge() {
@@ -416,6 +422,9 @@ public class AnalyseService {
         knowledgeClient.updateInstancesAdaptationParamCollection(serviceInstancesNewAdaptationParamCollections);
         knowledgeClient.updateServicesAdaptationParamCollection(serviceNewAdaptationParamCollections);
     }
+
+
+
 
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
