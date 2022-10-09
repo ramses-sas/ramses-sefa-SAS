@@ -220,7 +220,8 @@ public class AnalyseService {
         Set<String> analysedServices = new HashSet<>();
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
-            proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
+            //TODO CHIAMEREI QUI LA NUOVA FUNZIONE PER CALCOLARE I CURRENT VALUE DEI PARAMETRI DI ADATTAMENTO DEL SERVIZIO
+            proposedAdaptationOptions.addAll(computeAdaptationOptionsAndCurrentValueForParams(service, analysedServices));
         }
         for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
             log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
@@ -228,15 +229,22 @@ public class AnalyseService {
         return proposedAdaptationOptions;
     }
 
-    // Recursive
-    private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
+
+    /**
+     * Computes the adaptation options for a service and the current value of the adaptation parameters of the service and its instances.
+     * Recursive.
+     * @param service: the service to analyse
+     * @param analysedServices: the map of services that have already been analysed, to avoid circular dependencies
+     * @return the list of adaptation options for the service
+     */
+    private List<AdaptationOption> computeAdaptationOptionsAndCurrentValueForParams(Service service, Set<String> analysedServices) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         if (analysedServices.contains(service.getServiceId()))
             return adaptationOptions;
         analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
         List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
         for (Service s : serviceDependencies) {
-            adaptationOptions.addAll(computeAdaptationOptions(s, analysedServices));
+            adaptationOptions.addAll(computeAdaptationOptionsAndCurrentValueForParams(s, analysedServices));
         }
 
         // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
@@ -245,6 +253,7 @@ public class AnalyseService {
             return adaptationOptions;
 
         // Analisi del servizio corrente, se non ha dipendenze con problemi
+        // TODO SPOSTEREI QUESTA PARTE IN UN METODO A PARTE CHE CHIAMEREI COMPUTE_CURRENT_VALUE...
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForParam(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
