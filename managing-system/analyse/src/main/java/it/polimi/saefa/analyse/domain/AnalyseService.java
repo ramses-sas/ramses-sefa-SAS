@@ -199,7 +199,6 @@ public class AnalyseService {
             log.warn("UPDATING SERVICE {} STATS", service.getServiceId());
             updateAdaptationParametersHistory(service, instancesStats);
             computeServiceAndInstancesCurrentValues(service);
-            log.warn("AAA");
         }
         return adaptationOptions;
     }
@@ -404,32 +403,6 @@ public class AnalyseService {
         currentImplementationParamCollection.addNewAdaptationParamValue(MaxResponseTime.class, maxResponseTimeAccumulator / count);
         currentImplementationParamCollection.addNewAdaptationParamValue(Availability.class, availability);
     }
-
-    private void computeServiceAndInstancesCurrentValues(Service service) {
-        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForParam(Availability.class, analysisWindowSize);
-        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize);
-        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
-            // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
-            // Update the current values for the adaptation parameters of the service and of its instances. Then invalidates the values in the values history
-            service.changeCurrentValueForParam(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.changeCurrentValueForParam(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.invalidateLatestAndPreviousValuesForParam(Availability.class);
-            service.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
-            service.getInstances().forEach(instance -> {
-                if (instance.isJustBorn()) { //If it's just born, set the current value to the one provided in the benchmarks
-                    instance.changeCurrentValueForParam(Availability.class, service.getCurrentImplementation().getAdaptationParamBootBenchmarks().get(Availability.class));
-                    instance.changeCurrentValueForParam(AverageResponseTime.class, service.getCurrentImplementation().getAdaptationParamBootBenchmarks().get(AverageResponseTime.class));
-                } else {
-                    instance.changeCurrentValueForParam(Availability.class, instance.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                    instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                    instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
-                    instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
-                }
-                log.warn("Changed current val for instance {}. New curr avail val: {}. New curr ART val: {}", instance.getInstanceId(), instance.getCurrentValueForParam(Availability.class), instance.getCurrentValueForParam(AverageResponseTime.class));
-            });
-        }
-    }
-
 
     private void updateAdaptationParamCollectionsInKnowledge() {
         Map<String, Map<String, AdaptationParamCollection>> serviceInstancesNewAdaptationParamCollections = new HashMap<>();
