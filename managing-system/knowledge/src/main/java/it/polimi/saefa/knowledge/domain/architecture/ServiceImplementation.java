@@ -69,6 +69,7 @@ public class ServiceImplementation {
         Instance instance = new Instance(instanceId, serviceId);
         for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
             instance.getAdaptationParamCollection().createHistory(specification);
+            instance.getAdaptationParamCollection().changeCurrentValueForParam(specification.getClass(), getBootBenchmark(specification.getClass()));
         }
         instances.put(instanceId, instance);
         return instance;

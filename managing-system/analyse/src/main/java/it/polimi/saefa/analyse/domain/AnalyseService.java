@@ -140,12 +140,7 @@ public class AnalyseService {
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
                 if (metrics.size() != metricsWindowSize) {
-                    if (instance.isJustBorn())
-                        // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
-                        instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
-                    else
-                        // If it's not a new instance, the adaptation parameters will have the latest available value present in the value stack
-                        instancesStats.add(new InstanceStats(instance));
+                    instancesStats.add(new InstanceStats(instance));
                     continue;
                 }
 
@@ -176,12 +171,7 @@ public class AnalyseService {
                 if (activeMetrics.size() < 3) {
                     //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
                     // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
-                    if (instance.isJustBorn())
-                        // If it's a new instance, the adaptation parameters will have the values provided by the architecture specification.
-                        instancesStats.add(new InstanceStats(instance, service.getCurrentImplementation().getAdaptationParamBootBenchmarks()));
-                    else
-                        // If it's not a new instance, the adaptation parameters will have the latest available value
-                        instancesStats.add(new InstanceStats(instance));
+                    instancesStats.add(new InstanceStats(instance));
                 } else {
                     InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
@@ -248,15 +238,10 @@ public class AnalyseService {
             service.invalidateLatestAndPreviousValuesForParam(Availability.class);
             service.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
             service.getInstances().forEach(instance -> {
-                if (instance.isJustBorn()) { //If it's just born, set the current value to the one provided in the benchmarks
-                    instance.changeCurrentValueForParam(Availability.class, service.getCurrentImplementation().getAdaptationParamBootBenchmarks().get(Availability.class));
-                    instance.changeCurrentValueForParam(AverageResponseTime.class, service.getCurrentImplementation().getAdaptationParamBootBenchmarks().get(AverageResponseTime.class));
-                } else {
-                    instance.changeCurrentValueForParam(Availability.class, instance.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                    instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                    instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
-                    instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
-                }
+                instance.changeCurrentValueForParam(Availability.class, instance.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
+                instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
             });
         }
     }
@@ -352,15 +337,14 @@ public class AnalyseService {
             }
         }
         if (successfulRequestsCount == 0) {
-            if (instance.isJustBorn())
-                return service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
-            else {
-                AdaptationParameter.Value v = instance.getCurrentValueForParam(AverageResponseTime.class);
-                if (v == null) {
-                    throw new RuntimeException("THIS SHOULD NOT HAPPEN");
-                }
-                return instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+
+            //TODO delete up to the return
+            AdaptationParameter.Value v = instance.getCurrentValueForParam(AverageResponseTime.class);
+            if (v == null) {
+                throw new RuntimeException("THIS SHOULD NOT HAPPEN");
             }
+            return instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+
         }
         return successfulRequestsDuration/successfulRequestsCount;
     }

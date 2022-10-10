@@ -97,6 +97,7 @@ public class MonitorService {
 
             if (invalidIteration.get()) {
                 log.error("Invalid iteration. Skipping");
+                invalidIteration.set(false);
                 return;
             }
 

@@ -5,7 +5,6 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationPara
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
     @JsonIgnore
-    public List<Double> getLatestAnalysisWindow(int size) {
+    public List<Double> getLatestFilledAnalysisWindow(int size) {
         List<Double> values = new LinkedList<>();
         int i = Math.min(valuesStack.size(), size) - 1;
         int validValues = 0;
@@ -57,14 +56,12 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     }
 
     @JsonIgnore
-    public List<Double> getLatestAnalysisWindow(int size, double currentValue) {
+    public List<Double> getLatestFilledAnalysisWindow(int size, double currentValue) {
         List<Double> values = new LinkedList<>();
         int i = Math.min(valuesStack.size(), size) - 1;
         int validValues = 0;
         while (validValues < size) {
             if (i < 0) {
-                if (valuesStack.size() == 0)
-                    return null;
                 values.add(currentValue);
                 validValues++;
             } else {

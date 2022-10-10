@@ -53,10 +53,7 @@ public class Instance {
         getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
     }
 
-    @JsonIgnore
-    public boolean isJustBorn() {
-        return this.getAdaptationParamCollection().existsEmptyHistory();
-    }
+
 
     public String getAddress(){
         return instanceId.split("@")[1];
@@ -70,4 +67,10 @@ public class Instance {
         return instanceId.equals(instance.instanceId);
     }
 
+    /*
+    @JsonIgnore
+    public boolean isJustBorn() {
+        return this.getAdaptationParamCollection().existsEmptyHistory();
+    }
+     */
 }

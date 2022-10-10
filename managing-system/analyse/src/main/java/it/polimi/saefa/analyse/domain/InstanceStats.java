@@ -29,21 +29,12 @@ public class InstanceStats {
         fromNewData = true;
     }
 
-    // We don't have enough metrics to compute the stats, but the instance is NOT a just born one: so we use the last valid stats
+    // We don't have enough metrics to compute the stats, so we use the current value for each parameter
     public InstanceStats(Instance instance) {
         this.instance = instance;
-        availability = instance.getAdaptationParamCollection().getAdaptationParam(Availability.class).getLastValue();
-        averageResponseTime = instance.getAdaptationParamCollection().getAdaptationParam(AverageResponseTime.class).getLastValue();
-        maxResponseTime = instance.getAdaptationParamCollection().getAdaptationParam(MaxResponseTime.class).getLastValue();
-        this.fromNewData = false;
-    }
-
-    // We don't have enough metrics to compute the stats and the instance is JUST BORN: so we use the benchmarks provided by the architecture specification
-    public InstanceStats(Instance instance, Map<Class<? extends AdaptationParamSpecification>, Double> bootBenchmarks) {
-        this.instance = instance;
-        availability = bootBenchmarks.get(Availability.class);
-        averageResponseTime = bootBenchmarks.get(AverageResponseTime.class);
-        maxResponseTime = bootBenchmarks.get(MaxResponseTime.class);
+        availability = instance.getCurrentValueForParam(Availability.class).getValue();
+        averageResponseTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+        maxResponseTime = instance.getCurrentValueForParam(MaxResponseTime.class).getValue();
         this.fromNewData = false;
     }
 
