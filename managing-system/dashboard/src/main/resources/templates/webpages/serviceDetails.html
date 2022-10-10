@@ -29,7 +29,7 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}+'/metrics'}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
                                     </tr>
                                     </tbody>
@@ -55,6 +55,7 @@
 <!-- Bootstrap Core JavaScript -->
 <script src="/js/bootstrap.min.js"></script>
 
+<!-- Graphs scripts -->
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script th:inline="javascript" type="text/javascript" th:each="graph : ${graphs}" th:id="${graph.getYAxisName()}">
     google.charts.load('current', {'packages':['line']});
@@ -89,6 +90,7 @@
                     0: {side: 'bottom'}
                 }
             }
+
         };
         var chart = new google.charts.Line(document.getElementById(yAxisName));
 

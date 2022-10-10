@@ -136,7 +136,7 @@ public class AnalyseService {
                     continue;
                 }
 
-                List<InstanceMetricsSnapshot> metrics = knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize);
+                List<InstanceMetricsSnapshot> metrics = knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getServiceId(), instance.getInstanceId(), metricsWindowSize);
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
                 if (metrics.size() != metricsWindowSize) {
@@ -152,7 +152,7 @@ public class AnalyseService {
                     adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     continue;
                     /*
-                    Se l'utlima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
+                    Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
                     confonderla con una potenziale nuova istanza con stesso identificatore.
                     Inoltre, per evitare comportamenti oscillatori, scegliamo di terminare istanze poco reliable che
                     sono spesso unreachable o failed.

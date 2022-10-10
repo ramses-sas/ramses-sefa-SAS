@@ -34,17 +34,15 @@ public class KnowledgeService {
     @Autowired
     private AdaptationChoicesRepository adaptationChoicesRepository;
 
-    private final Map<String, Service> services = new ConcurrentHashMap<>();
-    //va capito come vogliamo gestirlo, ovvero se
-    // quando tutte le istanze di un servizio sono spente/crashate vogliamo che il servizio venga rimosso o meno
-    // Scelta progettuale: una volta che un servizio è stato creato non viene mai rimosso, ma solo le sue istanze
-    // (altrimenti è come il cambio di un functional requirement)
+    @Getter
+    private final Map<String, Service> servicesMap = new ConcurrentHashMap<>();
 
     private Set<Instance> previouslyActiveInstances = new HashSet<>();
-    //private final Set<Instance> shutdownInstances = Collections.synchronizedSet(new HashSet<>());
+
     // <serviceId, AdaptationOptions proposed by the Analyse>
     @Getter @Setter
     private Map<String, List<AdaptationOption>> proposedAdaptationOptions = new HashMap<>();
+
     // <serviceId, AdaptationOption chosen by the Plan>
     @Getter @Setter
     private Map<String, AdaptationOption> chosenAdaptationOptions = new HashMap<>();
@@ -52,30 +50,33 @@ public class KnowledgeService {
     @Getter
     private Modules activeModule = null;
 
-    @Getter
-    private Date lastAdaptationDate = new Date();
 
 
     public void setActiveModule(Modules activeModule) {
         this.activeModule = activeModule;
         if (activeModule == Modules.MONITOR) {
             // a new loop is started: reset the previous chosen options and the current proposed adaptation options
-            if (!chosenAdaptationOptions.isEmpty())
-                lastAdaptationDate = new Date();
+            for (String serviceId : chosenAdaptationOptions.keySet()) {
+                servicesMap.get(serviceId).setLatestAdaptationDate(new Date());
+            }
             proposedAdaptationOptions = new HashMap<>();
             chosenAdaptationOptions = new HashMap<>();
         }
     }
 
-    public void addService(Service service){
-        services.put(service.getServiceId(), service);
+    public Date getLatestAdaptationDateForService(String serviceId) {
+        return servicesMap.get(serviceId).getLatestAdaptationDate();
     }
+
+    // Called by the KnowledgeInit
+    public void addService(Service service) {
+        servicesMap.put(service.getServiceId(), service);
+    }
+    
 
     public List<Service> getServicesList(){
-        return services.values().stream().toList();
+        return servicesMap.values().stream().toList();
     }
-
-    public Map<String,Service> getServicesMap() { return services; }
 
     public void breakpoint(){
         log.info("breakpoint");
@@ -88,7 +89,7 @@ public class KnowledgeService {
                 Set<Instance> currentlyActiveInstances = new HashSet<>();
                 Set<Instance> shutdownInstances = new HashSet<>();
                 for (InstanceMetricsSnapshot metricsSnapshot : metricsList) {
-                    Service service = services.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
+                    Service service = servicesMap.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
                     if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
@@ -119,7 +120,7 @@ public class KnowledgeService {
                 previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
             }
             // For each service, remove from the map of instances the instances that have been shutdown and their weights in the service configuration
-            services.values().forEach(Service::removeShutdownInstances);
+            servicesMap.values().forEach(Service::removeShutdownInstances);
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
@@ -128,7 +129,7 @@ public class KnowledgeService {
     }
 
     public void notifyShutdownInstance(String serviceId, String instanceId) {
-        Service service = services.get(serviceId);
+        Service service = servicesMap.get(serviceId);
         Instance instance = service.getInstance(instanceId);
         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
         metrics.setStatus(InstanceStatus.SHUTDOWN);
@@ -144,7 +145,7 @@ public class KnowledgeService {
 
     public void changeServicesConfigurations(Map<String, ServiceConfiguration> newConfigurations){
         for (String serviceId : newConfigurations.keySet()){
-            Service service = services.get(serviceId);
+            Service service = servicesMap.get(serviceId);
             service.setConfiguration(newConfigurations.get(serviceId));
             configurationRepository.save(newConfigurations.get(serviceId));
         }
@@ -152,8 +153,8 @@ public class KnowledgeService {
 
 
 
-    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String instanceId, int n) {
-        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, lastAdaptationDate, Pageable.ofSize(n)).stream().toList();
+    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String serviceId, String instanceId, int n) {
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, servicesMap.get(serviceId).getLatestAdaptationDate(), Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
@@ -166,14 +167,12 @@ public class KnowledgeService {
         return metricsRepository.findLatestByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
-
-
     public List<InstanceMetricsSnapshot> getAllLatestByServiceId(String serviceId) {
         return metricsRepository.findLatestByServiceId(serviceId).stream().toList();
     }
 
     public Service getService(String serviceId) {
-        return services.get(serviceId);
+        return servicesMap.get(serviceId);
     }
 
     public List<AdaptationOption> getAdaptationOptions(String serviceId, int n) {
@@ -195,29 +194,29 @@ public class KnowledgeService {
     }
 
     public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        services.get(serviceId).getInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+        servicesMap.get(serviceId).getInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
     }
 
     public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        services.get(serviceId).getCurrentImplementation().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+        servicesMap.get(serviceId).getCurrentImplementation().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
     }
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
-        Service service = services.get(serviceId);
+        Service service = servicesMap.get(serviceId);
         service.getConfiguration().setLoadBalancerWeights(weights);
         configurationRepository.save(service.getConfiguration());
     }
 
     public void updateServiceAdaptationParamCollection(String serviceId, AdaptationParamCollection adaptationParamCollection) {
-        services.get(serviceId).getCurrentImplementation().setAdaptationParamCollection(adaptationParamCollection);
+        servicesMap.get(serviceId).getCurrentImplementation().setAdaptationParamCollection(adaptationParamCollection);
     }
 
     public void updateInstanceParamAdaptationCollection(String serviceId, String instanceId, AdaptationParamCollection adaptationParamCollection) {
-        services.get(serviceId).getInstance(instanceId).setAdaptationParamCollection(adaptationParamCollection);
+        servicesMap.get(serviceId).getInstance(instanceId).setAdaptationParamCollection(adaptationParamCollection);
     }
 
     public void updateService(Service service) {
-        services.put(service.getServiceId(), service);
+        servicesMap.put(service.getServiceId(), service);
     }
 
 
@@ -257,7 +256,7 @@ public class KnowledgeService {
 
 /*
     public Service createNewInstances(String serviceId, String implementationId, List<String> instanceIds) {
-        Service service = services.get(serviceId);
+        Service service = servicesMap.get(serviceId);
         int oldNumberOfInstances = service.getInstances().size();
         int newNumberOfInstances = oldNumberOfInstances + instanceIds.size();
         if(!service.getCurrentImplementationId().equals(implementationId)) {

@@ -1,6 +1,7 @@
 package it.polimi.saefa.dashboard.domain;
 
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,14 @@ public class DashboardWebService {
 
 	public Service getService(String serviceId) {
 		return knowledgeClient.getService(serviceId);
+	}
+
+	public Instance getInstance(String serviceId, String instanceId) {
+		return knowledgeClient.getInstance(serviceId, instanceId);
+	}
+
+	public Date getServiceLatestAdaptationDate(String serviceId) {
+		return knowledgeClient.getServiceLatestAdaptationDate(serviceId);
 	}
 
 	public Map<String, Service> getArchitecture() {
