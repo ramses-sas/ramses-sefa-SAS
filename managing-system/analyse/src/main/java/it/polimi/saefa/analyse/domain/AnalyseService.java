@@ -196,7 +196,6 @@ public class AnalyseService {
             // The stats of the service are not available if all the instances of the service are just born.
             // In this case none of the instances have enough metrics to perform the analysis.
             // Update the adaptation parameters of the service and of its instances ONLY LOCALLY.
-            log.warn("UPDATING SERVICE {} STATS", service.getServiceId());
             updateAdaptationParametersHistory(service, instancesStats);
             computeServiceAndInstancesCurrentValues(service);
         }
