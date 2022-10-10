@@ -35,9 +35,9 @@ public class ExecuteService {
                 log.info("Executing adaptation option: " + adaptationOption.getDescription());
                 Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
                 if (clazz.equals(AddInstance.class)) {
-                    handleAddInstance((AddInstance) (adaptationOption));
+                    //handleAddInstance((AddInstance) (adaptationOption));
                 } else if (clazz.equals(RemoveInstance.class)) {
-                    handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
+                    //handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
                 } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
                     handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
                 } else {
@@ -69,9 +69,8 @@ public class ExecuteService {
         String newInstanceId = service.createInstance(newInstancesAddress).getInstanceId();
         log.info("Adding instance to service" + addInstanceOption.getServiceId() + " with new instance " + newInstanceId);
         Map<String, Double> newWeights = addInstanceOption.getFinalWeights(newInstanceId);
-        if(newWeights!=null) {
+        if (newWeights != null)
             updateLoadbalancerWeights(service.getServiceId(), newWeights);
-        }
         knowledgeClient.updateService(service);
     }
 

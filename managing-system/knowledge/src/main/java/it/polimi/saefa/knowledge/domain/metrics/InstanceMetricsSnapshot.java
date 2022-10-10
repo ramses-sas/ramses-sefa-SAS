@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.metrics;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,25 +59,15 @@ public class InstanceMetricsSnapshot {
         return Objects.equals(httpMetrics, that.httpMetrics);
     }
 
-    /*
-    @Override
-    public int hashCode() {
-        int result = serviceId.hashCode();
-        result = 31 * result + instanceId.hashCode();
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (circuitBreakerMetrics != null ? circuitBreakerMetrics.hashCode() : 0);
-        result = 31 * result + (httpMetrics != null ? httpMetrics.hashCode() : 0);
-        return result;
-    }
-
-     */
-
-    public String getServiceImplementationId(){
+    @JsonIgnore
+    public String getServiceImplementationId() {
         return instanceId.split("@")[0];
     }
+
     public void addHttpMetrics(HttpEndpointMetrics metrics) {
         httpMetrics.put( metrics.getHttpMethod() + "@" + metrics.getEndpoint(), metrics);
     }
+
     public void applyTimestamp() {
         timestamp = new Date();
     }

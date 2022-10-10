@@ -27,7 +27,7 @@ public class Instance {
         this.serviceImplementationId = instanceId.split("@")[0];
         this.serviceId = serviceId;
         currentStatus = InstanceStatus.BOOTING;
-        latestInstanceMetricsSnapshot = new InstanceMetricsSnapshot();
+        latestInstanceMetricsSnapshot = new InstanceMetricsSnapshot(serviceId, instanceId);
         latestInstanceMetricsSnapshot.setStatus(currentStatus);
         latestInstanceMetricsSnapshot.applyTimestamp();
         adaptationParamCollection = new AdaptationParamCollection();

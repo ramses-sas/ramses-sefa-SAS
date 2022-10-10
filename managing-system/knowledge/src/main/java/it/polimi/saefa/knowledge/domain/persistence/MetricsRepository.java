@@ -22,10 +22,10 @@ public interface MetricsRepository extends CrudRepository<InstanceMetricsSnapsho
 
     Collection<InstanceMetricsSnapshot> findAllByInstanceIdAndTimestampBetween(String instanceId, Date start, Date end);
 
-    // InstanceMetrics findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
+    // InstanceMetricsSnapshot findByServiceIdAndInstanceIdAndTimestamp(String serviceId, String instanceId, Date timestamp);
 
     @Query("SELECT m FROM InstanceMetricsSnapshot m WHERE m.instanceId = :instanceId AND " +
-            "m.timestamp > IFNULL((SELECT MAX(m1.timestamp) FROM InstanceMetrics m1 WHERE m1.instanceId = :instanceId AND m.status="+SHUTDOWNSTATUS+"), it.polimi.saefa.knowledge.domain.persistence.MetricsRepository.MIN_TIMESTAMP) " +
+            "m.timestamp > IFNULL((SELECT MAX(m1.timestamp) FROM InstanceMetricsSnapshot m1 WHERE m1.instanceId = :instanceId AND m.status="+SHUTDOWNSTATUS+"), it.polimi.saefa.knowledge.domain.persistence.MetricsRepository.MIN_TIMESTAMP) " +
             "AND m.timestamp >= :after ORDER BY m.timestamp DESC")
     Page<InstanceMetricsSnapshot> findLatestOfCurrentInstanceOrderByTimestampDesc(String instanceId, Date after, Pageable pageable);
 

@@ -11,6 +11,7 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.MaxResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -112,9 +113,8 @@ public class AnalyseService {
     // their value to compute each new AdaptationParameterValue of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
     private List<AdaptationOption> analyse() {
-        Collection<Service> currentArchitecture = currentArchitectureMap.values();
         List<AdaptationOption> adaptationOptions = new ArrayList<>();
-        for (Service service : currentArchitecture) {
+        for (Service service : currentArchitectureMap.values()) {
             boolean existsInstanceWithNewMetricsWindow = false;
             List<InstanceStats> instancesStats = new ArrayList<>();
             // Analyze all the instances
@@ -124,19 +124,19 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
                     throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
 
-                if(instance.getCurrentStatus() == InstanceStatus.BOOTING )
-                    if((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
+                if (instance.getCurrentStatus() == InstanceStatus.BOOTING)
+                    if ((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
                         log.debug("Instance " + instance.getInstanceId() + " is still booting after " + maxBootTimeSeconds + " seconds. Forcing it to shutdown.");
                         adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
                         continue;
                     }
 
-                if(instance.getCurrentStatus() == InstanceStatus.FAILED){
+                if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
                     adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
 
-                List<InstanceMetricsSnapshot> metrics = new LinkedList<>(knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize));
+                List<InstanceMetricsSnapshot> metrics = knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getInstanceId(), metricsWindowSize);
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
                 if (metrics.size() != metricsWindowSize) {
@@ -185,10 +185,8 @@ public class AnalyseService {
                 } else {
                     InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
-
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
-                    (perché il CB può cambiare spontaneamente solo una volta)
-                     */
+                    (perché il CB può cambiare spontaneamente solo una volta) */
                     instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
                     existsInstanceWithNewMetricsWindow = true;
                 }
@@ -210,7 +208,7 @@ public class AnalyseService {
             // Update the adaptation parameters of the service and of its instances ONLY LOCALLY.
             log.warn("UPDATING SERVICE {} STATS", service.getServiceId());
             updateAdaptationParametersHistory(service, instancesStats);
-            //servicesStatsMap.put(service.getServiceId(), serviceStats);
+            computeServiceAndInstancesCurrentValues(service);
         }
         return adaptationOptions;
     }
@@ -223,9 +221,11 @@ public class AnalyseService {
     private List<AdaptationOption> adapt() {
         Set<String> analysedServices = new HashSet<>();
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
-        for (Service service : currentArchitectureMap.values()) {
+        /*for (Service service : currentArchitectureMap.values()) {
             computeServiceAndInstancesCurrentValues(service);
         }
+
+         */
 
         for(Service service : currentArchitectureMap.values()){
             proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
@@ -351,11 +351,16 @@ public class AnalyseService {
                 successfulRequestsCount += endpointSuccessfulRequestsCount;
             }
         }
-        if(successfulRequestsCount == 0) {
+        if (successfulRequestsCount == 0) {
             if (instance.isJustBorn())
                 return service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
-            else
+            else {
+                AdaptationParameter.Value v = instance.getCurrentValueForParam(AverageResponseTime.class);
+                if (v == null) {
+                    throw new RuntimeException("THIS SHOULD NOT HAPPEN");
+                }
                 return instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+            }
         }
         return successfulRequestsDuration/successfulRequestsCount;
     }
@@ -484,62 +489,4 @@ public class AnalyseService {
         log.info("breakpoint");
     }
 
-    /*
-
-    private void updateAverageResponseTime(Service service, List<InstanceStats> instancesStats) {
-        AverageResponseTime averageResponseTime = service.getAdaptationParameter(AverageResponseTime.class);
-        if (!instancesStats.isEmpty())
-            averageResponseTime.setValue(instancesStats.stream().mapToDouble(InstanceStats::getAverageResponseTime).average().orElseThrow());
-    }
-
-    private void updateMaxResponseTime(Service service, List<InstanceStats> instancesStats) {
-        MaxResponseTime maxResponseTime = service.getAdaptationParameter(MaxResponseTime.class);
-        if (!instancesStats.isEmpty())
-            maxResponseTime.setValue(instancesStats.stream().mapToDouble(InstanceStats::getMaxResponseTime).max().orElseThrow());
-    }
-
-    private void updateAvailability(Service service, List<InstanceStats> instancesStats) {
-        Availability availability = service.getAdaptationParameter(Availability.class);
-        if (!instancesStats.isEmpty()) {
-            availability.setValue(1 - instancesStats.stream().mapToDouble(InstanceStats::getAvailability).reduce(1.0, (accumulator, val) -> accumulator * (1 - val)));
-
-        }
-    }
-
-    // Fill the stats of the instances just born with the average of the other instances stats and create the stats for the service
-    // ^OR WITH THE ORACLE.
-    // Return null if all the instances are just born
-    private boolean fillJustBornInstances(Service service, List<InstanceStats> instancesStats) {
-        List<InstanceStats> justBornInstancesStats = new LinkedList<>();
-        double averageAvailability, averageMaxResponseTime;
-        double availabilityAccumulator = 0;
-        double maxResponseTimeAccumulator = 0;
-        double averageResponseTime = 0;
-        for (InstanceStats instanceStats : instancesStats) {
-            if (instanceStats.isNewInstance()) {
-                justBornInstancesStats.add(instanceStats);
-            } else {
-                availabilityAccumulator += instanceStats.getAvailability();
-                maxResponseTimeAccumulator += instanceStats.getMaxResponseTime();
-                averageResponseTime += instanceStats.getAverageResponseTime() * service.getLoadBalancerWeight(instanceStats.getInstance());
-            }
-        }
-
-        // All the instances are instances just born. So no adaptation is performed
-        if (justBornInstancesStats.size() == instancesStats.size())
-            return false;
-
-        averageAvailability = availabilityAccumulator / (instancesStats.size() - justBornInstancesStats.size());
-        averageMaxResponseTime = maxResponseTimeAccumulator / (instancesStats.size() - justBornInstancesStats.size());
-
-        // Fill the stats of the instances just born with the average of the other instances stats
-        for (InstanceStats instanceStats : justBornInstancesStats) {
-            instanceStats.setAvailability(averageAvailability);
-            instanceStats.setMaxResponseTime(averageMaxResponseTime);
-            instanceStats.setAverageResponseTime(averageResponseTime);
-        }
-        return true;//new ServiceStats(averageAvailability, averageResponseTime, averageMaxResponseTime, availability, maxResponseTime);
-    }
-
-     */
 }
