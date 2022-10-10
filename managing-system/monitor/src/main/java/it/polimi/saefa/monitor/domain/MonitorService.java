@@ -15,7 +15,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +37,8 @@ public class MonitorService {
     private PrometheusParser prometheusParser;
     @Value("${INTERNET_CONNECTION_CHECK_HOST}")
     private String internetConnectionCheckHost;
+    @Value("${INTERNET_CONNECTION_CHECK_PORT}")
+    private int internetConnectionCheckPort;
 
     private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
     private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
@@ -72,7 +77,7 @@ public class MonitorService {
                                 instanceMetricsSnapshot.applyTimestamp();
                                 metricsList.add(instanceMetricsSnapshot);
                                 try {
-                                    if (!InetAddress.getByName(internetConnectionCheckHost).isReachable(5000))
+                                    if (!pingHost(internetConnectionCheckHost, internetConnectionCheckPort, 5000 ))
                                         invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
                                 } catch (Exception e1) {
                                     log.error("Error checking internet connection");
@@ -126,5 +131,14 @@ public class MonitorService {
 
     public void breakpoint(){
         log.info("breakpoint");
+    }
+
+    private boolean pingHost(String host, int port, int timeout) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), timeout);
+            return true;
+        } catch (IOException e) {
+            return false; // Either timeout or unreachable or failed DNS lookup.
+        }
     }
 }
