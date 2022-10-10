@@ -24,10 +24,7 @@ public class DashboardWebService {
 	}
 
 	public Map<String, Service> getArchitecture() {
-		Map<String, Service> currentArchitecture = new HashMap<>();
-		List<Service> services = getAllServices();
-		services.forEach(s -> currentArchitecture.put(s.getServiceId(), s));
-		return currentArchitecture;
+		return knowledgeClient.getServicesMap();
 	}
 
 	public InstanceMetricsSnapshot getLatestMetrics(String serviceId, String instanceId) {

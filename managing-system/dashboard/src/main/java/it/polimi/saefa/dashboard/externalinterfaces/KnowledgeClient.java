@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
@@ -36,6 +37,9 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/services")
     List<Service> getServices();
+
+    @GetMapping("/servicesMap")
+    Map<String, Service> getServicesMap();
 
     @GetMapping("/rest/service/{serviceId}")
     Service getService(@PathVariable String serviceId);
