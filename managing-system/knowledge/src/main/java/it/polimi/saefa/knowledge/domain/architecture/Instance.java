@@ -18,26 +18,24 @@ public class Instance {
     private String instanceId; //service implementation id @ ip : port
     private String serviceId; //serviceId
     private String serviceImplementationId; //service implementation id
-    private InstanceStatus currentStatus = InstanceStatus.BOOTING;
-    private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
-    private InstanceMetricsSnapshot latestMetrics;
+    private InstanceStatus currentStatus;
+    private AdaptationParamCollection adaptationParamCollection;
+    private InstanceMetricsSnapshot latestInstanceMetricsSnapshot;
 
     public Instance(String instanceId, String serviceId) {
         this.instanceId = instanceId;
         this.serviceImplementationId = instanceId.split("@")[0];
         this.serviceId = serviceId;
-    }
-
-    public Instance(String instanceId, String serviceId, InstanceStatus currentStatus) {
-        this.instanceId = instanceId;
-        this.serviceImplementationId = instanceId.split("@")[0];
-        this.serviceId = serviceId;
-        this.currentStatus = currentStatus;
+        currentStatus = InstanceStatus.BOOTING;
+        latestInstanceMetricsSnapshot = new InstanceMetricsSnapshot();
+        latestInstanceMetricsSnapshot.setStatus(currentStatus);
+        latestInstanceMetricsSnapshot.applyTimestamp();
+        adaptationParamCollection = new AdaptationParamCollection();
     }
 
     // TODO verifica di poter togliere il JsonIgnore
     //@JsonIgnore
-    public <T extends AdaptationParamSpecification> List<Double> getLatestReplicatedAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
+    public <T extends AdaptationParamSpecification> List<Double> getLatestFilledAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
     }
 

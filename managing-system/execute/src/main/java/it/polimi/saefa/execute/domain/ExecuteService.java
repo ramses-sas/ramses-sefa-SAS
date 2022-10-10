@@ -6,6 +6,7 @@ import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,28 +69,30 @@ public class ExecuteService {
             newInstancesIds.add(service.createInstance(instance.getAddress()).getInstanceId());
         });
 
-        //todo vedere se usare il nuovo metodo redistribute weights
+        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+            int newNumberOfInstances = service.getInstances().size();
+            int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();
 
-        int newNumberOfInstances = service.getInstances().size();
-        int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();
-
-        for (Instance instance : service.getInstances()) {
-            if (newInstancesIds.contains(instance.getInstanceId())) {
-                service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
-            } else {
-                service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
+            for (Instance instance : service.getInstances()) {
+                if (newInstancesIds.contains(instance.getInstanceId())) {
+                    service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
+                } else {
+                    service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
+                }
             }
+            updateLoadbalancerWeights(service.getServiceId(), service.getLoadBalancerWeights());
         }
-        updateLoadbalancerWeights(service.getServiceId(), service.getLoadBalancerWeights());
         knowledgeClient.updateService(service);
     }
 
     private void handleRemoveInstanceOption(RemoveInstance removeInstancesOption) {
         String serviceId = removeInstancesOption.getServiceId();
         Service service = knowledgeClient.getService(serviceId);
-        Map<String, Double> newWeights = redistributeWeight(service.getLoadBalancerWeights(), removeInstancesOption.getInstanceId());
         removeInstance(serviceId, removeInstancesOption.getInstanceId());
-        updateLoadbalancerWeights(service.getServiceId(), newWeights);
+        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+            Map<String, Double> newWeights = redistributeWeight(service.getLoadBalancerWeights(), removeInstancesOption.getInstanceId());
+            updateLoadbalancerWeights(service.getServiceId(), newWeights);
+        }
     }
 
     private void handleChangeLBWeights(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {

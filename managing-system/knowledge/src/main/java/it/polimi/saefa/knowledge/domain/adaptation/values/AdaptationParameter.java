@@ -37,15 +37,35 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
     @JsonIgnore
-    public List<Double> getLatestAnalysisWindow(int size, boolean replicateLastValue) {
+    public List<Double> getLatestAnalysisWindow(int size) {
         List<Double> values = new LinkedList<>();
         int i = Math.min(valuesStack.size(), size) - 1;
         int validValues = 0;
         while (validValues < size) {
             if (i < 0) {
-                if (!replicateLastValue || valuesStack.size() == 0)
+                return null;
+            } else {
+                Value v = valuesStack.get(i);
+                if (!v.invalidatesThisAndPreviousValues) {
+                    values.add(v.getValue());
+                    validValues++;
+                }
+                i--;
+            }
+        }
+        return values;
+    }
+
+    @JsonIgnore
+    public List<Double> getLatestAnalysisWindow(int size, double currentValue) {
+        List<Double> values = new LinkedList<>();
+        int i = Math.min(valuesStack.size(), size) - 1;
+        int validValues = 0;
+        while (validValues < size) {
+            if (i < 0) {
+                if (valuesStack.size() == 0)
                     return null;
-                values.add(valuesStack.get(0).getValue());
+                values.add(currentValue);
                 validValues++;
             } else {
                 Value v = valuesStack.get(i);

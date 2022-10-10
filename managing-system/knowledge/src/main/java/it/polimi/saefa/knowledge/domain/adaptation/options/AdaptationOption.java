@@ -2,12 +2,15 @@ package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -28,8 +31,10 @@ public abstract class AdaptationOption {
 
     private String serviceId;
     private String serviceImplementationId;
-
     private String comment;
+    @ElementCollection
+    private Set<Class<? extends AdaptationParamSpecification>> adaptationParametersGoals;
+
     private boolean forced = false;
 
     // Timestamp of acceptance (it is NOT NULL ONLY IF the adaptation option has been accepted by the Plan)
@@ -46,6 +51,10 @@ public abstract class AdaptationOption {
         this.serviceId = serviceId;
         this.serviceImplementationId = serviceImplementationId;
         this.comment = comment;
+    }
+
+    public void addGoal(Class<? extends AdaptationParamSpecification> goal) {
+        this.adaptationParametersGoals.add(goal);
     }
 
     /*
