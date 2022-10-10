@@ -4,7 +4,7 @@ import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
 import it.polimi.saefa.analyse.externalInterfaces.PlanClient;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstance;
 import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWeights;
 import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
@@ -153,7 +153,6 @@ public class AnalyseService {
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
 
-                //InstanceMetrics latestMetrics = metrics.get(0);
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
                     adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     continue;
@@ -187,23 +186,16 @@ public class AnalyseService {
                     InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
 
-                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
-
-                    existsInstanceWithNewMetricsWindow = true;
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
                     (perché il CB può cambiare spontaneamente solo una volta)
-                    Di conseguenza le computeInstanceXXX non possono restituire null
-                    InstanceStats instanceStats = new InstanceStats(instance,
-                            computeInstanceAvgResponseTime(endpointAvgRespTime),
-                            computeInstanceMaxResponseTime(endpointMaxRespTime),
-                            computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics));
-                    instancesStats.add(instanceStats);
                      */
+                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
+                    existsInstanceWithNewMetricsWindow = true;
                 }
             }
 
             if (instancesStats.isEmpty()) {
-                adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
+                adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
                 log.warn("Service {} has no active instances", service.getServiceId());
                 continue;
             }
@@ -307,7 +299,22 @@ public class AnalyseService {
 
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, List<Double> serviceAvailabilityHistory) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
+        Availability availabilitySpecs = (Availability) service.getAdaptationParamSpecifications().get(Availability.class);
+        if (!availabilitySpecs.isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)){
+            List<Instance> instances = service.getInstances();
+            List<Instance> lessAvailableInstances = instances.stream().filter(
+                    i -> !availabilitySpecs.isSatisfied(
+                            i.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow()
+                    )
+            ).toList();
 
+            //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0))); todo
+
+            // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
+            if (lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
+                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications: change the LB weights"));
+            adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "The service avg availability specification is not satisfied: add instances"));
+        }
         return adaptationOptions;
     }
 
@@ -326,8 +333,8 @@ public class AnalyseService {
 
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
-                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), "At least one instance satisfies the avg Response time specifications: change the LB weights"));
-            adaptationOptions.add(new AddInstances(service.getServiceId(), service.getCurrentImplementationId(), "The service avg response time specification is not satisfied: add instances"));
+                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications: change the LB weights"));
+            adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "The service avg response time specification is not satisfied: add instances"));
         }
         return adaptationOptions;
     }

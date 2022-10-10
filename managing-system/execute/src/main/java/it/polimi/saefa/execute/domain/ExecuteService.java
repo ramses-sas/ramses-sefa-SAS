@@ -34,8 +34,8 @@ public class ExecuteService {
             chosenAdaptationOptions.forEach(adaptationOption -> {
                 log.info("Executing adaptation option: " + adaptationOption.getDescription());
                 Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
-                if (clazz.equals(AddInstances.class)) {
-                    handleAddInstances((AddInstances) (adaptationOption));
+                if (clazz.equals(AddInstance.class)) {
+                    handleAddInstance((AddInstance) (adaptationOption));
                 } else if (clazz.equals(RemoveInstance.class)) {
                     handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
                 } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
@@ -53,45 +53,33 @@ public class ExecuteService {
         }
     }
 
-    private void handleAddInstances(AddInstances addInstancesOption) {
-        String serviceId = addInstancesOption.getServiceId();
+    private void handleAddInstance(AddInstance addInstanceOption) {
+        String serviceId = addInstanceOption.getServiceId();
         Service service = knowledgeClient.getServicesMap().get(serviceId);
-        if (!service.getCurrentImplementationId().equals(addInstancesOption.getServiceImplementationId()))
-            throw new RuntimeException("Service implementation id mismatch. Expected: " + service.getCurrentImplementationId() + " Actual: " + addInstancesOption.getServiceImplementationId());
-        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(addInstancesOption.getServiceImplementationId(), addInstancesOption.getNumberOfInstancesToAdd()));
+        if (!service.getCurrentImplementationId().equals(addInstanceOption.getServiceImplementationId()))
+            throw new RuntimeException("Service implementation id mismatch. Expected: " + service.getCurrentImplementationId() + " Actual: " + addInstanceOption.getServiceImplementationId());
+        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(addInstanceOption.getServiceImplementationId(), 1));
 
         if (instancesResponse.getDockerizedInstances().isEmpty())
             throw new RuntimeException("No instances were added");
+        if (instancesResponse.getDockerizedInstances().size() > 1)
+            throw new RuntimeException("More than one instance was added");
 
-        Set<String> newInstancesIds = new HashSet<>();
-        instancesResponse.getDockerizedInstances().forEach(instance -> {
-            log.info("Adding instance to service" + addInstancesOption.getServiceId() + " with new instance " + instance.getAddress());
-            newInstancesIds.add(service.createInstance(instance.getAddress()).getInstanceId());
-        });
-
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
-            int newNumberOfInstances = service.getInstances().size();
-            int oldNumberOfInstances = newNumberOfInstances - instancesResponse.getDockerizedInstances().size();
-
-            for (Instance instance : service.getInstances()) {
-                if (newInstancesIds.contains(instance.getInstanceId())) {
-                    service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
-                } else {
-                    service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
-                }
-            }
-            updateLoadbalancerWeights(service.getServiceId(), service.getLoadBalancerWeights());
+        String newInstancesAddress = instancesResponse.getDockerizedInstances().get(0).getAddress();
+        String newInstanceId = service.createInstance(newInstancesAddress).getInstanceId();
+        log.info("Adding instance to service" + addInstanceOption.getServiceId() + " with new instance " + newInstanceId);
+        Map<String, Double> newWeights = addInstanceOption.getFinalWeights(newInstanceId);
+        if(newWeights!=null) {
+            updateLoadbalancerWeights(service.getServiceId(), newWeights);
         }
         knowledgeClient.updateService(service);
     }
 
     private void handleRemoveInstanceOption(RemoveInstance removeInstancesOption) {
         String serviceId = removeInstancesOption.getServiceId();
-        Service service = knowledgeClient.getService(serviceId);
         removeInstance(serviceId, removeInstancesOption.getInstanceId());
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
-            Map<String, Double> newWeights = redistributeWeight(service.getLoadBalancerWeights(), removeInstancesOption.getInstanceId());
-            updateLoadbalancerWeights(service.getServiceId(), newWeights);
+        if(removeInstancesOption.getNewWeights()!=null) {
+            updateLoadbalancerWeights(serviceId, removeInstancesOption.getNewWeights());
         }
     }
 

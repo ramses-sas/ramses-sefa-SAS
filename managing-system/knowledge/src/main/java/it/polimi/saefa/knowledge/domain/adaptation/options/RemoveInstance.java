@@ -8,6 +8,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -16,6 +17,10 @@ import java.util.List;
 @DiscriminatorValue("REMOVE_INSTANCES")
 public class RemoveInstance extends AdaptationOption {
     private String instanceId;
+    @ElementCollection
+    // <instanceId, newWeight>
+    private Map<String, Double> newWeights;
+
 
     public RemoveInstance(String serviceId, String serviceImplementationId, String instanceId, String comment) {
         super(serviceId, serviceImplementationId, comment);
@@ -30,7 +35,7 @@ public class RemoveInstance extends AdaptationOption {
 
     @Override
     public String getDescription() {
-        return isForced() ? "FORCED " : "" + "Remove instances " + instanceId + " of service " + super.getServiceId() + ". " + getComment();
+        return (isForced() ? "FORCED - " : "") + "Remove instances " + instanceId + " of service " + super.getServiceId() + ". " + getComment();
     }
 }
 

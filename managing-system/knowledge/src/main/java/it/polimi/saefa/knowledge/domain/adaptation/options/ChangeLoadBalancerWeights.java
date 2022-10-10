@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,14 +22,14 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
     private Map<String, Double> newWeights;
 
 
-    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, String comment) {
+    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
-        //this.serviceAverageAvailability = serviceAverageAvailability;
+        super.setAdaptationParametersGoal(goal);
     }
 
     @Override
     public String getDescription() {
-        String base = "Change load balancer weights of service " + super.getServiceId();
+        String base = "Goal: " + getAdaptationParametersGoal() + " Change load balancer weights of service " + super.getServiceId();
         if (newWeights != null)
             base += "\nNew weights are: \n" + newWeights;
         return base + ". " + getComment();

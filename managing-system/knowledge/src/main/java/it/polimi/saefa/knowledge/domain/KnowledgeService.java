@@ -128,12 +128,14 @@ public class KnowledgeService {
     }
 
     public void notifyShutdownInstance(String serviceId, String instanceId) {
-        Instance instance = services.get(serviceId).getInstance(instanceId);
-        instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+        Service service = services.get(serviceId);
+        Instance instance = service.getInstance(instanceId);
         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
         metrics.setStatus(InstanceStatus.SHUTDOWN);
         metrics.applyTimestamp();
         metricsRepository.save(metrics);
+        instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
+        instance.setLatestInstanceMetricsSnapshot(metrics);
     }
 
     public InstanceMetricsSnapshot getMetrics(long id) {
