@@ -50,6 +50,12 @@ public class KnowledgeInit implements InitializingBean {
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
             service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
+            servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
+                serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
+                        service.getPossibleImplementations()
+                                .get(serviceImplementationBenchmarks.getServiceImplementationId())
+                                .setBootBenchmark(adaptationClass, value));
+            });
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
@@ -57,12 +63,6 @@ public class KnowledgeInit implements InitializingBean {
             });
             service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
             knowledgeService.addService(service);
-            servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
-                serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
-                        service.getPossibleImplementations()
-                                .get(serviceImplementationBenchmarks.getServiceImplementationId())
-                                .setBootBenchmark(adaptationClass, value));
-            });
 
 
         });

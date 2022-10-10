@@ -50,8 +50,8 @@ public class AdaptationParamCollection {
 
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int windowSize, boolean fillWithCurrentValue) {
         return fillWithCurrentValue ?
-                adaptationParamValueHistories.get(adaptationParamClass).getLatestAnalysisWindow(windowSize, currentAdaptationParamsValues.get(adaptationParamClass).getValue()) :
-                adaptationParamValueHistories.get(adaptationParamClass).getLatestAnalysisWindow(windowSize);
+                adaptationParamValueHistories.get(adaptationParamClass).getLatestFilledAnalysisWindow(windowSize, currentAdaptationParamsValues.get(adaptationParamClass).getValue()) :
+                adaptationParamValueHistories.get(adaptationParamClass).getLatestFilledAnalysisWindow(windowSize);
     }
 
     public <T extends AdaptationParamSpecification> void createHistory(T adaptationParam) {
