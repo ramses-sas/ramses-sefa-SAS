@@ -263,8 +263,8 @@ public class AnalyseService {
             return adaptationOptions;
         analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
         List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
-        for (Service s : serviceDependencies) {
-            adaptationOptions.addAll(computeAdaptationOptions(s, analysedServices));
+        for (Service serviceDependency : serviceDependencies) {
+            adaptationOptions.addAll(computeAdaptationOptions(serviceDependency, analysedServices));
         }
 
         // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
