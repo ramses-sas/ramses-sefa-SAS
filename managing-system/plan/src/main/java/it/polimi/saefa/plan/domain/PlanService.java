@@ -280,7 +280,11 @@ public class PlanService {
                 if (emptyWeights)
                     previousWeights.put(instance.getInstanceId(), defaultWeight);
                 double instanceAvgRespTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                if (instanceAvgRespTime == 0)
+                    instanceAvgRespTime = Double.MIN_VALUE;
                 double instanceAvailability = instance.getCurrentValueForParam(Availability.class).getValue();
+                if(instanceAvailability == 0)
+                    instanceAvailability = Double.MIN_VALUE;
                 double k_i = instanceAvailability / instanceAvgRespTime;
                 double z_i = k_i / k_s;
 
