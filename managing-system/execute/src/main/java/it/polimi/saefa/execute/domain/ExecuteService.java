@@ -4,9 +4,7 @@ import it.polimi.saefa.configparser.CustomPropertiesWriter;
 import it.polimi.saefa.execute.externalInterfaces.*;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
-import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,18 +29,20 @@ public class ExecuteService {
             log.info("Starting Execute step");
             knowledgeClient.notifyModuleStart(Modules.EXECUTE);
             Map<String, List<AdaptationOption>> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
-            chosenAdaptationOptions.values().forEach(adaptationOption -> {
-                log.info("Executing adaptation option: " + adaptationOption.getDescription());
-                Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
-                if (clazz.equals(AddInstance.class)) {
-                    //handleAddInstance((AddInstance) (adaptationOption));
-                } else if (clazz.equals(RemoveInstance.class)) {
-                    //handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
-                } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
-                    //handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
-                } else {
-                    log.error("Unknown adaptation option type: " + adaptationOption.getClass());
-                }
+            chosenAdaptationOptions.values().forEach(adaptationOptions -> {
+                adaptationOptions.forEach(adaptationOption -> {
+                    log.info("Executing adaptation option: " + adaptationOption.getDescription());
+                    Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
+                    if (clazz.equals(AddInstance.class)) {
+                        //handleAddInstance((AddInstance) (adaptationOption));
+                    } else if (clazz.equals(RemoveInstance.class)) {
+                        //handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
+                    } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
+                        //handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
+                    } else {
+                        log.error("Unknown adaptation option type: " + adaptationOption.getClass());
+                    }
+                });
             });
             log.info("Ending execute. Notifying Monitor module to continue the loop.");
             monitorClient.notifyFinishedIteration();

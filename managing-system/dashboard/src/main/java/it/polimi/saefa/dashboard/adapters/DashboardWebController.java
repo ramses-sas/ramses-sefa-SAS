@@ -191,7 +191,7 @@ public class DashboardWebController {
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+(i+1) : "a"+(i+1), v.getValue());
+			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "B"+(i+1) : "A"+(i+1), v.getValue());
 			i++;
 		}
 		graphs[0] = availabilityGraph;
@@ -202,7 +202,7 @@ public class DashboardWebController {
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+(i+1) : "a"+(i+1), v.getValue()*1000);
+			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "B"+(i+1) : "A"+(i+1), v.getValue()*1000);
 		}
 		graphs[1] = artGraph;
 
@@ -220,7 +220,7 @@ public class DashboardWebController {
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			availabilityGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+(i+1) : "a"+(i+1), v.getValue());
+			availabilityGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "B"+(i+1) : "A"+(i+1), v.getValue());
 			i++;
 		}
 		graphs[0] = availabilityGraph;
@@ -231,7 +231,7 @@ public class DashboardWebController {
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			artGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+(i+1) : "a"+(i+1), v.getValue()*1000);
+			artGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "B"+(i+1) : "A"+(i+1), v.getValue()*1000);
 		}
 		graphs[1] = artGraph;
 
