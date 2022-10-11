@@ -183,24 +183,30 @@ public class DashboardWebController {
 
 	private GraphData[] computeServiceGraphs(Service service) {
 		GraphData[] graphs = new GraphData[2];
+		List<AdaptationParameter.Value> values;
+		int valuesSize, oldestValueIndex;
+
 		GraphData availabilityGraph = new GraphData("Instant", "Availability");
-		int i = 0;
-		for (AdaptationParameter.Value v : service.getValuesHistoryForParam(Availability.class)) {
-			if (i == maxHistorySize) // get only latest X values
-				break;
-			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i : "a"+i, v.getValue());
+		values = service.getValuesHistoryForParam(Availability.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i < maxHistorySize; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i+1 : "a"+i+1, v.getValue());
 			i++;
 		}
 		graphs[0] = availabilityGraph;
-		i = 0;
+
 		GraphData artGraph = new GraphData("Instant", "Average Response Time [ms]");
-		for (AdaptationParameter.Value v : service.getValuesHistoryForParam(AverageResponseTime.class)) {
-			if (i == maxHistorySize) // get only latest X values
-				break;
-			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i : "a"+i, v.getValue()*1000);
-			i++;
+		values = service.getValuesHistoryForParam(AverageResponseTime.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i < maxHistorySize; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i+1 : "a"+i+1, v.getValue()*1000);
 		}
 		graphs[1] = artGraph;
+
 		return graphs;
 	}
 
