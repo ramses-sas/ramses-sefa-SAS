@@ -234,17 +234,22 @@ public class AnalyseService {
             // Update the current values for the adaptation parameters of the service and of its instances. Then invalidates the values in the values history
             service.changeCurrentValueForParam(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
             service.changeCurrentValueForParam(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.invalidateLatestAndPreviousValuesForParam(Availability.class);
-            service.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
             service.getInstances().forEach(instance -> {
                 instance.changeCurrentValueForParam(Availability.class, instance.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
                 instance.changeCurrentValueForParam(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                instance.invalidateLatestAndPreviousValuesForParam(Availability.class);
-                instance.invalidateLatestAndPreviousValuesForParam(AverageResponseTime.class);
+
             });
         }
     }
 
+    private void invalidateAdaptationParametersHistory(Service service) {
+        service.getInstances().forEach(instance -> {
+            instance.invalidateAdaptationParametersHistory(Availability.class);
+            instance.invalidateAdaptationParametersHistory(AverageResponseTime.class);
+        });
+        service.invalidateAdaptationParametersHistory(Availability.class);
+        service.invalidateAdaptationParametersHistory(AverageResponseTime.class);
+    }
     /**
      * Computes the adaptation options for a service and the current value of the adaptation parameters of the service and its instances.
      * Recursive.
@@ -277,6 +282,7 @@ public class AnalyseService {
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+            invalidateAdaptationParametersHistory(service);
         }
         return adaptationOptions;
     }

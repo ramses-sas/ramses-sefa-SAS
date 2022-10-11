@@ -66,7 +66,7 @@ public class Service {
         getCurrentImplementation().getAdaptationParamCollection().changeCurrentValueForParam(adaptationParamClass, newValue);
     }
 
-    public <T extends AdaptationParamSpecification> void invalidateLatestAndPreviousValuesForParam(Class<T> adaptationParamClass) {
+    public <T extends AdaptationParamSpecification> void invalidateAdaptationParametersHistory(Class<T> adaptationParamClass) {
         getCurrentImplementation().getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
     }
 

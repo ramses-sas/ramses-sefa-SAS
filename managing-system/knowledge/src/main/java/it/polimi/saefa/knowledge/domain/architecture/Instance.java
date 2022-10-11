@@ -1,6 +1,5 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
@@ -49,7 +48,7 @@ public class Instance {
         getAdaptationParamCollection().changeCurrentValueForParam(adaptationParamClass, newValue);
     }
 
-    public <T extends AdaptationParamSpecification> void invalidateLatestAndPreviousValuesForParam(Class<T> adaptationParamClass) {
+    public <T extends AdaptationParamSpecification> void invalidateAdaptationParametersHistory(Class<T> adaptationParamClass) {
         getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
     }
 
