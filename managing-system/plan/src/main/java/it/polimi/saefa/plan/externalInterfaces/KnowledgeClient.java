@@ -31,7 +31,7 @@ public interface KnowledgeClient {
     Map<String, List<AdaptationOption>> proposedAdaptationOptions();
 
     @PostMapping("/rest/chooseAdaptationOptions")
-    ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+    ResponseEntity<String> chooseAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions);
 
     @GetMapping("/rest/proposedAdaptationOptions")
     Map<String, List<AdaptationOption>> getProposedAdaptationOptions();

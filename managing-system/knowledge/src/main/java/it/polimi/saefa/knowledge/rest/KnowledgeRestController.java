@@ -23,6 +23,11 @@ public class KnowledgeRestController {
     private KnowledgeService knowledgeService;
 
 
+    @GetMapping("/activeModule")
+    public Modules getActiveModule() {
+        return knowledgeService.getActiveModule();
+    }
+
     @PostMapping("/notifyModuleStart")
     public ResponseEntity<String> notifyModuleStart(@RequestBody Modules module) {
         knowledgeService.setActiveModule(module);
@@ -120,12 +125,12 @@ public class KnowledgeRestController {
 
     // Plan-related functions
     @GetMapping("/chosenAdaptationOptions")
-    public List<AdaptationOption> getChosenAdaptationOptions() {
-        return knowledgeService.getChosenAdaptationOptions().values().stream().toList();
+    public Map<String, List<AdaptationOption>> getChosenAdaptationOptions() {
+        return knowledgeService.getChosenAdaptationOptions();
     }
 
     @PostMapping("/chooseAdaptationOptions")
-    public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
+    public ResponseEntity<String> chooseAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions) {
         knowledgeService.chooseAdaptationOptions(adaptationOptions);
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
     }

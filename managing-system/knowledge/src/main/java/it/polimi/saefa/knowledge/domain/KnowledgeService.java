@@ -43,9 +43,9 @@ public class KnowledgeService {
     @Getter @Setter
     private Map<String, List<AdaptationOption>> proposedAdaptationOptions = new HashMap<>();
 
-    // <serviceId, AdaptationOption chosen by the Plan>
+    // <serviceId, AdaptationOptions chosen by the Plan (in this implementation, the Plan chooses ONE option per service)>
     @Getter @Setter
-    private Map<String, AdaptationOption> chosenAdaptationOptions = new HashMap<>();
+    private Map<String, List<AdaptationOption>> chosenAdaptationOptions = new HashMap<>();
 
     @Getter
     private Modules activeModule = null;
@@ -184,12 +184,14 @@ public class KnowledgeService {
     }
 
     // Called by the Plan module to choose the adaptation options
-    public void chooseAdaptationOptions(List<AdaptationOption> options) {
+    public void chooseAdaptationOptions(Map<String, List<AdaptationOption>> chosenAdaptationOptions) {
         // add the options both to the repository and to the map
-        options.forEach(option -> {
-            option.applyTimestamp();
-            adaptationChoicesRepository.save(option);
-            chosenAdaptationOptions.put(option.getServiceId(), option);
+        this.chosenAdaptationOptions = chosenAdaptationOptions;
+        this.chosenAdaptationOptions.values().forEach(serviceOptions -> {
+            serviceOptions.forEach(option -> {
+                option.applyTimestamp();
+                adaptationChoicesRepository.save(option);
+            });
         });
     }
 

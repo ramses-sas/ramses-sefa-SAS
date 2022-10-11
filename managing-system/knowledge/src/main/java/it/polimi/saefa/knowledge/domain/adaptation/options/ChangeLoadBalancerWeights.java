@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
         super.setAdaptationParametersGoal(goal);
     }
 
+    @JsonIgnore
     @Override
     public String getDescription() {
         String base = "Goal: " + getAdaptationParametersGoal() + " Change load balancer weights of service " + super.getServiceId();

@@ -45,11 +45,12 @@ public class PlanService {
             log.info("Starting plan");
             knowledgeClient.notifyModuleStart(Modules.PLAN);
             Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
-            List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
             Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
+            Map<String, List<AdaptationOption>> chosenAdaptationOptions = new HashMap<>();
 
             proposedAdaptationOptions.forEach((serviceId, options) -> {
                 log.debug("\n\nAnalysing service: {}", serviceId);
+                List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
                 // Initialized with all the forced options
                 List<AdaptationOption> optionsToCompare = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
                 if (optionsToCompare.isEmpty()) {
@@ -58,14 +59,12 @@ public class PlanService {
                         if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
                             ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
                             changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
-                            if(changeLoadBalancerWeights.getNewWeights() != null) { //If it's null it means that the problem has no solution
+                            if (changeLoadBalancerWeights.getNewWeights() != null) //If it's null it means that the problem has no solution
                                 optionsToCompare.add(changeLoadBalancerWeights);
-                            }
                         }
-                        if(option.getClass().equals(AddInstance.class)){
+                        if (option.getClass().equals(AddInstance.class))
                             optionsToCompare.add(handleAddInstance((AddInstance) option, servicesMap.get(option.getServiceId())));
-                        }
-                        if(option.getClass().equals(RemoveInstance.class))
+                        if (option.getClass().equals(RemoveInstance.class))
                             optionsToCompare.add(handleRemoveInstance((RemoveInstance) option, servicesMap.get(option.getServiceId())));
                     }
                     AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
@@ -76,8 +75,9 @@ public class PlanService {
                     log.info("Forced adaptation options: {}", optionsToCompare);
                     chosenAdaptationOptionList.addAll(optionsToCompare);
                 }
+                chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
             });
-            knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
+            knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
             log.info("Ending plan. Notifying the Execute module to start the next iteration.");
             executeClient.start();
         } catch (Exception e) {

@@ -27,7 +27,7 @@ public interface KnowledgeClient {
     Service getService(@PathVariable String serviceId);
 
     @GetMapping("/rest/chosenAdaptationOptions")
-    List<AdaptationOption> getChosenAdaptationOptions();
+    Map<String, List<AdaptationOption>> getChosenAdaptationOptions();
 
     @PostMapping("/rest/service/{serviceId}/setLoadBalancerWeights")
     ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights);

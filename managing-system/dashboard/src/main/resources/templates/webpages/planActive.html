@@ -1,0 +1,37 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(2)"></th:block>
+
+
+
+
+<div class="content">
+    <h6>Active Module: PLAN</h6>
+    <br>
+    <p>Plan module is choosing the adaptation options to apply from the ones proposed by the Analyse module</p>
+    <br>
+    <table class="configTable">
+        <thead>
+        <tr>
+            <th>Service</th>
+            <th>Proposed Adaptation Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${proposedAdaptationOptions.entrySet()}">
+            <td th:text="${entry.getKey()}">Service Id goes here</td>
+            <td th:text="${entry.getValue()}">Proposed Adaptation Options goes here</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+</body>
+</html>

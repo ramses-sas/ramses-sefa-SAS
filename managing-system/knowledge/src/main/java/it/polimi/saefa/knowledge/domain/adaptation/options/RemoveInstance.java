@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +34,7 @@ public class RemoveInstance extends AdaptationOption {
         super.setForced(isForced);
     }
 
+    @JsonIgnore
     @Override
     public String getDescription() {
         return (isForced() ? "FORCED - " : "") + "Remove instances " + instanceId + " of service " + super.getServiceId() + ". " + getComment();

@@ -42,6 +42,7 @@ public class AddInstance extends AdaptationOption {
         return finalWeights;
     }
 
+    @JsonIgnore
     @Override
     public String getDescription() {
         return (isForced() ? "FORCED -" : ("Goal: " + getAdaptationParametersGoal())) + " Add a new instances of service " + super.getServiceId() + ". " + getComment();

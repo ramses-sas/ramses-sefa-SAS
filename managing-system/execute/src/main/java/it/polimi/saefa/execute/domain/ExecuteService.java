@@ -30,8 +30,8 @@ public class ExecuteService {
         try {
             log.info("Starting Execute step");
             knowledgeClient.notifyModuleStart(Modules.EXECUTE);
-            List<AdaptationOption> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
-            chosenAdaptationOptions.forEach(adaptationOption -> {
+            Map<String, List<AdaptationOption>> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
+            chosenAdaptationOptions.values().forEach(adaptationOption -> {
                 log.info("Executing adaptation option: " + adaptationOption.getDescription());
                 Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
                 if (clazz.equals(AddInstance.class)) {
@@ -39,7 +39,7 @@ public class ExecuteService {
                 } else if (clazz.equals(RemoveInstance.class)) {
                     //handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
                 } else if (clazz.equals(ChangeLoadBalancerWeights.class)) {
-                    handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
+                    //handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
                 } else {
                     log.error("Unknown adaptation option type: " + adaptationOption.getClass());
                 }

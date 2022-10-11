@@ -43,7 +43,7 @@
                 </table>
             </div>
         </div>
-        <div class="column">
+        <div th:if="${!circuitBreakersTable.isEmpty()}" class="column">
             <div class="card">
                 <h5 class="cardElementTitle">Circuit Breakers Metrics</h5>
                 <table class="configTable">

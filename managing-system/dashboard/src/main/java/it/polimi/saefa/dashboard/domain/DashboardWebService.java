@@ -1,6 +1,8 @@
 package it.polimi.saefa.dashboard.domain;
 
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
+import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
@@ -41,6 +43,18 @@ public class DashboardWebService {
 		if (l == null || l.isEmpty())
 			return null;
 		return l.get(0);
+	}
+
+	public Modules getActiveModule() {
+		return knowledgeClient.getActiveModule();
+	}
+
+	public Map<String, List<AdaptationOption>> getProposedAdaptationOptions() {
+		return knowledgeClient.getProposedAdaptationOptions();
+	}
+
+	public Map<String, List<AdaptationOption>> getChosenAdaptationOptions() {
+		return knowledgeClient.getChosenAdaptationOptions();
 	}
 
 	public void breakpoint(){

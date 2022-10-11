@@ -1,6 +1,8 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
+import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
@@ -155,28 +157,25 @@ public class DashboardWebController {
 
 
 
-	/* Plot adaptation parameters. */
+	/* Display current status */
 	@GetMapping("/adaptation")
 	public String loopStatus(Model model) {
-		GraphData[] graphs = new GraphData[3];
-		GraphData data = new GraphData("Instant", "Availability");
-		for (int i = 0; i < 20; i++) {
-			data.addPoint("" + i, i * Math.random());
+		Modules activeModule = dashboardWebService.getActiveModule();
+		switch (activeModule) {
+			case MONITOR:
+				return "webpages/monitorActive";
+			case ANALYSE:
+				return "webpages/analyseActive";
+			case PLAN:
+				Map<String, List<AdaptationOption>> proposedAdaptationOptions = dashboardWebService.getProposedAdaptationOptions();
+				model.addAttribute("proposedAdaptationOptions", proposedAdaptationOptions);
+				return "webpages/planActive";
+			case EXECUTE:
+				Map<String, List<AdaptationOption>> chosenAdaptationOptions = dashboardWebService.getChosenAdaptationOptions();
+				model.addAttribute("chosenAdaptationOptions", chosenAdaptationOptions);
+				return "webpages/executeActive";
 		}
-		graphs[0] = data;
-		GraphData data1 = new GraphData("Instant", "Average Response Time");
-		for (int i = 0; i < 20; i++) {
-			data1.addPoint("" + i, i * Math.random());
-		}
-		graphs[1] = data1;
-		GraphData data2 = new GraphData("Instant", "Max Response Time");
-		for (int i = 0; i < 20; i++) {
-			data2.addPoint("" + i, i * Math.random());
-		}
-		graphs[2] = data2;
-		log.debug("Graphs: " + Arrays.toString(graphs));
-		model.addAttribute("graphs", graphs);
-		return "webpages/adaptation";
+		return "index";
 	}
 
 
@@ -190,9 +189,9 @@ public class DashboardWebController {
 		values = service.getValuesHistoryForParam(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
-		for (int i = 0; i < maxHistorySize; i++) { // get only latest X values
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i+1 : "a"+i+1, v.getValue());
+			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+(i+1) : "a"+(i+1), v.getValue());
 			i++;
 		}
 		graphs[0] = availabilityGraph;
@@ -201,9 +200,9 @@ public class DashboardWebController {
 		values = service.getValuesHistoryForParam(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
-		for (int i = 0; i < maxHistorySize; i++) { // get only latest X values
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+i+1 : "a"+i+1, v.getValue()*1000);
+			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "b"+(i+1) : "a"+(i+1), v.getValue()*1000);
 		}
 		graphs[1] = artGraph;
 
@@ -212,24 +211,30 @@ public class DashboardWebController {
 
 	private GraphData[] computeInstanceGraphs(Instance instance, Date serviceLatestAdaptationDate) {
 		GraphData[] graphs = new GraphData[2];
+		List<AdaptationParameter.Value> values;
+		int valuesSize, oldestValueIndex;
+
 		GraphData availabilityGraph = new GraphData("Instant", "Availability");
-		int i = 0;
-		for (AdaptationParameter.Value v : instance.getAdaptationParamCollection().getValuesHistoryForParam(Availability.class)) {
-			if (i == maxHistorySize) // get only latest X values
-				break;
-			availabilityGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+i : "a"+i, v.getValue());
+		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(Availability.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			availabilityGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+(i+1) : "a"+(i+1), v.getValue());
 			i++;
 		}
 		graphs[0] = availabilityGraph;
-		i = 0;
+
 		GraphData artGraph = new GraphData("Instant", "Average Response Time [ms]");
-		for (AdaptationParameter.Value v : instance.getAdaptationParamCollection().getValuesHistoryForParam(AverageResponseTime.class)) {
-			if (i == maxHistorySize) // get only latest X values
-				break;
-			artGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+i : "a"+i, v.getValue()*1000);
-			i++;
+		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(AverageResponseTime.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			artGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "b"+(i+1) : "a"+(i+1), v.getValue()*1000);
 		}
 		graphs[1] = artGraph;
+
 		return graphs;
 	}
 

@@ -1,9 +1,12 @@
 package it.polimi.saefa.dashboard.externalinterfaces;
 
+import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -31,5 +34,16 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/service/{serviceId}/latestAdaptationDate")
     Date getServiceLatestAdaptationDate(@PathVariable String serviceId);
+
+
+    // Adaptation status functions
+    @GetMapping("/rest/activeModule")
+    Modules getActiveModule();
+
+    @GetMapping("/rest/proposedAdaptationOptions")
+    Map<String, List<AdaptationOption>> getProposedAdaptationOptions();
+
+    @GetMapping("/rest/chosenAdaptationOptions")
+    Map<String, List<AdaptationOption>> getChosenAdaptationOptions();
 
 }
