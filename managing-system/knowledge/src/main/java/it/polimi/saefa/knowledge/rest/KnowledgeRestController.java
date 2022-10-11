@@ -3,6 +3,7 @@ package it.polimi.saefa.knowledge.rest;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.knowledge.domain.KnowledgeService;
@@ -18,7 +19,6 @@ import java.util.*;
 @RestController
 @RequestMapping(path="/rest")
 public class KnowledgeRestController {
-
     @Autowired
     private KnowledgeService knowledgeService;
 
@@ -29,52 +29,7 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Module start correctly notified");
     }
 
-    @PostMapping("/metrics/addMetricsBuffer")
-    public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer) {
-        knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
-    }
 
-    @GetMapping("/metrics/getLatestNOfCurrentInstance")
-    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(
-            @RequestParam String instanceId,
-            @RequestParam int n
-    ) {
-        return knowledgeService.getLatestNMetricsOfCurrentInstance(instanceId, n);
-    }
-
-    @GetMapping("/metrics/get")
-    public List<InstanceMetricsSnapshot> getMetrics(
-            //@RequestParam(required = false) String serviceId,
-            @RequestParam(required = false) String instanceId,
-            //@RequestParam(required = false, name = "at") String timestamp,
-            @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
-            @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
-    ) {
-        // before + after
-        if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
-            return knowledgeService.getAllMetricsBetween(startDate, endDate);
-
-        // instanceId
-        if (/*serviceId != null && */instanceId != null) {
-            // + startDate + endDate
-            if (startDate != null && endDate != null)
-                return knowledgeService.getAllInstanceMetricsBetween(instanceId, startDate, endDate);
-
-            // all
-            if (startDate == null && endDate == null)
-                return knowledgeService.getAllInstanceMetrics(instanceId);
-
-            /* + timestamp
-            if (timestamp != null && startDate == null && endDate == null)
-                try {
-                    return List.of(persistenceService.getMetrics(serviceId, instanceId, timestamp));
-                } catch (NullPointerException e) { return List.of(); }
-             */
-        }
-        throw new IllegalArgumentException("Invalid query arguments");
-        //TODO se da nessuna altra parte lanciamo eccezioni (e quindi non serve un handler),
-        // modificare il tipo di ritorno della funzione in "requestbody"
-    }
 
     @GetMapping("/services")
     public List<Service> getServices() {
@@ -86,51 +41,40 @@ public class KnowledgeRestController {
         return knowledgeService.getServicesMap();
     }
 
-    @PostMapping("/service/update")
-    public void updateService(@RequestBody Service service) {
-        knowledgeService.updateService(service);
-    }
-
     @GetMapping("/service/{serviceId}")
     public Service getService(@PathVariable String serviceId) {
         return knowledgeService.getService(serviceId);
     }
 
-    @GetMapping("/metrics/getLatest")
-    public List<InstanceMetricsSnapshot> getLatestMetrics(
-            @RequestParam(required = false) String serviceId,
-            @RequestParam(required = false) String instanceId
-    ) {
-        if (serviceId == null && instanceId == null)
-            throw new IllegalArgumentException("Invalid query arguments");
-        if (instanceId != null)
-            try {
-                return List.of(knowledgeService.getLatestByInstanceId(instanceId));
-            } catch (NullPointerException e) { return List.of(); }
-        else
-            return knowledgeService.getAllLatestByServiceId(serviceId);
+
+    @GetMapping("/service/{serviceId}/instance/{instanceId}")
+    public Instance getInstance(@PathVariable String serviceId, @PathVariable String instanceId) {
+        return knowledgeService.getService(serviceId).getInstance(instanceId);
     }
 
-    @PostMapping("/notifyShutdown")
-    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Map<String, String> request) {
-        knowledgeService.notifyShutdownInstance(request.get("serviceId"), request.get("instanceId"));
-        return ResponseEntity.ok("Shutdown of instance " + request.get("instanceId") + " notified");
+    @GetMapping("/service/{serviceId}/latestAdaptationDate")
+    public Date getServiceLatestAdaptationDate(@PathVariable String serviceId) {
+        return knowledgeService.getLatestAdaptationDateForService(serviceId);
     }
 
-    @PostMapping("/changeConfiguration")
-    public ResponseEntity<String> changeConfiguration(@RequestBody Map<String, ServiceConfiguration> request) {
-        knowledgeService.changeServicesConfigurations(request);
-        return ResponseEntity.ok("Configuration changed");
+    @PostMapping("/service/update")
+    public void updateService(@RequestBody Service service) {
+        knowledgeService.updateService(service);
     }
 
-    @PostMapping("/addNewAdaptationParameterValue")
-    public ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request){
-        if(request.getInstanceId() == null){
-            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
-        } else if (request.getInstanceId() != null){
-            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
-        }
-        return ResponseEntity.ok().body("Adaptation parameter value added");
+
+
+    // Monitor-related functions
+    @PostMapping("/metrics/addMetricsBuffer")
+    public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer) {
+        knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
+    }
+
+
+    // Analyse-related functions
+    @GetMapping("/metrics/getLatestNOfCurrentInstance")
+    public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(@RequestParam String serviceId, @RequestParam String instanceId, @RequestParam int n) {
+        return knowledgeService.getLatestNMetricsOfCurrentInstance(serviceId, instanceId, n);
     }
 
     @GetMapping("/proposedAdaptationOptions")
@@ -154,23 +98,6 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation options correctly proposed");
     }
 
-    @GetMapping("/chosenAdaptationOptions")
-    public List<AdaptationOption> getChosenAdaptationOptions() {
-        return knowledgeService.getChosenAdaptationOptions().values().stream().toList();
-    }
-
-    @PostMapping("/chooseAdaptationOptions")
-    public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
-        knowledgeService.chooseAdaptationOptions(adaptationOptions);
-        return ResponseEntity.ok().body("Adaptation options correctly chosen");
-    }
-
-    @PostMapping("/service/{serviceId}/setLoadBalancerWeights")
-    public ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights) {
-        knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
-        return ResponseEntity.ok().body("Load balancer weights correctly set");
-    }
-
     @PostMapping("/updateServicesAdaptationParamCollection")
     public ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, AdaptationParamCollection> serviceAdaptationParameters) {
         serviceAdaptationParameters.forEach((serviceId, adaptationParamCollection) -> {
@@ -191,6 +118,48 @@ public class KnowledgeRestController {
 
 
 
+    // Plan-related functions
+    @GetMapping("/chosenAdaptationOptions")
+    public List<AdaptationOption> getChosenAdaptationOptions() {
+        return knowledgeService.getChosenAdaptationOptions().values().stream().toList();
+    }
+
+    @PostMapping("/chooseAdaptationOptions")
+    public ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
+        knowledgeService.chooseAdaptationOptions(adaptationOptions);
+        return ResponseEntity.ok().body("Adaptation options correctly chosen");
+    }
+
+
+
+    // Execute-related functions
+    @PostMapping("/changeConfiguration")
+    public ResponseEntity<String> changeConfiguration(@RequestBody Map<String, ServiceConfiguration> request) {
+        knowledgeService.changeServicesConfigurations(request);
+        return ResponseEntity.ok("Configuration changed");
+    }
+
+    @PostMapping("/addNewAdaptationParameterValue")
+    public ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request){
+        if(request.getInstanceId() == null){
+            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
+        } else if (request.getInstanceId() != null){
+            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
+        }
+        return ResponseEntity.ok().body("Adaptation parameter value added");
+    }
+
+    @PostMapping("/service/{serviceId}/setLoadBalancerWeights")
+    public ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights) {
+        knowledgeService.setLoadBalancerWeights(serviceId, instanceWeights);
+        return ResponseEntity.ok().body("Load balancer weights correctly set");
+    }
+
+    @PostMapping("/notifyShutdown")
+    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Map<String, String> request) {
+        knowledgeService.notifyShutdownInstance(request.get("serviceId"), request.get("instanceId"));
+        return ResponseEntity.ok("Shutdown of instance " + request.get("instanceId") + " notified");
+    }
 
 
 
@@ -200,6 +169,44 @@ public class KnowledgeRestController {
 
 
     // Inspection endpoints
+
+    @GetMapping("/metrics/getLatest")
+    public List<InstanceMetricsSnapshot> getLatestMetrics(@RequestParam(required = false) String serviceId, @RequestParam(required = false) String instanceId) {
+        if (serviceId == null && instanceId == null)
+            throw new IllegalArgumentException("Invalid query arguments");
+        if (instanceId != null)
+            try {
+                return List.of(knowledgeService.getLatestByInstanceId(instanceId));
+            } catch (NullPointerException e) { return List.of(); }
+        else
+            return knowledgeService.getAllLatestByServiceId(serviceId);
+    }
+
+
+    @GetMapping("/metrics/get")
+    public List<InstanceMetricsSnapshot> getMetrics(
+            @RequestParam(required = false) String instanceId,
+            @RequestParam(required = false, name = "after") String startDate, // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
+            @RequestParam(required = false, name = "before") String endDate // The date MUST be in the format yyyy-MM-dd'T'HH:mm:ss (without the ' around the T)
+    ) {
+        // before + after
+        if (instanceId == null && startDate != null && endDate != null/* && serviceId == null*/)
+            return knowledgeService.getAllMetricsBetween(startDate, endDate);
+
+        // instanceId
+        if (instanceId != null) {
+            // + startDate + endDate
+            if (startDate != null && endDate != null)
+                return knowledgeService.getAllInstanceMetricsBetween(instanceId, startDate, endDate);
+            // all
+            if (startDate == null && endDate == null)
+                return knowledgeService.getAllInstanceMetrics(instanceId);
+        }
+        throw new IllegalArgumentException("Invalid query arguments");
+        // TODO se da nessuna altra parte lanciamo eccezioni (e quindi non serve un handler),
+        // modificare il tipo di ritorno della funzione in "requestbody"
+    }
+
 
     @GetMapping("/metrics/{metricsId}")
     public InstanceMetricsSnapshot getMetrics(@PathVariable long metricsId) {

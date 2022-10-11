@@ -65,6 +65,7 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/metrics/getLatestNOfCurrentInstance")
     List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(
+            @RequestParam String serviceId,
             @RequestParam String instanceId,
             @RequestParam int n
     );

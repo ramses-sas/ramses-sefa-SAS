@@ -22,7 +22,8 @@ public class Service {
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
     // <AdaptationParameter class, AdaptationParamSpecification>
     private Map<Class<? extends AdaptationParamSpecification>, AdaptationParamSpecification> adaptationParamSpecifications = new HashMap<>();
-
+    @Setter
+    private Date latestAdaptationDate = new Date();
 
 
     public Service(String serviceId) {
@@ -49,7 +50,6 @@ public class Service {
         return getCurrentImplementation().createInstance(instanceAddress, adaptationParamSpecifications.values().stream().toList());
     }
 
-    @JsonIgnore
     // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
@@ -57,7 +57,10 @@ public class Service {
         return getCurrentImplementation().getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, false);
     }
 
-    @JsonIgnore
+    public <T extends AdaptationParamSpecification> List<AdaptationParameter.Value> getValuesHistoryForParam(Class<T> adaptationParamClass) {
+        return getCurrentImplementation().getAdaptationParamCollection().getValuesHistoryForParam(adaptationParamClass);
+    }
+
     public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
         return getCurrentImplementation().getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
     }
@@ -73,24 +76,6 @@ public class Service {
     @JsonIgnore
     public ServiceImplementation getCurrentImplementation() {
         return possibleImplementations.get(currentImplementationId);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder possibleImplementations = new StringBuilder();
-        for (String implId : this.possibleImplementations.keySet()) {
-            if (!possibleImplementations.isEmpty())
-                possibleImplementations.append(", ");
-            possibleImplementations.append(implId);
-        }
-
-        return "\nService '" + serviceId + "'\n" +
-                "\tImplemented by: '" + currentImplementationId + "'\n" +
-                (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
-                "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
-                "\tDependencies: " + dependencies + "\n" +
-                (adaptationParamSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + adaptationParamSpecifications.values() + "\n" +
-                "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 
     public void setAdaptationParameters(List<AdaptationParamSpecification> specs) {
@@ -119,7 +104,7 @@ public class Service {
     }
 
 
-        public void removeInstance(Instance shutdownInstance) {
+    public void removeInstance(Instance shutdownInstance) {
         getCurrentImplementation().removeInstance(shutdownInstance);
         if(configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)
             configuration.getLoadBalancerWeights().remove(shutdownInstance.getInstanceId());
@@ -138,5 +123,23 @@ public class Service {
 
     public Map<String, Double> getLoadBalancerWeights() {
         return configuration.getLoadBalancerWeights();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder possibleImplementations = new StringBuilder();
+        for (String implId : this.possibleImplementations.keySet()) {
+            if (!possibleImplementations.isEmpty())
+                possibleImplementations.append(", ");
+            possibleImplementations.append(implId);
+        }
+
+        return "\nService '" + serviceId + "'\n" +
+                "\tImplemented by: '" + currentImplementationId + "'\n" +
+                (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
+                "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
+                "\tDependencies: " + dependencies + "\n" +
+                (adaptationParamSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + adaptationParamSpecifications.values() + "\n" +
+                        "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 }
