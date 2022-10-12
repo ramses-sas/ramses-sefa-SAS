@@ -8,8 +8,6 @@ import java.util.*;
 @Data
 public class AdaptationParamCollection {
     private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter<? extends AdaptationParamSpecification>> adaptationParamsMap = new HashMap<>();
-    //private final Map<Class<? extends AdaptationParamSpecification>, AdaptationParameter.Value> currentAdaptationParamsValues = new HashMap<>();
-
 
     public <T extends AdaptationParamSpecification> AdaptationParameter<T> getAdaptationParam(Class<T> adaptationParamClass) {
         return (AdaptationParameter<T>) adaptationParamsMap.get(adaptationParamClass);

@@ -24,14 +24,18 @@ public class ServiceImplementation {
     // <adaptParamClass, paramBenchmark>
     private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmarks = new HashMap<>();
 
-    private double costPerInstance;
-    private double costPerRequest; // tipo scatto alla risposta
-    private double costPerSecond; //cost per second a richiesta (equivale a una sorta di costo per processing time)
-    private double costPerBoot; //costo per avvio di un'istanza
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
-    private double penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
-    private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
+    private int implementationTrust; //valutazione di quanto è affidabile questa implementazione
+    private int penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
+    //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
     private double instanceLoadShutdownThreshold; // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
+
+    public ServiceImplementation(String implementationId, double score, int implementationTrust, double instanceLoadShutdownThreshold) {
+        this.implementationId = implementationId;
+        this.score = score;
+        this.implementationTrust = implementationTrust;
+        this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
+    }
 
     public double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
         return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
@@ -95,15 +99,7 @@ public class ServiceImplementation {
     }
 
 
-
-    public ServiceImplementation(String implementationId, double costPerInstance, double costPerRequest, double costPerSecond, double costPerBoot, double score, double riskFactor, double instanceLoadShutdownThreshold) {
-        this.implementationId = implementationId;
-        this.costPerInstance = costPerInstance;
-        this.costPerRequest = costPerRequest;
-        this.costPerSecond = costPerSecond;
-        this.costPerBoot = costPerBoot;
-        this.score = score;
-        this.riskFactor = riskFactor;
-        this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
+    public void incrementPenalty() {
+        this.penalty += penalty;
     }
 }
