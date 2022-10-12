@@ -112,6 +112,7 @@ public class DashboardWebController {
 		for (Instance instance : service.getInstances())
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
 		model.addAttribute("serviceId", serviceId);
+		model.addAttribute("latestAdaptationDate", service.getLatestAdaptationDate());
 		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
 
@@ -194,58 +195,76 @@ public class DashboardWebController {
 
 	private GraphData[] computeServiceGraphs(Service service) {
 		GraphData[] graphs = new GraphData[2];
+		// Values is ordered by timestamp ASC
 		List<AdaptationParameter.Value> values;
+		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		GraphData availabilityGraph = new GraphData("Instant", "Availability");
+		graph = new GraphData("Instant", "Availability");
 		values = service.getValuesHistoryForParam(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			availabilityGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "B"+(i+1) : "A"+(i+1), v.getValue());
-			i++;
+			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
+				graph.addPointBefore(v.getValue());
+			} else {
+				graph.addPointAfter(v.getValue());
+			}
 		}
-		graphs[0] = availabilityGraph;
+		graph.generateAggregatedPoints();
+		log.debug(graph.getPoints().toString());
+		graphs[0] = graph;
 
-		GraphData artGraph = new GraphData("Instant", "Average Response Time [ms]");
+		graph = new GraphData("Instant", "Average Response Time [ms]");
 		values = service.getValuesHistoryForParam(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			artGraph.addPoint(v.getTimestamp().before(service.getLatestAdaptationDate()) ? "B"+(i+1) : "A"+(i+1), v.getValue()*1000);
+			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
+				graph.addPointBefore(v.getValue() * 1000);
+			} else
+				graph.addPointAfter(v.getValue()*1000);
 		}
-		graphs[1] = artGraph;
+		graph.generateAggregatedPoints();
+		graphs[1] = graph;
 
 		return graphs;
 	}
 
 	private GraphData[] computeInstanceGraphs(Instance instance, Date serviceLatestAdaptationDate) {
 		GraphData[] graphs = new GraphData[2];
+		// Values is ordered by timestamp ASC
 		List<AdaptationParameter.Value> values;
+		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		GraphData availabilityGraph = new GraphData("Instant", "Availability");
+		graph = new GraphData("Instant", "Availability");
 		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			availabilityGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "B"+(i+1) : "A"+(i+1), v.getValue());
-			i++;
+			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
+				graph.addPointBefore(v.getValue());
+			} else
+				graph.addPointAfter(v.getValue());
 		}
-		graphs[0] = availabilityGraph;
+		graphs[0] = graph;
 
-		GraphData artGraph = new GraphData("Instant", "Average Response Time [ms]");
+		graph = new GraphData("Instant", "Average Response Time [ms]");
 		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
-			artGraph.addPoint(v.getTimestamp().before(serviceLatestAdaptationDate) ? "B"+(i+1) : "A"+(i+1), v.getValue()*1000);
+			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
+				graph.addPointBefore(v.getValue()*1000);
+			} else
+				graph.addPointAfter(v.getValue()*1000);
 		}
-		graphs[1] = artGraph;
+		graphs[1] = graph;
 
 		return graphs;
 	}
