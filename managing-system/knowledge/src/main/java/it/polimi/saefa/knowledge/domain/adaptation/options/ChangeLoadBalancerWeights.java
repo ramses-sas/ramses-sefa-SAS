@@ -31,9 +31,9 @@ public class ChangeLoadBalancerWeights extends AdaptationOption {
     @JsonIgnore
     @Override
     public String getDescription() {
-        String base = "Goal: " + getAdaptationParametersGoal() + " Change load balancer weights of service " + super.getServiceId();
+        String base = "Goal: " + getAdaptationParametersGoal().getSimpleName() + " - Change load balancer weights of service " + super.getServiceId();
         if (newWeights != null)
             base += "\nNew weights are: \n" + newWeights;
-        return base + ". " + getComment();
+        return base + ".\n" + getComment();
     }
 }

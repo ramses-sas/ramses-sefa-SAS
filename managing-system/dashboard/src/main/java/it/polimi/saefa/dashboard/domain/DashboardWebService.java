@@ -57,6 +57,10 @@ public class DashboardWebService {
 		return knowledgeClient.getChosenAdaptationOptions();
 	}
 
+	public Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(int n) {
+		return knowledgeClient.getChosenAdaptationOptionsHistory(n);
+	}
+
 	public void breakpoint(){
 		log.info("breakpoint");
 	}

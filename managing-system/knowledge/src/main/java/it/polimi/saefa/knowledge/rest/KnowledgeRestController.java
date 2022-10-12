@@ -51,7 +51,6 @@ public class KnowledgeRestController {
         return knowledgeService.getService(serviceId);
     }
 
-
     @GetMapping("/service/{serviceId}/instance/{instanceId}")
     public Instance getInstance(@PathVariable String serviceId, @PathVariable String instanceId) {
         return knowledgeService.getService(serviceId).getInstance(instanceId);
@@ -174,6 +173,14 @@ public class KnowledgeRestController {
 
 
     // Inspection endpoints
+    @GetMapping("/chosenAdaptationOptionsHistory")
+    public Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(@RequestParam int n) {
+        Map<String, List<AdaptationOption>> history = new HashMap<>();
+        knowledgeService.getServicesMap().keySet().forEach(serviceId -> {
+            history.put(serviceId, knowledgeService.getChosenAdaptationOptionsHistory(serviceId, n));
+        });
+        return history;
+    }
 
     @GetMapping("/metrics/getLatest")
     public List<InstanceMetricsSnapshot> getLatestMetrics(@RequestParam(required = false) String serviceId, @RequestParam(required = false) String instanceId) {

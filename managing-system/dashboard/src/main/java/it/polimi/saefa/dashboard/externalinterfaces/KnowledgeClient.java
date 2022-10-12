@@ -46,4 +46,7 @@ public interface KnowledgeClient {
     @GetMapping("/rest/chosenAdaptationOptions")
     Map<String, List<AdaptationOption>> getChosenAdaptationOptions();
 
+    @GetMapping("/rest/chosenAdaptationOptionsHistory")
+    Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(@RequestParam int n);
+
 }

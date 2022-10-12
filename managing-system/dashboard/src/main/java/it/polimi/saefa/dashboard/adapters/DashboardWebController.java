@@ -29,6 +29,8 @@ import java.util.*;
 public class DashboardWebController {
 	@Value("${MAX_HISTORY_SIZE}")
 	private int maxHistorySize;
+	@Value("${ADAPTATION_HISTORY_SIZE}")
+	private int adaptationHistorySize;
 
 	@Autowired 
 	private DashboardWebService dashboardWebService;
@@ -160,6 +162,16 @@ public class DashboardWebController {
 	/* Display current status */
 	@GetMapping("/adaptation")
 	public String loopStatus(Model model) {
+		Map<String, List<AdaptationOption>> history = dashboardWebService.getChosenAdaptationOptionsHistory(adaptationHistorySize);
+		Map<String, List<String>> historyTable = new HashMap<>();
+		for (String serviceId : history.keySet()) {
+			List<String> serviceHistory = new LinkedList<>();
+			for (AdaptationOption option : history.get(serviceId))
+				serviceHistory.add(option.getDescription() + "\nApplied at: " + option.getTimestamp());
+			historyTable.put(serviceId, serviceHistory);
+		}
+		model.addAttribute("adaptationHistorySize", adaptationHistorySize);
+		model.addAttribute("historyTable", historyTable);
 		Modules activeModule = dashboardWebService.getActiveModule();
 		switch (activeModule) {
 			case MONITOR:

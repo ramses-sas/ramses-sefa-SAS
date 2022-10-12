@@ -168,7 +168,7 @@ public class PlanService {
 
                 }
                 double newBenefit = availabilityEstimation / service.getCurrentValueForParam(Availability.class).getValue();
-                log.debug("New benefit brought by " + adaptationOption.getClass() + "for availability: " + newBenefit);
+                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for availability: " + newBenefit);
 
                 if(newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))){
                     benefits.put(Availability.class, newBenefit);
@@ -216,7 +216,7 @@ public class PlanService {
 
                 }
                 double newBenefit =  service.getCurrentValueForParam(AverageResponseTime.class).getValue() / avgResponseTimeEstimation;
-                log.debug("New benefit brought by " + adaptationOption.getClass() + "for response time: " + newBenefit);
+                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for response time: " + newBenefit);
                 if(newBenefit > 1 && (!benefits.containsKey(AverageResponseTime.class) || newBenefit > benefits.get(AverageResponseTime.class))){
                     benefits.put(AverageResponseTime.class, newBenefit);
                     bestOptionForGoal.put(AverageResponseTime.class, adaptationOption);

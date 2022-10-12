@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -175,8 +176,12 @@ public class KnowledgeService {
         return servicesMap.get(serviceId);
     }
 
-    public List<AdaptationOption> getAdaptationOptions(String serviceId, int n) {
+    public List<AdaptationOption> getChosenAdaptationOptionsHistory(String serviceId, int n) {
         return adaptationChoicesRepository.findAllByServiceIdOrderByTimestampDesc(serviceId, Pageable.ofSize(n)).stream().toList();
+    }
+
+    public Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(int n) {
+        return adaptationChoicesRepository.findAll(Pageable.ofSize(n)).stream().collect(Collectors.groupingBy(AdaptationOption::getServiceId));
     }
 
     public void proposeAdaptationOptions(Map<String, List<AdaptationOption>> proposedAdaptationOptions) {

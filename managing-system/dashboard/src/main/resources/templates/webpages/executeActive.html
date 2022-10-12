@@ -8,9 +8,39 @@
 
 
 <div class="content">
+    <table  class="simpleTable">
+        <thead>
+        <tr>
+            <th><h3>Service</h3></th>
+            <th th:colspan="${adaptationHistorySize}"><h3>Latest Adaptation Options applied</h3></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${historyTable.entrySet()}">
+            <td th:text="${entry.getKey()}">Service Id goes here</td>
+            <td style="white-space: pre;" th:each="opt : ${entry.getValue()}" th:text="${opt}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <br><br>
     <h3>Active Module: EXECUTE</h3>
     <br>
     <p>Execute module is applying the adaptation options chosen by the Plan module</p>
+    <br>
+    <table class="detailsTable">
+        <thead>
+        <tr>
+            <th>Service</th>
+            <th>Chosen Adaptation Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${chosenAdaptationOptions.entrySet()}">
+            <td th:text="${entry.getKey()}">Service Id goes here</td>
+            <td style="white-space: pre;" th:each="opt : ${entry.getValue()}" th:text="${opt}">Chosen Adaptation Options goes here</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 

@@ -37,7 +37,7 @@ public class RemoveInstance extends AdaptationOption {
     @JsonIgnore
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED - " : "") + "Remove instances " + instanceId + " of service " + super.getServiceId() + ". " + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getAdaptationParametersGoal().getSimpleName())) + " - Remove instances " + instanceId + " of service " + super.getServiceId() + ".\n" + getComment();
     }
 }
 

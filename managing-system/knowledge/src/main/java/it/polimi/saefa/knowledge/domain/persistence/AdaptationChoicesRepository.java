@@ -12,4 +12,7 @@ public interface AdaptationChoicesRepository extends CrudRepository<AdaptationOp
 
     Page<AdaptationOption> findAllByServiceIdOrderByTimestampDesc(String serviceId, Pageable pageable);
 
+    @Query("SELECT m FROM AdaptationOption m ORDER BY m.timestamp DESC")
+    Page<AdaptationOption> findAll(Pageable pageable);
+
 }
