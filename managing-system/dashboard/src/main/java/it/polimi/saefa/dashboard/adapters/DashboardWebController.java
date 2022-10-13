@@ -88,10 +88,8 @@ public class DashboardWebController {
 			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
-			currentImplementationTable.add(new String[]{"Cost Per Boot", currentImplementation.getCostPerBoot()+"€"});
-			currentImplementationTable.add(new String[]{"Cost Per Instance", currentImplementation.getCostPerInstance()+"€"});
-			currentImplementationTable.add(new String[]{"Cost Per Second Of Execution", currentImplementation.getCostPerSecond()+"€/s"});
-			currentImplementationTable.add(new String[]{"Cost Per Request", currentImplementation.getCostPerRequest()+"€/request"});
+			currentImplementationTable.add(new String[]{"Score", String.valueOf(currentImplementation.getScore())});
+			currentImplementationTable.add(new String[]{"Penalty", String.valueOf(currentImplementation.getPenalty())});
 			servicesCurrentImplementationTable.put(s.getServiceId(), currentImplementationTable);
 		}
 

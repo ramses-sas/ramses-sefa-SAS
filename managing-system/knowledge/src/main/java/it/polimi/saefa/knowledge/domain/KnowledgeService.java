@@ -90,7 +90,9 @@ public class KnowledgeService {
                 Set<Instance> currentlyActiveInstances = new HashSet<>();
                 Set<Instance> shutdownInstances = new HashSet<>();
                 for (InstanceMetricsSnapshot metricsSnapshot : metricsList) {
-                    Service service = servicesMap.get(metricsSnapshot.getServiceId()); //TODO l'executor deve notificare la knowledge quando un servizio cambia il microservizio che lo implementa
+                    Service service = servicesMap.get(metricsSnapshot.getServiceId());
+                    if(!Objects.equals(metricsSnapshot.getServiceImplementationId(), service.getCurrentImplementationId())) //Skip the metricsSnapshot if it is not related to the current implementation
+                        continue;
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
                     if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
@@ -129,7 +131,7 @@ public class KnowledgeService {
         }
     }
 
-    public void notifyShutdownInstance(String serviceId, String instanceId) {
+    public void shutdownInstance(String serviceId, String instanceId) {
         Service service = servicesMap.get(serviceId);
         Instance instance = service.getInstance(instanceId);
         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
@@ -138,6 +140,33 @@ public class KnowledgeService {
         metricsRepository.save(metrics);
         instance.setCurrentStatus(InstanceStatus.SHUTDOWN);
         instance.setLatestInstanceMetricsSnapshot(metrics);
+    }
+
+    public void changeServiceImplementation(String serviceId, String newImplementationId, List<String> newInstancesAddresses){
+        Service service = servicesMap.get(serviceId);
+
+        for(Instance instance : service.getInstances()){
+            shutdownInstance(serviceId, instance.getInstanceId());
+            service.removeInstance(instance);
+        }
+        service.setCurrentImplementationId(newImplementationId);
+
+        for(String instanceAddress : newInstancesAddresses) {
+            service.createInstance(instanceAddress);
+        }
+
+        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM){
+            Map<String, Double> newWeights = new HashMap<>();
+            for(Instance instance : service.getInstances()){
+                newWeights.put(instance.getInstanceId(), 1.0/service.getInstances().size());
+            }
+            service.setLoadBalancerWeights(newWeights);
+        }
+    }
+
+    public void addInstance(String serviceId, String instanceAddress){
+        Service service = servicesMap.get(serviceId);
+        service.createInstance(instanceAddress);
     }
 
     public InstanceMetricsSnapshot getMetrics(long id) {

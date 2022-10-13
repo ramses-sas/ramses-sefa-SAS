@@ -21,6 +21,7 @@ import java.util.Date;
         @JsonSubTypes.Type(value = AddInstance.class),
         @JsonSubTypes.Type(value = RemoveInstance.class),
         @JsonSubTypes.Type(value = ChangeLoadBalancerWeights.class),
+        @JsonSubTypes.Type(value = ChangeImplementation.class),
 })
 public abstract class AdaptationOption {
     @Id

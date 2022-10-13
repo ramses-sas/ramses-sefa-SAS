@@ -24,14 +24,10 @@ public class SystemArchitectureParser {
             implementations.forEach(impl -> {
                 JsonObject implementation = impl.getAsJsonObject();
                 String implementationId = implementation.get("implementation_id").getAsString();
-                double costPerInstance = implementation.get("cost_per_instance").getAsDouble();
-                double costPerRequest = implementation.get("cost_per_request").getAsDouble();
-                double costPerSecond = implementation.get("cost_per_second").getAsDouble();
-                double costPerBoot = implementation.get("cost_per_boot").getAsDouble();
                 double score = implementation.get("score").getAsDouble();
-                double riskFactor = implementation.get("risk_factor").getAsDouble();
+                int implementationTrust = implementation.get("implementation_trust").getAsInt();
                 double instanceLoadShutdownThreshold = implementation.get("instance_load_shutdown_threshold") == null ? 0 : implementation.get("instance_load_shutdown_threshold").getAsDouble();
-                serviceImplementations.add(new ServiceImplementation(implementationId, costPerInstance, costPerRequest, costPerSecond, costPerBoot, score, riskFactor, instanceLoadShutdownThreshold));
+                serviceImplementations.add(new ServiceImplementation(implementationId, score, implementationTrust, instanceLoadShutdownThreshold));
             });
             double totalScore = serviceImplementations.stream().map(ServiceImplementation::getScore).reduce(0.0, Double::sum);
             if (totalScore != 1.0) {

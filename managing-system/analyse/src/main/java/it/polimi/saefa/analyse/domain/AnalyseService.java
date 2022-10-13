@@ -3,10 +3,8 @@ package it.polimi.saefa.analyse.domain;
 import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
 import it.polimi.saefa.analyse.externalInterfaces.PlanClient;
 import it.polimi.saefa.knowledge.domain.Modules;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstance;
-import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWeights;
-import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstance;
+import it.polimi.saefa.knowledge.domain.adaptation.options.*;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.MaxResponseTime;
@@ -210,11 +208,6 @@ public class AnalyseService {
     private List<AdaptationOption> adapt() {
         Set<String> analysedServices = new HashSet<>();
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
-        /*for (Service service : currentArchitectureMap.values()) {
-            computeServiceAndInstancesCurrentValues(service);
-        }
-
-         */
 
         for(Service service : currentArchitectureMap.values()){
             proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
@@ -282,9 +275,23 @@ public class AnalyseService {
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+            if(!adaptationOptions.isEmpty())
+                service.getCurrentImplementation().incrementPenalty();
             invalidateAdaptationParametersHistory(service);
+
+
         }
         return adaptationOptions;
+    }
+
+    private AdaptationOption createChangeImplementationOption(Service service, Class<? extends AdaptationParamSpecification> goal) {
+        List<String> possibleImplementations = new LinkedList<>();
+        if(service.getPossibleImplementations().size() > 1){
+            for(String possibleImplementationId : service.getPossibleImplementations().keySet())
+                if(!possibleImplementationId.equals(service.getCurrentImplementationId()))
+                    possibleImplementations.add(possibleImplementationId);
+        }
+        return new ChangeImplementation(service.getServiceId(), service.getCurrentImplementationId(), service.getInstances().size(), possibleImplementations, goal, "Changing implementation");
     }
 
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, List<Double> serviceAvailabilityHistory) {
@@ -298,8 +305,8 @@ public class AnalyseService {
                     )
             ).toList();
 
-            //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0))); todo
-
+            if(service.shouldConsiderChangingImplementation())
+                adaptationOptions.add(createChangeImplementationOption(service, Availability.class));
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
@@ -319,8 +326,8 @@ public class AnalyseService {
                     )
             ).toList();
 
-            //adaptationOptions.add(new ChangeImplementation(service.getServiceId(), service.getCurrentImplementation(), service.getImplementations().get(0))); todo
-
+            if(service.shouldConsiderChangingImplementation())
+                adaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));

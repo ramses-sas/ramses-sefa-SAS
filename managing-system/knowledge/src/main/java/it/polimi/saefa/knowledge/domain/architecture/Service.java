@@ -125,6 +125,10 @@ public class Service {
         return configuration.getLoadBalancerWeights();
     }
 
+    public boolean shouldConsiderChangingImplementation(){
+        return getCurrentImplementation().getImplementationTrust() - getCurrentImplementation().getPenalty() <= 0;
+    }
+
     @Override
     public String toString() {
         StringBuilder possibleImplementations = new StringBuilder();
