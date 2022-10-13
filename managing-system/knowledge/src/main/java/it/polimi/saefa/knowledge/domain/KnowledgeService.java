@@ -144,6 +144,7 @@ public class KnowledgeService {
 
     public void changeServiceImplementation(String serviceId, String newImplementationId, List<String> newInstancesAddresses){
         Service service = servicesMap.get(serviceId);
+        service.getCurrentImplementation().setPenalty(0);
 
         for(Instance instance : service.getInstances()){
             shutdownInstance(serviceId, instance.getInstanceId());
