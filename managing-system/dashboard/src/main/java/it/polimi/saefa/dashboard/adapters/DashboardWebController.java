@@ -159,34 +159,33 @@ public class DashboardWebController {
 
 
 	/* Display current status */
-	@GetMapping("/adaptation")
-	public String loopStatus(Model model) {
+	@GetMapping("/adaptationStatus")
+	public String adaptationStatus(Model model) {
 		Map<String, List<AdaptationOption>> history = dashboardWebService.getChosenAdaptationOptionsHistory(adaptationHistorySize);
 		Map<String, List<String>> historyTable = new HashMap<>();
 		for (String serviceId : history.keySet()) {
 			List<String> serviceHistory = new LinkedList<>();
 			for (AdaptationOption option : history.get(serviceId))
 				serviceHistory.add(option.getDescription() + "\nApplied at: " + option.getTimestamp());
+			for (int i = serviceHistory.size(); i < adaptationHistorySize; i++)
+				serviceHistory.add("");
 			historyTable.put(serviceId, serviceHistory);
 		}
 		model.addAttribute("adaptationHistorySize", adaptationHistorySize);
 		model.addAttribute("historyTable", historyTable);
 		Modules activeModule = dashboardWebService.getActiveModule();
+		model.addAttribute("activeModule", activeModule);
 		switch (activeModule) {
-			case MONITOR:
-				return "webpages/monitorActive";
-			case ANALYSE:
-				return "webpages/analyseActive";
-			case PLAN:
-				Map<String, List<AdaptationOption>> proposedAdaptationOptions = dashboardWebService.getProposedAdaptationOptions();
-				model.addAttribute("proposedAdaptationOptions", proposedAdaptationOptions);
-				return "webpages/planActive";
-			case EXECUTE:
-				Map<String, List<AdaptationOption>> chosenAdaptationOptions = dashboardWebService.getChosenAdaptationOptions();
-				model.addAttribute("chosenAdaptationOptions", chosenAdaptationOptions);
-				return "webpages/executeActive";
+			case MONITOR ->
+					model.addAttribute("statusDescription", "Monitor module is collecting metrics from the services.");
+			case ANALYSE ->
+					model.addAttribute("statusDescription", "Analyse module is computing the adaptation options from the metrics collected by the monitor.");
+			case PLAN ->
+					model.addAttribute("statusDescription", "Plan module is choosing the adaptation options to apply from the ones proposed by the Analyse module.");
+			case EXECUTE ->
+					model.addAttribute("statusDescription", "Execute module is applying the adaptation options chosen by the Plan module.");
 		}
-		return "index";
+		return "webpages/adaptationStatus";
 	}
 
 
