@@ -174,15 +174,15 @@ public class DashboardWebController {
 		model.addAttribute("historyTable", historyTable);
 		Modules activeModule = dashboardWebService.getActiveModule();
 		model.addAttribute("activeModule", activeModule);
-		switch (activeModule) {
-			case MONITOR ->
-					model.addAttribute("statusDescription", "Monitor module is collecting metrics from the services.");
-			case ANALYSE ->
-					model.addAttribute("statusDescription", "Analyse module is computing the adaptation options from the metrics collected by the monitor.");
-			case PLAN ->
-					model.addAttribute("statusDescription", "Plan module is choosing the adaptation options to apply from the ones proposed by the Analyse module.");
-			case EXECUTE ->
-					model.addAttribute("statusDescription", "Execute module is applying the adaptation options chosen by the Plan module.");
+		Modules failedModule = dashboardWebService.getFailedModule();
+		model.addAttribute("failedModule", failedModule);
+		if (activeModule != null) {
+			switch (activeModule) {
+				case MONITOR -> model.addAttribute("statusDescription", "Monitor module is collecting metrics from the services.");
+				case ANALYSE -> model.addAttribute("statusDescription", "Analyse module is computing the adaptation options from the metrics collected by the monitor.");
+				case PLAN -> model.addAttribute("statusDescription", "Plan module is choosing the adaptation options to apply from the ones proposed by the Analyse module.");
+				case EXECUTE -> model.addAttribute("statusDescription", "Execute module is applying the adaptation options chosen by the Plan module.");
+			}
 		}
 		return "webpages/adaptationStatus";
 	}
@@ -277,6 +277,18 @@ public class DashboardWebController {
 	@PostMapping("/configuration/changeMonitorSchedulingPeriod")
 	public String changeMonitorSchedulingPeriod(Model model, @RequestParam(value = "monitorSchedulingPeriod") int monitorSchedulingPeriod) {
 		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod*1000);
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/startMonitorRoutine")
+	public String startMonitorRoutine(Model model) {
+		dashboardWebService.startMonitorRoutine();
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/stopMonitorRoutine")
+	public String stopMonitorRoutine(Model model) {
+		dashboardWebService.stopMonitorRoutine();
 		return configuration(model);
 	}
 

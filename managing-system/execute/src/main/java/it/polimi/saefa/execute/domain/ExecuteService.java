@@ -54,6 +54,7 @@ public class ExecuteService {
             log.info("Ending execute. Notifying Monitor module to continue the loop.");
             monitorClient.notifyFinishedIteration();
         } catch (Exception e) {
+            knowledgeClient.setFailedModule(Modules.EXECUTE);
             log.error(e.getMessage());
             e.printStackTrace();
             throw new RuntimeException(e);

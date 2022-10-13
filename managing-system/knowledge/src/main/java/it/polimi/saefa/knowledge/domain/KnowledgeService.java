@@ -51,6 +51,8 @@ public class KnowledgeService {
     @Getter
     private Modules activeModule = null;
 
+    @Getter @Setter
+    private Modules failedModule = null;
 
 
     public void setActiveModule(Modules activeModule) {

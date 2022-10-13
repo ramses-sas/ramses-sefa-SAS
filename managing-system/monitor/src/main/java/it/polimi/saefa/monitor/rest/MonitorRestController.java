@@ -23,10 +23,22 @@ public class MonitorRestController {
     public int getSchedulingPeriod() {
         return monitorService.getSchedulingPeriod();
     }
+
     @PutMapping("/schedulingPeriod")
     public void changeSchedulingPeriod(@RequestParam("period") int period) {
         monitorService.changeSchedulingPeriod(period);
     }
+
+    @GetMapping("/startRoutine")
+    public void startRoutine() {
+        monitorService.startRoutine();
+    }
+
+    @GetMapping("/stopRoutine")
+    public void stopRoutine() {
+        monitorService.stopRoutine();
+    }
+
 
 
     // TODO remove after test

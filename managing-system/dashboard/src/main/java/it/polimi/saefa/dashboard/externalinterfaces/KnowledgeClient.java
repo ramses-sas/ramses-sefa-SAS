@@ -49,4 +49,7 @@ public interface KnowledgeClient {
     @GetMapping("/rest/chosenAdaptationOptionsHistory")
     Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(@RequestParam int n);
 
+    @GetMapping("/rest/failedModule")
+    Modules getFailedModule();
+
 }

@@ -134,6 +134,7 @@ public class MonitorService {
                     analyseClient.start();
                 }
             } catch (Exception e) {
+                knowledgeClient.setFailedModule(Modules.MONITOR);
                 log.error(e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("Error during the monitor execution", e);
@@ -145,7 +146,27 @@ public class MonitorService {
         if (monitorRoutine.cancel(false)) {
             log.info("Monitor routine cancelled");
             schedulingPeriod = newPeriod;
+            startRoutine();
+        } else {
+            log.error("Error cancelling monitor routine");
+        }
+    }
+
+    public void startRoutine() {
+        if (monitorRoutine == null || monitorRoutine.isCancelled()) {
+            log.info("Monitor routine starting");
             monitorRoutine = taskScheduler.scheduleWithFixedDelay(new MonitorRoutine(), schedulingPeriod);
+        } else {
+            log.info("Monitor routine already running");
+        }
+    }
+
+    public void stopRoutine() {
+        if (monitorRoutine.cancel(false)) {
+            log.info("Monitor routine stopping");
+            monitorRoutine = null;
+        } else {
+            log.error("Error stopping monitor routine");
         }
     }
 

@@ -35,4 +35,7 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/proposedAdaptationOptions")
     Map<String, List<AdaptationOption>> getProposedAdaptationOptions();
+
+    @PutMapping("/rest/activeModule")
+    String setFailedModule(@RequestParam Modules module);
 }

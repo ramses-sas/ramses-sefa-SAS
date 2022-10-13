@@ -15,4 +15,10 @@ public interface MonitorClient {
     @PutMapping("/rest/schedulingPeriod")
     void changeSchedulingPeriod(@RequestParam("period") int period);
 
+    @GetMapping("/rest/startRoutine")
+    void startRoutine();
+
+    @GetMapping("/rest/stopRoutine")
+    void stopRoutine();
+
 }

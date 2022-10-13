@@ -75,6 +75,7 @@ public class PlanService {
             log.info("Ending plan. Notifying the Execute module to start the next iteration.");
             executeClient.start();
         } catch (Exception e) {
+            knowledgeClient.setFailedModule(Modules.PLAN);
             log.error(e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Error during the plan execution", e);

@@ -44,4 +44,7 @@ public interface KnowledgeClient {
 
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
+
+    @PutMapping("/rest/activeModule")
+    String setFailedModule(@RequestParam Modules module);
 }

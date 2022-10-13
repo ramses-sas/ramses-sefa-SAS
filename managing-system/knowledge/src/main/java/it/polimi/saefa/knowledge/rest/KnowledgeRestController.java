@@ -36,6 +36,17 @@ public class KnowledgeRestController {
     }
 
 
+    @GetMapping("/failedModule")
+    public Modules getFailedModule() {
+        return knowledgeService.getFailedModule();
+    }
+
+    @PutMapping("/failedModule")
+    public String setFailedModule(@RequestParam Modules module) {
+        knowledgeService.setFailedModule(module);
+        return "Failed module correctly set";
+    }
+
 
     @GetMapping("/services")
     public List<Service> getServices() {
