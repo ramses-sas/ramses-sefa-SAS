@@ -34,4 +34,10 @@ public class InstancesManagerRestController {
 		return new RemoveInstanceResponse(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 	}
 
+	@PostMapping(path = "/changeProfile")
+	public String changeProfile(@RequestBody String newProfile) {
+		instancesManagerService.changeProfile(newProfile);
+		return "Profile changed to " + newProfile;
+	}
+
 }

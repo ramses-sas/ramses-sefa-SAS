@@ -23,10 +23,12 @@ public class InstancesSupplier {
     private KnowledgeClient knowledgeClient;
 
     public Map<String, List<InstanceInfo>> getServicesInstances() {
+        // Get the managed services from the knowledge
         Set<String> serviceIdSet = knowledgeClient.getServicesMap().keySet();
         List<Application> applications = discoveryClient.getApplications().getRegisteredApplications();
         Map<String, List<InstanceInfo>> servicesInstances = new HashMap<>();
         applications.forEach(application -> {
+            // If the service is managed get its instances from the discovery client
             if (serviceIdSet.contains(application.getName())) {
                 List<InstanceInfo> applicationsInstances = application.getInstances();
                 servicesInstances.put(application.getName(), applicationsInstances);
@@ -37,3 +39,5 @@ public class InstancesSupplier {
 
 
 }
+
+

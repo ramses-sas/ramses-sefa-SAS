@@ -56,6 +56,12 @@ BuildNRun() {
   fi
 }
 
+cd "../libs/config-parser/" || return
+./gradlew clean; ./gradlew build
+cd "../load-balancer/"
+./gradlew clean; ./gradlew build
+cd "../../managed-system/"
+
 if [ "$IS_REMOTE" = "no" ] ; then
   cd "servers/eureka-registry-server/" || return
   bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"

@@ -85,6 +85,7 @@ done
 
 echo ""
 PrintSuccess "1/4 - Building the service using gradle provided by the project..."
+"$ROOT_PATH/gradlew" clean
 "$ROOT_PATH/gradlew" build
 PrintSuccess "1/4 - DONE"
 echo ""

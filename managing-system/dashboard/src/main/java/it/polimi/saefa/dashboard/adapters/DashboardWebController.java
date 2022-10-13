@@ -1,16 +1,21 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
+import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 import it.polimi.saefa.knowledge.domain.metrics.CircuitBreakerMetrics;
-import it.polimi.saefa.knowledge.domain.metrics.HttpRequestMetrics;
-import it.polimi.saefa.knowledge.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,79 +27,15 @@ import java.util.*;
 @Controller
 @Slf4j
 public class DashboardWebController {
+	@Value("${MAX_HISTORY_SIZE}")
+	private int maxHistorySize;
+	@Value("${ADAPTATION_HISTORY_SIZE}")
+	private int adaptationHistorySize;
 
 	@Autowired 
 	private DashboardWebService dashboardWebService;
 
-	@GetMapping("/service/{serviceId}")
-	public String serviceDetails(Model model, @PathVariable String serviceId) {
-		Service service = dashboardWebService.getService(serviceId);
-		log.info("Service: " + service);
-		// [[InstanceId, Status, LatestMetricsDescription]]
-		List<String[]> instancesTable = new ArrayList<>();
-		for (Instance instance : service.getInstances())
-			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
-		model.addAttribute("serviceId", serviceId);
-		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
-		model.addAttribute("instancesTable", instancesTable);
 
-		GraphData[] graphs = new GraphData[3];
-		GraphData data = new GraphData("Instant", "Availability");
-		for (int i = 0; i < 20; i++) {
-			data.addPoint("" + i, i * Math.random());
-		}
-		graphs[0] = data;
-		GraphData data1 = new GraphData("Instant", "Average Response Time");
-		for (int i = 0; i < 20; i++) {
-			data1.addPoint("" + i, i * Math.random());
-		}
-		graphs[1] = data1;
-		GraphData data2 = new GraphData("Instant", "Max Response Time");
-		for (int i = 0; i < 20; i++) {
-			data2.addPoint("" + i, i * Math.random());
-		}
-		graphs[2] = data2;
-		log.debug("Graphs: " + Arrays.toString(graphs));
-		model.addAttribute("graphs", graphs);
-
-		return "webpages/serviceDetails";
-	}
-
-	@GetMapping("/service/{serviceId}/{instanceId}/metrics")
-	public String instanceMetrics(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
-		InstanceMetrics latestMetrics = dashboardWebService.getLatestMetrics(serviceId, instanceId);
-		log.debug("Latest metrics: " + latestMetrics);
-		List<String[]> resourceTable = new ArrayList<>();
-		List<String[]> httpMetricsTable = new ArrayList<>();
-		List<String[]> circuitBreakersTable = new ArrayList<>();
-		if (latestMetrics != null) {
-			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
-			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
-			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
-			for (HttpRequestMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
-				for(String outcome : httpMetrics.getOutcomes())
-					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
-						outcome, httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.2f", httpMetrics.getAverageDurationByOutcome(outcome))+" s"});
-			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
-				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
-				double failureRate = cbMetrics.getFailureRate();
-				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", failureRate*100)+"%"});
-				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
-				double slowCallRate = cbMetrics.getSlowCallRate();
-				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", slowCallRate*100)+"%"});
-				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
-				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
-					Double avgDuration = cbMetrics.getAverageDuration(status);
-					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format(Locale.ROOT, "%.2f", avgDuration)+" s"});
-				}
-				circuitBreakersTable.add(new String[]{"", ""});
-			}
-		}
-		model.addAttribute("resourceTable", resourceTable);
-		model.addAttribute("httpMetricsTable", httpMetricsTable);
-		model.addAttribute("circuitBreakersTable", circuitBreakersTable);
-		return "webpages/instanceMetrics";
-	}
 
 	/* Mostra home page */
 	@GetMapping("/")
@@ -133,24 +74,22 @@ public class DashboardWebController {
 
 			// List <ParameterName, Value, Threshold, Weight>
 			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementationObject().getAdaptationParamCollection().getAdaptationParamHistories()) {
+			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementation().getAdaptationParamCollection().getAdaptationParamsMap().values()) {
 				serviceAdaptationParametersTable.add(new String[]{
-					ap.getSpecification().getClass().getSimpleName(),
-					ap.getLastValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", ap.getLastValue()),
-					ap.getSpecification().getConstraintDescription(),
-					ap.getSpecification().getWeight().toString()}
+						ap.getSpecification().getClass().getSimpleName(),
+						ap.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.3f", ap.getCurrentValue().getValue()),
+						ap.getSpecification().getConstraintDescription(),
+						ap.getSpecification().getWeight().toString()}
 				);
 			}
 			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
 
-			ServiceImplementation currentImplementation = s.getCurrentImplementationObject();
+			ServiceImplementation currentImplementation = s.getCurrentImplementation();
 			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
-			currentImplementationTable.add(new String[]{"Cost Per Boot", currentImplementation.getCostPerBoot()+"€"});
-			currentImplementationTable.add(new String[]{"Cost Per Instance", currentImplementation.getCostPerInstance()+"€"});
-			currentImplementationTable.add(new String[]{"Cost Per Second Of Execution", currentImplementation.getCostPerSecond()+"€/s"});
-			currentImplementationTable.add(new String[]{"Cost Per Request", currentImplementation.getCostPerRequest()+"€/request"});
+			currentImplementationTable.add(new String[]{"Score", String.valueOf(currentImplementation.getScore())});
+			currentImplementationTable.add(new String[]{"Penalty", String.valueOf(currentImplementation.getPenalty())});
 			servicesCurrentImplementationTable.put(s.getServiceId(), currentImplementationTable);
 		}
 
@@ -161,27 +100,185 @@ public class DashboardWebController {
 		return "index";
 	}
 
-	/* Plot adaptation parameters. */
-	@GetMapping("/adaptation")
-	public String home(Model model) {
-		GraphData[] graphs = new GraphData[3];
-		GraphData data = new GraphData("Instant", "Availability");
-		for (int i = 0; i < 20; i++) {
-			data.addPoint("" + i, i * Math.random());
-		}
-		graphs[0] = data;
-		GraphData data1 = new GraphData("Instant", "Average Response Time");
-		for (int i = 0; i < 20; i++) {
-			data1.addPoint("" + i, i * Math.random());
-		}
-		graphs[1] = data1;
-		GraphData data2 = new GraphData("Instant", "Max Response Time");
-		for (int i = 0; i < 20; i++) {
-			data2.addPoint("" + i, i * Math.random());
-		}
-		graphs[2] = data2;
-		log.debug("Graphs: " + Arrays.toString(graphs));
-		model.addAttribute("graphs", graphs);
-		return "webpages/adaptation";
+
+	@GetMapping("/service/{serviceId}")
+	public String serviceDetails(Model model, @PathVariable String serviceId) {
+		Service service = dashboardWebService.getService(serviceId);
+		log.info("Service: " + service);
+		// [[InstanceId, Status, LatestMetricsDescription]]
+		List<String[]> instancesTable = new ArrayList<>();
+		for (Instance instance : service.getInstances())
+			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
+		model.addAttribute("serviceId", serviceId);
+		model.addAttribute("latestAdaptationDate", service.getLatestAdaptationDate());
+		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
+		model.addAttribute("instancesTable", instancesTable);
+
+		model.addAttribute("graphs", computeServiceGraphs(service));
+		return "webpages/serviceDetails";
 	}
+
+	@GetMapping("/service/{serviceId}/{instanceId}")
+	public String instanceDetails(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
+		Instance instance = dashboardWebService.getInstance(serviceId, instanceId);
+		InstanceMetricsSnapshot latestMetrics = instance.getLatestInstanceMetricsSnapshot();
+		List<String[]> resourceTable = new ArrayList<>();
+		List<String[]> httpMetricsTable = new ArrayList<>();
+		List<String[]> circuitBreakersTable = new ArrayList<>();
+		if (latestMetrics != null) {
+			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
+			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
+			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
+			for (HttpEndpointMetrics httpMetrics : latestMetrics.getHttpMetrics().values())
+				for(String outcome : httpMetrics.getOutcomes())
+					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
+						outcome, String.valueOf(httpMetrics.getCountByOutcome(outcome)),
+							httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.1f", httpMetrics.getAverageDurationByOutcome(outcome)*1000)+" ms"});
+			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
+				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
+				double failureRate = cbMetrics.getFailureRate();
+				circuitBreakersTable.add(new String[]{"Failure Rate", failureRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", failureRate)+"%"});
+				circuitBreakersTable.add(new String[]{"Failed Calls Count", cbMetrics.getNotPermittedCallsCount()+""});
+				double slowCallRate = cbMetrics.getSlowCallRate();
+				circuitBreakersTable.add(new String[]{"Slow Calls Rate", slowCallRate==-1 ? "N/A" : String.format(Locale.ROOT, "%.1f", slowCallRate)+"%"});
+				circuitBreakersTable.add(new String[]{"Slow Calls Count", cbMetrics.getSlowCallCount()+""});
+				for (CircuitBreakerMetrics.CallOutcomeStatus status : CircuitBreakerMetrics.CallOutcomeStatus.values()) {
+					Double avgDuration = cbMetrics.getAverageDuration(status);
+					circuitBreakersTable.add(new String[]{"Average Call Duration when "+status, avgDuration.isNaN() ? "N/A" : String.format(Locale.ROOT, "%.3f", avgDuration)+" s"});
+				}
+				circuitBreakersTable.add(new String[]{"", ""});
+			}
+		}
+		model.addAttribute("resourceTable", resourceTable);
+		model.addAttribute("httpMetricsTable", httpMetricsTable);
+		model.addAttribute("circuitBreakersTable", circuitBreakersTable);
+		model.addAttribute("graphs", computeInstanceGraphs(instance, dashboardWebService.getServiceLatestAdaptationDate(serviceId)));
+		return "webpages/instanceDetails";
+	}
+
+
+	/* Display current status */
+	@GetMapping("/adaptationStatus")
+	public String adaptationStatus(Model model) {
+		Map<String, List<AdaptationOption>> history = dashboardWebService.getChosenAdaptationOptionsHistory(adaptationHistorySize);
+		Map<String, List<String>> historyTable = new HashMap<>();
+		for (String serviceId : history.keySet()) {
+			List<String> serviceHistory = new LinkedList<>();
+			for (AdaptationOption option : history.get(serviceId))
+				serviceHistory.add(option.getDescription() + "\nApplied at: " + option.getTimestamp());
+			for (int i = serviceHistory.size(); i < adaptationHistorySize; i++)
+				serviceHistory.add("");
+			historyTable.put(serviceId, serviceHistory);
+		}
+		model.addAttribute("adaptationHistorySize", adaptationHistorySize);
+		model.addAttribute("historyTable", historyTable);
+		Modules activeModule = dashboardWebService.getActiveModule();
+		model.addAttribute("activeModule", activeModule);
+		switch (activeModule) {
+			case MONITOR ->
+					model.addAttribute("statusDescription", "Monitor module is collecting metrics from the services.");
+			case ANALYSE ->
+					model.addAttribute("statusDescription", "Analyse module is computing the adaptation options from the metrics collected by the monitor.");
+			case PLAN ->
+					model.addAttribute("statusDescription", "Plan module is choosing the adaptation options to apply from the ones proposed by the Analyse module.");
+			case EXECUTE ->
+					model.addAttribute("statusDescription", "Execute module is applying the adaptation options chosen by the Plan module.");
+		}
+		return "webpages/adaptationStatus";
+	}
+
+	private GraphData[] computeServiceGraphs(Service service) {
+		GraphData[] graphs = new GraphData[2];
+		// Values is ordered by timestamp ASC
+		List<AdaptationParameter.Value> values;
+		GraphData graph;
+		int valuesSize, oldestValueIndex;
+
+		graph = new GraphData("Instant", "Availability");
+		values = service.getValuesHistoryForParam(Availability.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
+				graph.addPointBefore(v.getValue());
+			} else {
+				graph.addPointAfter(v.getValue());
+			}
+		}
+		graph.generateAggregatedPoints();
+		log.debug(graph.getPoints().toString());
+		graphs[0] = graph;
+
+		graph = new GraphData("Instant", "Average Response Time [ms]");
+		values = service.getValuesHistoryForParam(AverageResponseTime.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
+				graph.addPointBefore(v.getValue() * 1000);
+			} else
+				graph.addPointAfter(v.getValue()*1000);
+		}
+		graph.generateAggregatedPoints();
+		graphs[1] = graph;
+
+		return graphs;
+	}
+
+	private GraphData[] computeInstanceGraphs(Instance instance, Date serviceLatestAdaptationDate) {
+		GraphData[] graphs = new GraphData[2];
+		// Values is ordered by timestamp ASC
+		List<AdaptationParameter.Value> values;
+		GraphData graph;
+		int valuesSize, oldestValueIndex;
+
+		graph = new GraphData("Instant", "Availability");
+		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(Availability.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
+				graph.addPointBefore(v.getValue());
+			} else
+				graph.addPointAfter(v.getValue());
+		}
+		graphs[0] = graph;
+
+		graph = new GraphData("Instant", "Average Response Time [ms]");
+		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(AverageResponseTime.class);
+		valuesSize = values.size();
+		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
+		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
+			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
+				graph.addPointBefore(v.getValue()*1000);
+			} else
+				graph.addPointAfter(v.getValue()*1000);
+		}
+		graphs[1] = graph;
+
+		return graphs;
+	}
+
+
+
+	// Configuration part
+
+	/* Show configuration page */
+	@GetMapping("/configuration")
+	public String configuration(Model model) {
+		model.addAttribute("monitorSchedulingPeriod", dashboardWebService.getMonitorSchedulingPeriod()/1000);
+		return "webpages/configuration";
+	}
+
+	@PostMapping("/configuration/changeMonitorSchedulingPeriod")
+	public String changeMonitorSchedulingPeriod(Model model, @RequestParam(value = "monitorSchedulingPeriod") int monitorSchedulingPeriod) {
+		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod*1000);
+		return configuration(model);
+	}
+
+
 }

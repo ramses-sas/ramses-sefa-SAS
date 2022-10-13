@@ -9,6 +9,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				}
@@ -23,6 +31,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 
 					]
@@ -38,6 +54,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				},
@@ -47,6 +71,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				},
@@ -56,6 +88,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				}
@@ -70,6 +110,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				},
@@ -79,6 +127,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				},
@@ -88,6 +144,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				}
@@ -104,6 +168,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				}
@@ -118,6 +190,14 @@
 						{
 							"name": "average_response_time",
 							"benchmark": 5
+						},
+						{
+							"name": "max_response_time",
+							"benchmark": 5
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.8
 						}
 					]
 				}

@@ -1,5 +1,6 @@
 package it.polimi.saefa.plan.externalInterfaces;
 
+import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
@@ -14,6 +15,9 @@ import java.util.Map;
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
 
+    @PostMapping("/rest/notifyModuleStart")
+    ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
+
     @GetMapping("/rest/services")
     List<Service> getServices();
 
@@ -27,7 +31,7 @@ public interface KnowledgeClient {
     Map<String, List<AdaptationOption>> proposedAdaptationOptions();
 
     @PostMapping("/rest/chooseAdaptationOptions")
-    ResponseEntity<String> chooseAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
+    ResponseEntity<String> chooseAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions);
 
     @GetMapping("/rest/proposedAdaptationOptions")
     Map<String, List<AdaptationOption>> getProposedAdaptationOptions();

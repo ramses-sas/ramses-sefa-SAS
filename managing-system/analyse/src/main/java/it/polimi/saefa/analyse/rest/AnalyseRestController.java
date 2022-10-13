@@ -1,23 +1,15 @@
 package it.polimi.saefa.analyse.rest;
 
 import it.polimi.saefa.analyse.domain.AnalyseService;
-import it.polimi.saefa.analyse.externalInterfaces.KnowledgeClient;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstances;
-import it.polimi.saefa.knowledge.domain.adaptation.options.RemoveInstances;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/rest")
 public class AnalyseRestController {
     @Autowired
     private AnalyseService analyseService;
-
-    @Autowired
-    private KnowledgeClient knowledgeClient;
 
     @GetMapping("/start")
     public String start() {
@@ -50,11 +42,10 @@ public class AnalyseRestController {
     }
 
     // TODO remove after test
-    @GetMapping("/test")
-    public String test() {
-        List<AdaptationOption> opt = List.of(new AddInstances("restaurant-service", "restaurant-service", 1, "test"), new RemoveInstances("restaurant-service", "restaurant-service", List.of("restaurant-service@localhost:58085"), "test"));
-        knowledgeClient.proposeAdaptationOptions(opt);
-        knowledgeClient.chooseAdaptationOptions(opt);
-        return "OK";
+    @GetMapping("/")
+    public String debug() {
+        analyseService.breakpoint();
+        return "Hello from Analysis Service";
     }
+
 }

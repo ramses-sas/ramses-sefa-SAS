@@ -48,22 +48,21 @@ public class KnowledgeInit implements InitializingBean {
             List<InstanceInfo> instances = serviceApplication.getInstances();
             if (instances == null || instances.isEmpty())
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
-            service.setCurrentImplementation(instances.get(0).getInstanceId().split("@")[0]);
+            service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
             service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
-            instances.forEach(instanceInfo -> {
-                if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementation()))
-                    throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
-                service.getOrCreateInstance(instanceInfo.getInstanceId());
-            });
-            service.setConfiguration(configurationParser.parseProperties(service));
-            knowledgeService.addService(service);
             servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
                 serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
                         service.getPossibleImplementations()
                                 .get(serviceImplementationBenchmarks.getServiceImplementationId())
-                                .getAdaptationParamCollection()
                                 .setBootBenchmark(adaptationClass, value));
             });
+            instances.forEach(instanceInfo -> {
+                if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))
+                    throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
+                service.createInstance(instanceInfo.getInstanceId().split("@")[1]);
+            });
+            service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
+            knowledgeService.addService(service);
 
 
         });
@@ -75,7 +74,7 @@ public class KnowledgeInit implements InitializingBean {
                 if (configuration.getLoadBalancerWeights() == null) {
                     for (Instance instance : service.getInstances())
                         configuration.addLoadBalancerWeight(instance.getInstanceId(), 1.0/service.getInstances().size());
-                } else if (!configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementationObject().getInstances().keySet())) {
+                } else if (!configuration.getLoadBalancerWeights().keySet().equals(service.getCurrentImplementation().getInstances().keySet())) {
                     throw new RuntimeException("Service " + service.getServiceId() + " has a load balancer weights map with different keys than the current implementation instances");
                 }
             }

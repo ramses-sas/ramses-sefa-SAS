@@ -13,7 +13,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class HttpRequestMetrics {
+public class HttpEndpointMetrics {
 
     @Id
     @GeneratedValue
@@ -33,9 +33,9 @@ public class HttpRequestMetrics {
     public static class OutcomeMetrics{
         private String outcome;
         private int status;
-        private long count;
-        private double totalDuration;
-        private double maxDuration;
+        private long count = 0;
+        private double totalDuration = 0;
+        private double maxDuration = 0;
 
         @JsonIgnore
         @Transient
@@ -48,6 +48,22 @@ public class HttpRequestMetrics {
         public OutcomeMetrics(String outcome) {
             this.outcome = outcome;
         }
+
+        public void updateTotalDuration(double duration){
+            totalDuration += duration;
+        }
+
+        public void updateCount(long count) {
+            this.count += count;
+        }
+
+        public void updateMaxDuration(double maxDuration){
+            if(maxDuration > this.maxDuration)
+                this.maxDuration = maxDuration;
+        }
+
+
+
     }
 
     @Override
@@ -55,7 +71,7 @@ public class HttpRequestMetrics {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        HttpRequestMetrics that = (HttpRequestMetrics) o;
+        HttpEndpointMetrics that = (HttpEndpointMetrics) o;
 
         if (!endpoint.equals(that.endpoint)) return false;
         return httpMethod.equals(that.httpMethod) && getTotalCount() == that.getTotalCount();
@@ -100,7 +116,7 @@ public class HttpRequestMetrics {
     public double getTotalDurationOfSuccessful(){
         double total = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.status<400)
+            if(outcomeMetrics.status<500)
                 total += outcomeMetrics.getTotalDuration();
         }
         return total;
@@ -119,7 +135,7 @@ public class HttpRequestMetrics {
     public int getTotalCountOfSuccessful(){
         int total = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.status<400)
+            if(outcomeMetrics.status<500)
                 total += outcomeMetrics.getCount();
         }
         return total;
@@ -129,7 +145,7 @@ public class HttpRequestMetrics {
     public double getMaxDuration(){
         double max = 0;
         for(OutcomeMetrics outcomeMetrics : outcomeMetrics.values()){
-            if(outcomeMetrics.getMaxDuration() > max)
+            if(outcomeMetrics.getStatus()<500 && outcomeMetrics.getMaxDuration() > max)
                 max = outcomeMetrics.getMaxDuration();
         }
         return max;
@@ -183,21 +199,21 @@ public class HttpRequestMetrics {
     public void addOrSetOutcomeMetricsDetails(String outcome, int status, long count, double totalDuration) {
         OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics(outcome));
         outcomeMetric.setStatus(status);
-        outcomeMetric.setCount(count);
-        outcomeMetric.setTotalDuration(totalDuration);
+        outcomeMetric.updateCount(count);
+        outcomeMetric.updateTotalDuration(totalDuration);
         outcomeMetrics.put(outcome, outcomeMetric);
     }
 
     public void addOrSetOutcomeMetricsMaxDuration(String outcome, double maxDuration) {
         OutcomeMetrics outcomeMetric = outcomeMetrics.getOrDefault(outcome, new OutcomeMetrics(outcome));
-        outcomeMetric.setMaxDuration(maxDuration);
+        outcomeMetric.updateMaxDuration(maxDuration);
         outcomeMetrics.put(outcome, outcomeMetric);
     }
 
 
 
 
-    public HttpRequestMetrics(String endpoint, String httpMethod) {
+    public HttpEndpointMetrics(String endpoint, String httpMethod) {
         this.endpoint = endpoint;
         this.httpMethod = httpMethod;
     }

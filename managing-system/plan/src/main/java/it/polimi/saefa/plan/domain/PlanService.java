@@ -1,22 +1,19 @@
 package it.polimi.saefa.plan.domain;
 
 import com.google.ortools.linearsolver.*;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.options.ChangeLoadBalancerWeights;
+import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.adaptation.options.*;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
-import it.polimi.saefa.knowledge.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.*;
 import it.polimi.saefa.plan.externalInterfaces.ExecuteClient;
 import it.polimi.saefa.plan.externalInterfaces.KnowledgeClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -38,49 +35,86 @@ public class PlanService {
     }
 
     public void startPlan() {
-        log.info("Starting plan");
-        Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
-        List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
-        Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
+        try {
+            log.info("Starting plan");
+            knowledgeClient.notifyModuleStart(Modules.PLAN);
+            Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
+            Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
+            Map<String, List<AdaptationOption>> chosenAdaptationOptions = new HashMap<>();
 
-        proposedAdaptationOptions.forEach((serviceId, options) -> {
-            boolean foundForcedOption = false;
-            log.debug("\n\nAnalysing service: {}", serviceId);
-            List<AdaptationOption> optionsToCompare = new LinkedList<>();
-            for (AdaptationOption option : options) {
-                if (option.isForced()) {
-                    log.info("Forced adaptation option: {}", option.getDescription());
-                    chosenAdaptationOptionList.add(option);
-                    foundForcedOption = true;
-                }
-                if (!foundForcedOption) {
-                    log.info("Adaptation option: {}", option.getDescription());
-                    if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
-                        ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
-                        changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(changeLoadBalancerWeights, servicesMap.get(option.getServiceId())));
-                        optionsToCompare.add(changeLoadBalancerWeights);
+            proposedAdaptationOptions.forEach((serviceId, options) -> {
+                log.debug("\n\nAnalysing service: {}", serviceId);
+                List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
+                // Initialized with all the forced options
+                List<AdaptationOption> optionsToCompare = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
+                if (optionsToCompare.isEmpty()) {
+                    for (AdaptationOption option : options) {
+                        log.info("Adaptation option: {}", option.getDescription());
+                        if (option.getClass().equals(ChangeLoadBalancerWeights.class)) {
+                            ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) option;
+                            changeLoadBalancerWeights.setNewWeights(handleChangeLoadBalancerWeights(servicesMap.get(option.getServiceId())));
+                            if (changeLoadBalancerWeights.getNewWeights() != null) //If it's null it means that the problem has no solution
+                                optionsToCompare.add(changeLoadBalancerWeights);
+                        }
+                        if (option.getClass().equals(AddInstance.class))
+                            optionsToCompare.add(handleAddInstance((AddInstance) option, servicesMap.get(option.getServiceId())));
+                        if (option.getClass().equals(RemoveInstance.class))
+                            optionsToCompare.add(handleRemoveInstance((RemoveInstance) option, servicesMap.get(option.getServiceId())));
                     }
+                    AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
+                    if (chosenOption != null)
+                        chosenAdaptationOptionList.add(chosenOption);
+                } else {
+                    // If there is at least a forced option, all the other options are ignored
+                    log.info("Forced adaptation options: {}", optionsToCompare);
+                    chosenAdaptationOptionList.addAll(optionsToCompare);
+                }
+                chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
+            });
+            knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
+            log.info("Ending plan. Notifying the Execute module to start the next iteration.");
+            executeClient.start();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error during the plan execution", e);
+        }
+    }
+
+    private RemoveInstance handleRemoveInstance(RemoveInstance removeInstance, Service service) {
+        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM){
+            removeInstance.setNewWeights(redistributeWeight(service.getLoadBalancerWeights(), removeInstance.getInstanceId()));
+        }
+        return removeInstance;
+    }
+
+    private AddInstance handleAddInstance(AddInstance addInstance, Service service) {
+        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+            int oldNumberOfInstances = service.getInstances().size();
+            int newNumberOfInstances = oldNumberOfInstances + 1;
+            Map<String, Double> oldWeightsRedistributed = reduceWeightsForNewInstance(service.getLoadBalancerWeights(), newNumberOfInstances);
+
+            Set<String> instancesToRemove = new HashSet<>();
+            double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
+
+            Double newWeight = 1.0 / (newNumberOfInstances);
+            for (String instanceId : oldWeightsRedistributed.keySet()) {
+                if (oldWeightsRedistributed.get(instanceId) < shutdownThreshold) {
+                    instancesToRemove.add(instanceId);
                 }
             }
-            AdaptationOption chosenOption = extractBestOption(optionsToCompare);
-            if (chosenOption != null)
-                chosenAdaptationOptionList.add(chosenOption);
-        });
-        knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptionList);
-        log.info("Ending plan. Notifying the Execute module to start the next iteration.");
-        executeClient.start();
+            for (String instanceId : instancesToRemove) {
+                oldWeightsRedistributed = redistributeWeight(oldWeightsRedistributed, instanceId);
+            }
+            addInstance.setNewInstanceWeight(newWeight);
+            addInstance.setOldInstancesNewWeights(oldWeightsRedistributed);
+        }
+            return addInstance;
     }
 
-    public AdaptationOption extractBestOption(List<AdaptationOption> toCompare) {
-        if (toCompare.size() == 0)
-            return null;
-        // TODO: implementare algoritmo di selezione migliore opzione
-        return toCompare.get(0);
-    }
-
-    public Map<String, Double> handleChangeLoadBalancerWeights(ChangeLoadBalancerWeights option, Service service) {
+    public Map<String, Double> handleChangeLoadBalancerWeights(Service service) {
         Map<String, Double> previousWeights = service.getConfiguration().getLoadBalancerWeights();
-        double shutdownThreshold = service.getCurrentImplementationObject().getInstanceLoadShutdownThreshold() / service.getInstances().size();
+        double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
         double defaultWeight = 1.0 / service.getInstances().size();
         boolean emptyWeights = previousWeights.isEmpty();
 
@@ -90,46 +124,57 @@ public class PlanService {
         Map<String, MPVariable> weights = new HashMap<>();
         Map<String, MPVariable> activations = new HashMap<>();
         MPObjective objective = solver.objective();// min{∑(w_i/z_i) - ∑(a_i * z_i)}
-        MPConstraint sumOfWeights = solver.makeConstraint(1, 1, "sumOfWeights"); //∑w_i = 1
+        double sumOfWeightsValue = 1.0;
 
-        double serviceAvgRespTime = service.getCurrentImplementationObject().getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-        double serviceAvgAvailability = option.getServiceAverageAvailability(); //TODO se l'availability del sistema è quella media e non in parallelo, va tolta dall'adaptation option e presa dal servizio
+        double serviceAvgRespTime = service.getCurrentValueForParam(AverageResponseTime.class).getValue();
+        double serviceAvgAvailability = service.getCurrentValueForParam(Availability.class).getValue();
         double k_s = serviceAvgAvailability/serviceAvgRespTime; // service performance indicator
+        MPConstraint sumOfWeights = solver.makeConstraint("sumOfWeights"); //∑w_i = 1 - b/n
 
         for (Instance instance : service.getInstances()) {
-            MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
-            MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
-            weights.put(instance.getInstanceId(), weight);
-            activations.put(instance.getInstanceId(), activation);
-            sumOfWeights.setCoefficient(weight, 1);
+            if (instance.getCurrentStatus() != InstanceStatus.BOOTING){
+                MPVariable weight = solver.makeNumVar(0, 1, instance.getInstanceId() + "_weight");
+                MPVariable activation = solver.makeIntVar(0, 1, instance.getInstanceId() + "_activation");
+                weights.put(instance.getInstanceId(), weight);
+                activations.put(instance.getInstanceId(), activation);
+                sumOfWeights.setCoefficient(weight, 1);
 
-            // w_i - a_i*shutdownThreshold >= 0 OVVERO
-            // w_i >= a_i * shutdownThreshold
-            MPConstraint lowerBoundConstraint = solver.makeConstraint(0, Double.POSITIVE_INFINITY, instance.getInstanceId() + "_activation_lowerBoundConstraint");
-            lowerBoundConstraint.setCoefficient(weight, 1);
-            lowerBoundConstraint.setCoefficient(activation, -shutdownThreshold);
+                // w_i - a_i*shutdownThreshold >= 0 OVVERO
+                // w_i >= a_i * shutdownThreshold
+                MPConstraint lowerBoundConstraint = solver.makeConstraint(0, Double.POSITIVE_INFINITY, instance.getInstanceId() + "_activation_lowerBoundConstraint");
+                lowerBoundConstraint.setCoefficient(weight, 1);
+                lowerBoundConstraint.setCoefficient(activation, -shutdownThreshold);
 
-            // w_i - a_i<=0 OVVERO
-            // w_i <= a_i
-            MPConstraint upperBoundConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, instance.getInstanceId() + "_activation_upperBoundConstraint");
-            upperBoundConstraint.setCoefficient(weight, 1);
-            upperBoundConstraint.setCoefficient(activation, -1);
+                // w_i - a_i<=0 OVVERO
+                // w_i <= a_i
+                MPConstraint upperBoundConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, instance.getInstanceId() + "_activation_upperBoundConstraint");
+                upperBoundConstraint.setCoefficient(weight, 1);
+                upperBoundConstraint.setCoefficient(activation, -1);
 
-            if(emptyWeights)
-                previousWeights.put(instance.getInstanceId(), defaultWeight);
-            double instanceAvgRespTime = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-            double instanceAvailability = instance.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
-            double k_i = instanceAvailability/instanceAvgRespTime;
-            double z_i = k_i/k_s;
+                if (emptyWeights)
+                    previousWeights.put(instance.getInstanceId(), defaultWeight);
+                double instanceAvgRespTime = instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                if (instanceAvgRespTime == 0)
+                    instanceAvgRespTime = Double.MIN_VALUE;
+                double instanceAvailability = instance.getCurrentValueForParam(Availability.class).getValue();
+                if(instanceAvailability == 0)
+                    instanceAvailability = Double.MIN_VALUE;
+                double k_i = instanceAvailability / instanceAvgRespTime;
+                double z_i = k_i / k_s;
 
-            objective.setCoefficient(weight, 1/z_i);
-            objective.setCoefficient(activation, -z_i);
+                objective.setCoefficient(weight, 1 / z_i);
+                objective.setCoefficient(activation, -z_i);
+            }
+            else{
+                sumOfWeightsValue -= defaultWeight;
+            }
         }
+        sumOfWeights.setBounds(sumOfWeightsValue, sumOfWeightsValue);
 
         for (Instance instance_i : service.getInstances()) {
             MPVariable weight_i = weights.get(instance_i.getInstanceId());
-            double instanceAvgRespTime_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-            double instanceAvailability_i = instance_i.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double instanceAvgRespTime_i = instance_i.getCurrentValueForParam(AverageResponseTime.class).getValue();
+            double instanceAvailability_i = instance_i.getCurrentValueForParam(Availability.class).getValue();
             double k_i = instanceAvailability_i/instanceAvgRespTime_i;
 
             double z_i = k_i/k_s;
@@ -139,8 +184,8 @@ public class PlanService {
             for(Instance instance_j : service.getInstances()){
                 if(!instance_i.getInstanceId().equals(instance_j.getInstanceId())){
                     MPVariable weight_j = weights.get(instance_j.getInstanceId());
-                    double instanceAvgRespTime_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
-                    double instanceAvailability_j = instance_j.getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+                    double instanceAvgRespTime_j = instance_j.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                    double instanceAvailability_j = instance_j.getCurrentValueForParam(Availability.class).getValue();
                     firstConstraint.setCoefficient(activations.get(instance_j.getInstanceId()), z_i * previousWeights.get(instance_j.getInstanceId()));
 
                     double k_j = instanceAvailability_j /instanceAvgRespTime_j;
@@ -182,9 +227,9 @@ public class PlanService {
 
         for (String instanceId : previousWeights.keySet()) {
             String P_i = String.format("%.2f", previousWeights.get(instanceId));
-            double avail_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(Availability.class).getValue();
+            double avail_i_double = service.getInstance(instanceId).getCurrentValueForParam(Availability.class).getValue();
             String avail_i = String.format("%.2f", avail_i_double);
-            double ART_i_double = service.getOrCreateInstance(instanceId).getAdaptationParamCollection().getLatestAdaptationParamValue(AverageResponseTime.class).getValue();
+            double ART_i_double = service.getInstance(instanceId).getCurrentValueForParam(AverageResponseTime.class).getValue();
             String ART_i = String.format("%.2f", ART_i_double);
             double k_i_double = avail_i_double/ART_i_double;
             String k_i = String.format("%.2f", k_i_double);
@@ -209,6 +254,206 @@ public class PlanService {
 
         return newWeights;
     }
+
+    public ChangeImplementation handleChangeImplementation(ChangeImplementation changeImplementation, Service service){
+        String bestImplementationId = null;
+        double bestImplementationBenefit = 0;
+        //Deve prendere la lista di possible implementation,
+        for(String implementationId: changeImplementation.getPossibleImplementations()){
+            Class goal = changeImplementation.getAdaptationParametersGoal();
+            ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
+            double benchmark = implementation.getBootBenchmark(changeImplementation.getAdaptationParametersGoal()) * implementation.getScore();
+            if(bestImplementationId == null) {
+                bestImplementationId = implementationId;
+                bestImplementationBenefit = benchmark;
+            }
+            else{
+                if(Availability.class == goal) {
+                    if (benchmark > bestImplementationBenefit) {
+                        bestImplementationId = implementationId;
+                        bestImplementationBenefit = benchmark;
+                    }
+                } else if(AverageResponseTime.class == goal) {
+                    if (benchmark < bestImplementationBenefit) {
+                        bestImplementationId = implementationId;
+                        bestImplementationBenefit = benchmark;
+                    }
+                }
+            }
+        }
+        changeImplementation.setNewImplementationId(bestImplementationId);
+
+        return changeImplementation;
+    }
+
+    public AdaptationOption extractBestOption(Service service, List<AdaptationOption> toCompare) {
+        if (toCompare.size() == 0)
+            return null;
+        Map<Class<? extends AdaptationParamSpecification>, Double> benefits = new HashMap<>();
+        Map<Class<? extends AdaptationParamSpecification>, AdaptationOption> bestOptionForGoal = new HashMap<>();
+
+        for (AdaptationOption adaptationOption : toCompare) {
+            List<Instance> instances = service.getInstances();
+            if(adaptationOption.getAdaptationParametersGoal() == Availability.class) {
+                double availabilityEstimation = 0.0;
+                if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+                    if (ChangeLoadBalancerWeights.class.equals(adaptationOption.getClass())) {
+                        ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) adaptationOption;
+                        for (Instance instance : instances) {
+                            availabilityEstimation += changeLoadBalancerWeights.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(Availability.class).getValue();
+                        }
+                    }
+                    else if (AddInstance.class.equals(adaptationOption.getClass())) {
+                        AddInstance addInstance = (AddInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            availabilityEstimation += addInstance.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(Availability.class).getValue();
+                        }
+                        availabilityEstimation += addInstance.getNewInstanceWeight() * service.getCurrentImplementation().getBootBenchmark(Availability.class);
+                    } else if (RemoveInstance.class.equals(adaptationOption.getClass())) {
+                        RemoveInstance removeInstance = (RemoveInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            if (!instance.getInstanceId().equals(removeInstance.getInstanceId()))
+                                availabilityEstimation += removeInstance.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(Availability.class).getValue();
+                        }
+                    }
+
+                }
+                else {
+                    if (AddInstance.class.equals(adaptationOption.getClass())) {
+                        for (Instance instance : instances) {
+                            availabilityEstimation += instance.getCurrentValueForParam(Availability.class).getValue();
+                        }
+                        availabilityEstimation += service.getCurrentImplementation().getBootBenchmark(Availability.class);
+                        availabilityEstimation /= instances.size() + 1;
+                    } else if (RemoveInstance.class.equals(adaptationOption.getClass())) {
+                        RemoveInstance removeInstance = (RemoveInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            if (!instance.getInstanceId().equals(removeInstance.getInstanceId()))
+                                availabilityEstimation += instance.getCurrentValueForParam(Availability.class).getValue();
+                        }
+                        availabilityEstimation /= instances.size() - 1;
+                    }
+                }
+                if(ChangeImplementation.class.equals(adaptationOption.getClass())) {
+                    ChangeImplementation changeImplementation = (ChangeImplementation) adaptationOption;
+                    availabilityEstimation = service.getPossibleImplementations().get(changeImplementation.getNewImplementationId()).getBootBenchmark(Availability.class);
+                }
+                double newBenefit = availabilityEstimation / service.getCurrentValueForParam(Availability.class).getValue();
+                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for availability: " + newBenefit);
+
+                if(newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))){
+                    benefits.put(Availability.class, newBenefit);
+                    bestOptionForGoal.put(Availability.class, adaptationOption);
+                }
+            }
+            else if(adaptationOption.getAdaptationParametersGoal() == AverageResponseTime.class){
+                double avgResponseTimeEstimation = 0.0;
+                if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+                    if (ChangeLoadBalancerWeights.class.equals(adaptationOption.getClass())) {
+                        ChangeLoadBalancerWeights changeLoadBalancerWeights = (ChangeLoadBalancerWeights) adaptationOption;
+                        for (Instance instance : instances) {
+                            avgResponseTimeEstimation += changeLoadBalancerWeights.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                        }
+                    } else if (AddInstance.class.equals(adaptationOption.getClass())) {
+                        AddInstance addInstance = (AddInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            avgResponseTimeEstimation += addInstance.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                        }
+                        avgResponseTimeEstimation += addInstance.getNewInstanceWeight() * service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
+                    } else if (RemoveInstance.class.equals(adaptationOption.getClass())) {
+                        RemoveInstance removeInstance = (RemoveInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            if (!instance.getInstanceId().equals(removeInstance.getInstanceId()))
+                                avgResponseTimeEstimation += removeInstance.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                        }
+                    }
+
+                }
+                else {
+                    if (AddInstance.class.equals(adaptationOption.getClass())) {
+                        for (Instance instance : instances) {
+                            avgResponseTimeEstimation += instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                        }
+                        avgResponseTimeEstimation += service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
+                        avgResponseTimeEstimation /= instances.size() + 1;
+                    } else if (RemoveInstance.class.equals(adaptationOption.getClass())) {
+                        RemoveInstance removeInstance = (RemoveInstance) adaptationOption;
+                        for (Instance instance : instances) {
+                            if (!instance.getInstanceId().equals(removeInstance.getInstanceId()))
+                                avgResponseTimeEstimation += instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
+                        }
+                        avgResponseTimeEstimation /= instances.size() - 1;
+                    }
+
+                }
+                if(ChangeImplementation.class.equals(adaptationOption.getClass())) {
+                    ChangeImplementation changeImplementation = (ChangeImplementation) adaptationOption;
+                    avgResponseTimeEstimation = service.getPossibleImplementations().get(changeImplementation.getNewImplementationId()).getBootBenchmark(AverageResponseTime.class);
+                }
+                double newBenefit =  service.getCurrentValueForParam(AverageResponseTime.class).getValue() / avgResponseTimeEstimation;
+                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for response time: " + newBenefit);
+                if(newBenefit > 1 && (!benefits.containsKey(AverageResponseTime.class) || newBenefit > benefits.get(AverageResponseTime.class))){
+                    benefits.put(AverageResponseTime.class, newBenefit);
+                    bestOptionForGoal.put(AverageResponseTime.class, adaptationOption);
+                }
+            }
+        }
+
+        Class<? extends AdaptationParamSpecification> bestBenefitClass = null;
+
+        for (Class<? extends AdaptationParamSpecification> adaptationParamSpecification : benefits.keySet()) {
+            if(bestBenefitClass == null || benefits.get(adaptationParamSpecification) > benefits.get(bestBenefitClass))
+                bestBenefitClass = adaptationParamSpecification;
+        }
+        if(bestBenefitClass == null){
+            log.error("No beneficial adaptation option found for service " + service.getServiceId());
+            return null;
+        }
+
+        return bestOptionForGoal.get(bestBenefitClass);
+    }
+
+    public void breakpoint(){
+        log.info("breakpoint");
+    }
+
+    /**
+     * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.
+     *
+     * @param weights
+     * @param instanceToRemoveId
+     * @return the new weights map
+     */
+    private Map<String, Double> redistributeWeight(Map<String, Double> weights, String instanceToRemoveId) {
+        Map<String, Double> newWeights = new HashMap<>();
+        double instanceWeight = weights.get(instanceToRemoveId);
+        for(String instanceId : weights.keySet()) {
+            double weight = weights.get(instanceId);
+            if (!instanceId.equals(instanceToRemoveId)) {
+                weight += instanceWeight / (weights.size() - 1);
+                newWeights.put(instanceId, weight);
+            } else
+                newWeights.put(instanceId, 0.0);
+        }
+        return newWeights;
+    }
+
+    /**
+     * Reduces the active instances weight to give enough weight to the new instance.
+     *
+     * @param weights
+     * @return the new weights map
+     */
+    private Map<String, Double> reduceWeightsForNewInstance(Map<String, Double> weights, int newNumberOfInstances) {
+        Map<String, Double> newWeights = new HashMap<>();
+        int oldNumberOfInstances = weights.size();
+
+        for (String instanceId : weights.keySet()) {
+            newWeights.put(instanceId, weights.get(instanceId) * (double) oldNumberOfInstances / (double) newNumberOfInstances);
+        }
+        return newWeights;
+    }
+
 
     public Map<String, Double> handleChangeLoadBalancerWeightsTEST() {
         log.warn("TEST");

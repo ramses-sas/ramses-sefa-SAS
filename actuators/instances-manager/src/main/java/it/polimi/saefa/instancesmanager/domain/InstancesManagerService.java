@@ -22,22 +22,22 @@ import static com.github.dockerjava.api.model.HostConfig.newHostConfig;
 @Slf4j
 @Service
 public class InstancesManagerService {
-    Environment env;
-    String localIp;
-    String dockerIp;
-    DockerClient dockerClient;
+    private final Object lock = new Object();
+    private final Environment env;
+    private String currentProfile;
+    private final String localIp;
+    private final String dockerIp;
+    private final DockerClient dockerClient;
 
     // <Profile, List of SimulationInstanceParams>
-    Map<String, List<SimulationInstanceParams>> simulationInstanceParamsMap;
+    private final Map<String, List<SimulationInstanceParams>> simulationInstanceParamsMap;
 
 
     public InstancesManagerService(Environment env) throws UnknownHostException {
-        localIp = InetAddress.getLocalHost().getHostAddress();
         this.env = env;
-        dockerIp = env.getProperty("DOCKER_IP");
+        localIp = InetAddress.getLocalHost().getHostAddress();
+        dockerIp = env.getProperty("DOCKER_IP") != null ? env.getProperty("DOCKER_IP") : localIp;
         String dockerPort = env.getProperty("DOCKER_PORT");
-        if (dockerIp == null || dockerIp.isEmpty())
-            dockerIp = localIp;
         if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())
             throw new RuntimeException("Docker IP and port must be set");
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
@@ -50,12 +50,11 @@ public class InstancesManagerService {
             //log.warn("Container: {}", container);
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
-        String profile = env.getProperty("PROFILE");
-        profile = "AAA";
+        currentProfile = "DEFAULT";
         simulationInstanceParamsMap = new HashMap<>();
-        switch (profile) {
-            case "AAA":
-                simulationInstanceParamsMap.put(profile, List.of(
+        switch (currentProfile) {
+            case "DEFAULT":
+                simulationInstanceParamsMap.put(currentProfile, List.of(
                     new SimulationInstanceParams(0.1, 1.7, 0.2),
                     new SimulationInstanceParams(0.2, 2.0, 0.2),
                     new SimulationInstanceParams(0.5, 4.0, 0.5)
@@ -70,9 +69,10 @@ public class InstancesManagerService {
     public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances) {
         String imageName = serviceImplementationName;
         List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
-        String profile = env.getProperty("PROFILE");
-        profile = "AAA";
-        List<SimulationInstanceParams> simulationInstanceParamsList = simulationInstanceParamsMap.get(profile);
+        List<SimulationInstanceParams> simulationInstanceParamsList;
+        synchronized (lock) {
+            simulationInstanceParamsList = simulationInstanceParamsMap.get(currentProfile);
+        }
         for (int i = 0; i < numberOfInstances; i++) {
             int randomPort = getRandomPort();
             ExposedPort serverPort = ExposedPort.tcp(randomPort);
@@ -139,6 +139,11 @@ public class InstancesManagerService {
         }
     }
 
+    public void changeProfile(String newProfile) {
+        synchronized (lock) {
+            currentProfile = newProfile;
+        }
+    }
 
     public String getDockerIp() {
         return dockerIp;
@@ -146,6 +151,31 @@ public class InstancesManagerService {
 
     public DockerClient getDockerClient() {
         return dockerClient;
+    }
+
+
+
+
+    // Test methods
+    public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances, double exceptionRate, double sleepDuration, double sleepVariance) {
+        String imageName = serviceImplementationName;
+        List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
+        for (int i = 0; i < numberOfInstances; i++) {
+            int randomPort = getRandomPort();
+            ExposedPort serverPort = ExposedPort.tcp(randomPort);
+            Ports portBindings = new Ports();
+            portBindings.bind(serverPort, Ports.Binding.bindIpAndPort("0.0.0.0", randomPort));
+            List<String> envVars = buildContainerEnvVariables(randomPort, new SimulationInstanceParams(exceptionRate, sleepDuration, sleepVariance));
+            String newContainerId = dockerClient.createContainerCmd(imageName)
+                    .withName(imageName + "_" + randomPort)
+                    .withEnv(envVars)
+                    .withExposedPorts(serverPort)
+                    .withHostConfig(newHostConfig().withPortBindings(portBindings))
+                    .exec().getId();
+            dockerClient.startContainerCmd(newContainerId).exec();
+            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "_" + randomPort, dockerIp, randomPort, envVars));
+        }
+        return serviceContainerInfos;
     }
 }
 

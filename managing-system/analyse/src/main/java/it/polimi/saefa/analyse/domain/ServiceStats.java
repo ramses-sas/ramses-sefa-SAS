@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
+/*
 
 @Getter
 @Setter
@@ -15,4 +16,5 @@ public class ServiceStats {
     private Double availability;
     private Double maxResponseTime;
 }
+ */
 

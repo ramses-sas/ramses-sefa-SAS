@@ -19,6 +19,9 @@
                                 <h5 class="cardElementTitle">Possible implementations</h5>
                                 <h6 class="cardElementContent" th:each="impl : ${possibleImplementations}" th:text="${impl}">Implementation id goes here</h6>
                                 <br>
+                                <h5 class="cardElementTitle">Latest Adaptation Date</h5>
+                                <h6 class="cardElementContent" th:text="${latestAdaptationDate}">latestAdaptationDate goes here</h6>
+                                <br>
                                 <h5 class="cardElementTitle">Instances</h5>
                                 <table class="configTable">
                                     <thead>
@@ -29,7 +32,7 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}+'/metrics'}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
                                     </tr>
                                     </tbody>
@@ -55,6 +58,7 @@
 <!-- Bootstrap Core JavaScript -->
 <script src="/js/bootstrap.min.js"></script>
 
+<!-- Graphs scripts -->
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script th:inline="javascript" type="text/javascript" th:each="graph : ${graphs}" th:id="${graph.getYAxisName()}">
     google.charts.load('current', {'packages':['line']});
@@ -66,11 +70,12 @@
         var yAxisName = /*[[${graph.getYAxisName()}]]*/;
         var pointsList = /*[[${graph.getPoints()}]]*/;
         //console.log(yAxisName);
-        //console.log(pointsList);
+        console.log(pointsList);
         /*]]>*/
         var data = new google.visualization.DataTable();
         data.addColumn('string', xAxisName);
-        data.addColumn('number', yAxisName);
+        data.addColumn('number', "Before Adaptation");
+        data.addColumn('number', "After Adaptation");
         data.addRows(pointsList);
 
         var options = {
@@ -88,10 +93,14 @@
                 x: {
                     0: {side: 'bottom'}
                 }
+            },
+            series: {
+                0: {color: '#3072f6'},
+                1: {color: 'rgb(70,252,10)'}
             }
         };
-        var chart = new google.charts.Line(document.getElementById(yAxisName));
 
+        var chart = new google.charts.Line(document.getElementById(yAxisName));
         chart.draw(data, google.charts.Line.convertOptions(options));
     }
 </script>
