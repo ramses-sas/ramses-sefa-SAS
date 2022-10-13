@@ -270,15 +270,29 @@ table.simpleTable {
     position: relative;
     width: 100%;
     margin: 0 auto;
-    border-collapse: separate;
+    border-collapse: collapse;
     overflow: hidden;
-    border-spacing: 0 20px;
-}
-table.simpleTable td, th {
-    padding-left: 8px;
-    padding-right: 8px;
-    vertical-align: top;
+    border: 2px solid black;
     text-align: center;
+}
+table.simpleTable tbody td {
+    padding: 20px 8px;
+    vertical-align: center;
+    text-align: center;
+    horiz-align: center;
+}
+table.simpleTable thead th h3 {
+    padding: 10px;
+    text-align: center;
+    /* Center vertically */
+    position: relative;
+    transform: translate(0, -10%);
+}
+table.simpleTable > tbody > tr:not(:last-of-type) > td {
+    border-bottom: 2px solid black;
+}
+table.simpleTable > thead > tr > th {
+    border-bottom: 2px solid black;
 }
 
 h5.cardElementTitle {
