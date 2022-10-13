@@ -3,6 +3,9 @@ package it.polimi.saefa.execute.externalInterfaces;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.rest.AddInstanceRequest;
+import it.polimi.saefa.knowledge.rest.ChangeOfImplementationRequest;
+import it.polimi.saefa.knowledge.rest.ShutdownInstanceRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,5 +39,11 @@ public interface KnowledgeClient {
     void updateService(@RequestBody Service service);
 
     @PostMapping("/rest/notifyShutdown")
-    ResponseEntity<String> notifyShutdownInstance(@RequestBody Map<String, String> request);
+    ResponseEntity<String> notifyShutdownInstance(@RequestBody ShutdownInstanceRequest request);
+
+    @PostMapping("/rest/notifyAddInstance")
+    ResponseEntity<String> notifyAddInstance(@RequestBody AddInstanceRequest request);
+
+    @PostMapping("/rest/notifyChangeOfImplementation")
+    ResponseEntity<String> notifyChangeOfImplementation(@RequestBody ChangeOfImplementationRequest request);
 }

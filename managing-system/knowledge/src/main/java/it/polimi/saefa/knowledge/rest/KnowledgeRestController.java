@@ -2,6 +2,7 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstance;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -160,10 +161,23 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/notifyShutdown")
-    public ResponseEntity<String> notifyShutdownInstance(@RequestBody Map<String, String> request) {
-        knowledgeService.notifyShutdownInstance(request.get("serviceId"), request.get("instanceId"));
-        return ResponseEntity.ok("Shutdown of instance " + request.get("instanceId") + " notified");
+    public ResponseEntity<String> notifyShutdownInstance(@RequestBody ShutdownInstanceRequest request) {
+        knowledgeService.shutdownInstance(request.getServiceId(), request.getInstanceId());
+        return ResponseEntity.ok("Shutdown of instance " + request.getInstanceId() + " notified");
     }
+
+    @PostMapping("/notifyAddInstance")
+    public ResponseEntity<String> notifyAddInstance(@RequestBody AddInstanceRequest request) {
+        knowledgeService.addInstance(request.getServiceId(), request.getNewInstanceAddress());
+        return ResponseEntity.ok("Add of instance " + request.getNewInstanceAddress() + " notified");
+    }
+
+    @PostMapping("/notifyChangeOfImplementation")
+    public ResponseEntity<String> notifyChangeOfImplementation(@RequestBody ChangeOfImplementationRequest request) {
+        knowledgeService.changeServiceImplementation(request.getServiceId(), request.getNewImplementationId(), request.getNewInstancesAddresses());
+        return ResponseEntity.ok("Change of implementation to " + request.getNewImplementationId() + " notified");
+    }
+
 
 
 
