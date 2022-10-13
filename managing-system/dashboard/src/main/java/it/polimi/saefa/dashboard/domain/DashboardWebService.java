@@ -1,6 +1,7 @@
 package it.polimi.saefa.dashboard.domain;
 
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
+import it.polimi.saefa.dashboard.externalinterfaces.MonitorClient;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
@@ -17,10 +18,8 @@ import java.util.*;
 public class DashboardWebService {
 	@Autowired
 	private KnowledgeClient knowledgeClient;
-
-	public List<Service> getAllServices() {
-		return knowledgeClient.getServices();
-	}
+	@Autowired
+	private MonitorClient monitorClient;
 
 	public Service getService(String serviceId) {
 		return knowledgeClient.getService(serviceId);
@@ -38,15 +37,37 @@ public class DashboardWebService {
 		return knowledgeClient.getServicesMap();
 	}
 
+	public Modules getActiveModule() {
+		return knowledgeClient.getActiveModule();
+	}
+
+	public Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(int n) {
+		return knowledgeClient.getChosenAdaptationOptionsHistory(n);
+	}
+
+
+	// Configuration methods
+	// MONITOR
+	public int getMonitorSchedulingPeriod() {
+		return monitorClient.getSchedulingPeriod();
+	}
+	public void changeMonitorSchedulingPeriod(int period) {
+		monitorClient.changeSchedulingPeriod(period);
+	}
+
+
+	public void breakpoint(){
+		log.info("breakpoint");
+	}
+}
+
+
+/*
 	public InstanceMetricsSnapshot getLatestMetrics(String serviceId, String instanceId) {
 		List<InstanceMetricsSnapshot> l = knowledgeClient.getLatestMetrics(serviceId, instanceId);
 		if (l == null || l.isEmpty())
 			return null;
 		return l.get(0);
-	}
-
-	public Modules getActiveModule() {
-		return knowledgeClient.getActiveModule();
 	}
 
 	public Map<String, List<AdaptationOption>> getProposedAdaptationOptions() {
@@ -57,12 +78,6 @@ public class DashboardWebService {
 		return knowledgeClient.getChosenAdaptationOptions();
 	}
 
-	public Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(int n) {
-		return knowledgeClient.getChosenAdaptationOptionsHistory(n);
-	}
 
-	public void breakpoint(){
-		log.info("breakpoint");
-	}
-}
+ */
 

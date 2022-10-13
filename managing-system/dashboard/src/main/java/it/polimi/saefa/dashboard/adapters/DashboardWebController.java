@@ -159,7 +159,6 @@ public class DashboardWebController {
 	}
 
 
-
 	/* Display current status */
 	@GetMapping("/adaptationStatus")
 	public String adaptationStatus(Model model) {
@@ -189,8 +188,6 @@ public class DashboardWebController {
 		}
 		return "webpages/adaptationStatus";
 	}
-
-
 
 	private GraphData[] computeServiceGraphs(Service service) {
 		GraphData[] graphs = new GraphData[2];
@@ -267,5 +264,23 @@ public class DashboardWebController {
 
 		return graphs;
 	}
+
+
+
+	// Configuration part
+
+	/* Show configuration page */
+	@GetMapping("/configuration")
+	public String configuration(Model model) {
+		model.addAttribute("monitorSchedulingPeriod", dashboardWebService.getMonitorSchedulingPeriod()/1000);
+		return "webpages/configuration";
+	}
+
+	@PostMapping("/configuration/changeMonitorSchedulingPeriod")
+	public String changeMonitorSchedulingPeriod(Model model, @RequestParam(value = "monitorSchedulingPeriod") int monitorSchedulingPeriod) {
+		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod*1000);
+		return configuration(model);
+	}
+
 
 }
