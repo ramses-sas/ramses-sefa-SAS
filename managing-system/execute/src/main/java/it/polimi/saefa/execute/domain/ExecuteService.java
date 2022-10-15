@@ -39,11 +39,11 @@ public class ExecuteService {
                     log.info("Executing adaptation option: " + adaptationOption.getDescription());
                     Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
                     if (AddInstance.class.equals(clazz)) {
-                        //handleAddInstance((AddInstance) (adaptationOption));
+                        handleAddInstanceOption((AddInstance) (adaptationOption));
                     } else if (RemoveInstance.class.equals(clazz)) {
-                        //handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
+                        handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
                     } else if (ChangeLoadBalancerWeights.class.equals(clazz)) {
-                        //handleChangeLBWeights((ChangeLoadBalancerWeights) (adaptationOption));
+                        handleChangeLBWeightsOption((ChangeLoadBalancerWeights) (adaptationOption));
                     } else if(ChangeImplementation.class.equals(clazz)){
                         handleChangeImplementationOption((ChangeImplementation) (adaptationOption));
                     } else {

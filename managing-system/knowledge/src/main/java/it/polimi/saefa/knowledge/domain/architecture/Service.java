@@ -15,7 +15,6 @@ public class Service {
     private String serviceId;
     @Setter
     private String currentImplementationId; //name of the current implementation of the service
-    @Setter
     private ServiceConfiguration configuration;
     private List<String> dependencies; //names of services that this service depends on
     // <ServiceImplementationId, ServiceImplementation>
@@ -39,6 +38,15 @@ public class Service {
     @JsonIgnore
     public List<Instance> getInstances() {
         return new LinkedList<>(getCurrentImplementation().getInstances().values());
+    }
+
+    public void setConfiguration(ServiceConfiguration configuration) {
+        this.configuration = configuration;
+        if(this.configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+            if(this.configuration.getLoadBalancerWeights() == null || this.configuration.getLoadBalancerWeights().isEmpty()) {
+                getInstances().forEach(instance -> configuration.getLoadBalancerWeights().put(instance.getInstanceId(), 1.0/getInstances().size()));
+            }
+        }
     }
 
     @JsonIgnore
@@ -111,10 +119,12 @@ public class Service {
     }
 
     public void removeShutdownInstances() {
+        List<Instance> shutdownInstances = new LinkedList<>();
         getCurrentImplementation().getInstances().values().forEach(instance -> {
             if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
-                removeInstance(instance);
+                shutdownInstances.add(instance);
         });
+        shutdownInstances.forEach(this::removeInstance);
     }
 
     public Instance getInstance(String instanceId) {

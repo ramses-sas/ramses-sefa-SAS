@@ -5,6 +5,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.persistence.ConfigurationRepository;
 import it.polimi.saefa.knowledge.parser.AdaptationParamParser;
 import it.polimi.saefa.knowledge.parser.ConfigurationParser;
 import it.polimi.saefa.knowledge.parser.SystemArchitectureParser;
@@ -28,6 +29,8 @@ public class KnowledgeInit implements InitializingBean {
     private KnowledgeService knowledgeService;
     @Autowired
     private ConfigurationParser configurationParser;
+    @Autowired
+    private ConfigurationRepository configurationRepository;
     @Autowired
     private EurekaClient discoveryClient;
 
@@ -62,6 +65,7 @@ public class KnowledgeInit implements InitializingBean {
                 service.createInstance(instanceInfo.getInstanceId().split("@")[1]);
             });
             service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
+            configurationRepository.save(service.getConfiguration());
             knowledgeService.addService(service);
 
 

@@ -161,7 +161,7 @@ public class KnowledgeService {
             for(Instance instance : service.getInstances()){
                 newWeights.put(instance.getInstanceId(), 1.0/service.getInstances().size());
             }
-            service.setLoadBalancerWeights(newWeights);
+            setLoadBalancerWeights(serviceId, newWeights);
         }
     }
 
@@ -240,7 +240,14 @@ public class KnowledgeService {
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
         Service service = servicesMap.get(serviceId);
-        service.getConfiguration().setLoadBalancerWeights(weights);
+        ServiceConfiguration oldConfiguration = service.getConfiguration();
+        ServiceConfiguration newConfiguration = new ServiceConfiguration();
+        newConfiguration.setLoadBalancerType(oldConfiguration.getLoadBalancerType());
+        newConfiguration.setLoadBalancerWeights(weights);
+        newConfiguration.setServiceId(serviceId);
+        newConfiguration.setCircuitBreakersConfiguration(oldConfiguration.getCircuitBreakersConfiguration());
+        newConfiguration.setTimestamp(new Date());
+        service.setConfiguration(newConfiguration);
         configurationRepository.save(service.getConfiguration());
     }
 

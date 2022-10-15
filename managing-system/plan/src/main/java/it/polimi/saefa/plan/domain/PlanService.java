@@ -60,6 +60,8 @@ public class PlanService {
                             optionsToCompare.add(handleAddInstance((AddInstance) option, servicesMap.get(option.getServiceId())));
                         if (option.getClass().equals(RemoveInstance.class))
                             optionsToCompare.add(handleRemoveInstance((RemoveInstance) option, servicesMap.get(option.getServiceId())));
+                        if (option.getClass().equals(ChangeImplementation.class))
+                            optionsToCompare.add(handleChangeImplementation((ChangeImplementation) option, servicesMap.get(option.getServiceId())));
                     }
                     AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
                     if (chosenOption != null)
@@ -244,6 +246,8 @@ public class PlanService {
             return null;
         }
         for (String instanceId : previousWeights.keySet()) {
+            if(weights.get(instanceId) == null)
+                throw new RuntimeException("Instance " + instanceId + " not found in the weights map");
             double W_i_double = weights.get(instanceId).solutionValue();
             String W_i = String.format("%.3f", W_i_double);
             newWeights.put(instanceId, W_i_double);
@@ -260,7 +264,7 @@ public class PlanService {
         double bestImplementationBenefit = 0;
         //Deve prendere la lista di possible implementation,
         for(String implementationId: changeImplementation.getPossibleImplementations()){
-            Class goal = changeImplementation.getAdaptationParametersGoal();
+            Class<? extends AdaptationParamSpecification> goal = changeImplementation.getAdaptationParametersGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
             double benchmark = implementation.getBootBenchmark(changeImplementation.getAdaptationParametersGoal()) * implementation.getScore();
             if(bestImplementationId == null) {

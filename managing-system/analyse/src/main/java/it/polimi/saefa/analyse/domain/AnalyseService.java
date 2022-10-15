@@ -14,6 +14,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.Getter;
 import lombok.Setter;
@@ -165,7 +166,7 @@ public class AnalyseService {
                     */
                 }
 
-                List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(InstanceMetricsSnapshot::isActive).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
+                List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(instanceMetricsSnapshot -> instanceMetricsSnapshot.isActive() && instanceMetricsSnapshot.getHttpMetrics().size()>0).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
                 if (activeMetrics.size() < 3) {
                     //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
                     // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
@@ -175,7 +176,7 @@ public class AnalyseService {
                     InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
                     (perché il CB può cambiare spontaneamente solo una volta) */
-                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(service, instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
+                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(instance, oldestActiveMetrics, latestActiveMetrics), computeMaxResponseTime(oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
                     existsInstanceWithNewMetricsWindow = true;
                 }
             }
@@ -336,11 +337,21 @@ public class AnalyseService {
         return adaptationOptions;
     }
 
-    private double computeInstanceAvgResponseTime(Service service, Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
+    private double computeInstanceAvgResponseTime(Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
         double successfulRequestsDuration = 0;
         double successfulRequestsCount = 0;
 
-        for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
+        for(String endpoint : latestActiveMetrics.getHttpMetrics().keySet()){
+            HttpEndpointMetrics oldestEndpointMetrics = oldestActiveMetrics.getHttpMetrics().get(endpoint);
+            successfulRequestsDuration += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
+            successfulRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+            if(oldestEndpointMetrics != null){
+                successfulRequestsDuration -= oldestEndpointMetrics.getTotalDurationOfSuccessful();
+                successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
+            }
+        }
+
+        /* for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
             double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
             if (endpointSuccessfulRequestsCount != 0) {
                 double endpointSuccessfulRequestsDuration = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalDurationOfSuccessful();
@@ -348,13 +359,15 @@ public class AnalyseService {
                 successfulRequestsCount += endpointSuccessfulRequestsCount;
             }
         }
+         */
         if (successfulRequestsCount == 0) {
 
-            //TODO delete up to the return
+            //TODO delete up to the return (DAVVERO? NON SOLO L'IF?)
             AdaptationParameter.Value v = instance.getCurrentValueForParam(AverageResponseTime.class);
             if (v == null) {
                 throw new RuntimeException("THIS SHOULD NOT HAPPEN");
             }
+            log.warn("ATTENZIONE AL TODO //TODO delete up to the return (DAVVERO? NON SOLO L'IF?)");
             return instance.getCurrentValueForParam(AverageResponseTime.class).getValue();
 
         }
@@ -365,11 +378,18 @@ public class AnalyseService {
         double successfulRequestsCount = 0;
         double totalRequestsCount = 0;
 
-        for (String endpoint : oldestActiveMetrics.getHttpMetrics().keySet()) {
-            double endpointSuccessfulRequestsCount = latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
-            totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount() - oldestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
-            successfulRequestsCount += endpointSuccessfulRequestsCount;
+        for(String endpoint : latestActiveMetrics.getHttpMetrics().keySet()){
+            HttpEndpointMetrics oldestEndpointMetrics = oldestActiveMetrics.getHttpMetrics().get(endpoint);
+            totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
+            successfulRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
+            if(oldestEndpointMetrics != null){
+                totalRequestsCount -= oldestEndpointMetrics.getTotalCount();
+                successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
+            }
         }
+
+        if(totalRequestsCount == 0)
+            throw new RuntimeException("THIS SHOULD NOT HAPPEN");
         return successfulRequestsCount/totalRequestsCount;
     }
 
@@ -430,10 +450,6 @@ public class AnalyseService {
         knowledgeClient.updateInstancesAdaptationParamCollection(serviceInstancesNewAdaptationParamCollections);
         knowledgeClient.updateServicesAdaptationParamCollection(serviceNewAdaptationParamCollections);
     }
-
-
-
-
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
         if (newMetricsWindowSize < 3)
