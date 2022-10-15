@@ -46,4 +46,8 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/notifyChangeOfImplementation")
     ResponseEntity<String> notifyChangeOfImplementation(@RequestBody ChangeOfImplementationRequest request);
+
+
+    @PutMapping("/rest/activeModule")
+    String setFailedModule(@RequestParam Modules module);
 }

@@ -45,6 +45,18 @@ public class DashboardWebService {
 		return knowledgeClient.getChosenAdaptationOptionsHistory(n);
 	}
 
+	public Modules getFailedModule() {
+		return knowledgeClient.getFailedModule();
+	}
+
+	public void startMonitorRoutine() {
+		monitorClient.startRoutine();
+	}
+
+	public void stopMonitorRoutine() {
+		monitorClient.stopRoutine();
+	}
+
 
 	// Configuration methods
 	// MONITOR
@@ -54,7 +66,6 @@ public class DashboardWebService {
 	public void changeMonitorSchedulingPeriod(int period) {
 		monitorClient.changeSchedulingPeriod(period);
 	}
-
 
 	public void breakpoint(){
 		log.info("breakpoint");

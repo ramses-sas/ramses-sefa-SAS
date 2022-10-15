@@ -8,6 +8,9 @@
 
 
 <div class="content">
+    <div th:if="${failedModule != null}">
+        <h4 th:text="@{'LOOP INTERRUPTED: '+${failedModule.toString()}+' failed!'}"></h4>
+    </div>
     <table class="simpleTable">
         <thead>
             <tr>
@@ -23,9 +26,13 @@
         </tbody>
     </table>
     <br><br>
-    <h3 th:text="@{'Active Module: '+${activeModule}}">Active Module here</h3>
-    <br>
-    <p th:text="${statusDescription}">Status description here</p>
+    <div th:if="${activeModule != null}">
+        <h3 th:text="@{'Active Module: '+${activeModule}}">Active Module here</h3>
+        <br>
+        <p th:text="${statusDescription}">Status description here</p>
+    </div>
+    <h3 th:if="${activeModule == null}">Active Module: N/A</h3>
+
 </div>
 
 

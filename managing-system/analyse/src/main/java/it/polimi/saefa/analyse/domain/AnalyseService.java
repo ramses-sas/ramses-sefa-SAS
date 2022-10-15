@@ -102,6 +102,7 @@ public class AnalyseService {
             log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.");
             planClient.start();
         }  catch (Exception e) {
+            knowledgeClient.setFailedModule(Modules.ANALYSE);
             log.error(e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Error during the Analyse execution: " + e.getMessage());

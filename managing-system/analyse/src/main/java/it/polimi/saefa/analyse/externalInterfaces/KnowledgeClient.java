@@ -82,4 +82,6 @@ public interface KnowledgeClient {
     @PostMapping("/rest/updateInstancesAdaptationParamCollection")
     ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, AdaptationParamCollection>> instanceAdaptationParameters);
 
+    @PutMapping("/rest/activeModule")
+    String setFailedModule(@RequestParam Modules module);
 }
