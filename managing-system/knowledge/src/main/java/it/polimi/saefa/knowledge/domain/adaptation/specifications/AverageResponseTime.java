@@ -19,6 +19,7 @@ public class AverageResponseTime extends AdaptationParamSpecification {
     @JsonCreator
     public AverageResponseTime() { super(); }
 
+    // used in AdaptationParamParser: clazz.getDeclaredConstructor(String.class)
     public AverageResponseTime(String json) {
         super();
         fromJson(json);

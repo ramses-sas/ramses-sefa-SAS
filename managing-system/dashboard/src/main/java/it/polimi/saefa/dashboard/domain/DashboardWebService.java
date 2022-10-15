@@ -1,5 +1,6 @@
 package it.polimi.saefa.dashboard.domain;
 
+import it.polimi.saefa.dashboard.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.dashboard.externalinterfaces.MonitorClient;
 import it.polimi.saefa.knowledge.domain.Modules;
@@ -20,6 +21,8 @@ public class DashboardWebService {
 	private KnowledgeClient knowledgeClient;
 	@Autowired
 	private MonitorClient monitorClient;
+	@Autowired
+	private AnalyseClient analyseClient;
 
 	public Service getService(String serviceId) {
 		return knowledgeClient.getService(serviceId);
@@ -49,22 +52,40 @@ public class DashboardWebService {
 		return knowledgeClient.getFailedModule();
 	}
 
+
+	// Configuration methods
+	// MONITOR
+	public MonitorClient.GetInfoResponse getMonitorInfo() {
+		return monitorClient.getInfo();
+	}
+	public void changeMonitorSchedulingPeriod(int period) {
+		monitorClient.changeSchedulingPeriod(period);
+	}
 	public void startMonitorRoutine() {
 		monitorClient.startRoutine();
 	}
-
 	public void stopMonitorRoutine() {
 		monitorClient.stopRoutine();
 	}
 
-
-	// Configuration methods
-	// MONITOR
-	public int getMonitorSchedulingPeriod() {
-		return monitorClient.getSchedulingPeriod();
+	// ANALYSE
+	public AnalyseClient.GetInfoResponse getAnalyseInfo() {
+		return analyseClient.getInfo();
 	}
-	public void changeMonitorSchedulingPeriod(int period) {
-		monitorClient.changeSchedulingPeriod(period);
+	public void changeMetricsWindowSize(int value) {
+		analyseClient.changeMetricsWindowSize(value);
+	}
+	public void changeAnalysisWindowSize(int value) {
+		analyseClient.changeAnalysisWindowSize(value);
+	}
+	public void changeFailureRateThreshold(double value) {
+		analyseClient.changeFailureRateThreshold(value);
+	}
+	public void changeUnreachableRateThreshold(double value) {
+		analyseClient.changeUnreachableRateThreshold(value);
+	}
+	public void changeParametersSatisfactionRate(double value) {
+		analyseClient.changeParametersSatisfactionRate(value);
 	}
 
 	public void breakpoint(){

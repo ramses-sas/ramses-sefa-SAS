@@ -19,6 +19,11 @@ public class MonitorRestController {
 
 
     // Configuration endpoints
+    @GetMapping("/")
+    public GetInfoResponse getInfo() {
+        return new GetInfoResponse(getSchedulingPeriod(), isRoutineRunning());
+    }
+
     @GetMapping("/schedulingPeriod")
     public int getSchedulingPeriod() {
         return monitorService.getSchedulingPeriod();
@@ -39,10 +44,15 @@ public class MonitorRestController {
         monitorService.stopRoutine();
     }
 
+    @GetMapping("/isRoutineRunning")
+    public boolean isRoutineRunning() {
+        return monitorService.getMonitorRoutine() != null;
+    }
+
 
 
     // TODO remove after test
-    @GetMapping("/")
+    @GetMapping("/break")
     public String debug() {
         monitorService.breakpoint();
         return "Hello from Monitor Service";

@@ -25,6 +25,10 @@ public class GraphData {
         pointsBefore.add(y1);
     }
 
+    public boolean isEmpty() {
+        return points == null || points.isEmpty();
+    }
+
     public void addPointAfter(Object y2) {
         pointsAfter.add(y2);
     }

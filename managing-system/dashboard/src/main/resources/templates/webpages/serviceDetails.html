@@ -44,7 +44,8 @@
                 <td class="col2">
                     <div class="row">
                         <div class="column" th:each="graph : ${graphs}">
-                            <div class="card" th:id="${graph.getYAxisName()}"></div>
+                            <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+                            <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
                         </div>
                     </div>
                 </td>

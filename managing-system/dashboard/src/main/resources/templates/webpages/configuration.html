@@ -8,25 +8,57 @@
 
 
 <div class="content">
-    <div> <!-- MONITOR -->
-        <h2>Monitor configuration</h2>
+    <!-- MONITOR -->
+    <div>
+        <h2>Monitor Module configuration</h2>
+        <br>
+        <form th:if="${isMonitorRunning}" action="/configuration/stopMonitorRoutine" method="POST">
+            <label for="stopMonitorRoutine">Current Status: Running  </label>
+            <input id="stopMonitorRoutine" type="submit" value="Stop">
+        </form>
+        <form th:if="${!isMonitorRunning}" action="/configuration/startMonitorRoutine" method="POST">
+            <label for="startMonitorRoutine">Current Status: Not Running  </label>
+            <input id="startMonitorRoutine" type="submit" value="Start">
+        </form>
         <form action="/configuration/changeMonitorSchedulingPeriod" method="POST">
             <label for="monitorSchedulingPeriod">Monitor scheduling period (in seconds):</label>
             <input type="number" id="monitorSchedulingPeriod" name="monitorSchedulingPeriod" min="1" th:value="${monitorSchedulingPeriod}">
-            <input type="submit">
+            <input type="submit" value="Change">
         </form>
         <p>Attention! A <i>quick</i> failure detection capability of the managing system highly relies on a frequent monitor routine.</p>
-        <form action="/configuration/startMonitorRoutine" method="POST">
-            <label for="startMonitorRoutine">Start Monitor Routine</label>
-            <input id="startMonitorRoutine" type="submit">
+    </div>
+    <br>
+    <!-- ANALYSE -->
+    <div>
+        <h2>Analyse Module configuration</h2>
+        <br>
+        <form action="/configuration/changeMetricsWindowSize" method="POST">
+            <label for="metricsWindowSize">Metrics Window Size:</label>
+            <input type="number" id="metricsWindowSize" name="metricsWindowSize" min="3" th:value="${metricsWindowSize}">
+            <input type="submit" value="Change">
         </form>
-        <form action="/configuration/stopMonitorRoutine" method="POST">
-            <label for="stopMonitorRoutine">Stop Monitor Routine</label>
-            <input id="stopMonitorRoutine" type="submit">
+        <form action="/configuration/changeAnalysisWindowSize" method="POST">
+            <label for="analysisWindowSize">Analysis Window Size:</label>
+            <input type="number" id="analysisWindowSize" name="analysisWindowSize" min="1" th:value="${analysisWindowSize}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeFailureRateThreshold" method="POST">
+            <label for="failureRateThreshold">Failure Rate Threshold:</label>
+            <input type="number" id="failureRateThreshold" name="failureRateThreshold" min="0" max="1" step="any" th:value="${failureRateThreshold}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeUnreachableRateThreshold" method="POST">
+            <label for="unreachableRateThreshold">Unreachable Rate Threshold:</label>
+            <input type="number" id="unreachableRateThreshold" name="unreachableRateThreshold" min="0" max="1" step="any" th:value="${unreachableRateThreshold}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeParametersSatisfactionRate" method="POST">
+            <label for="parametersSatisfactionRate">Parameters Satisfaction Rate:</label>
+            <input type="number" id="parametersSatisfactionRate" name="parametersSatisfactionRate" min="0" max="1" step="any" th:value="${parametersSatisfactionRate}">
+            <input type="submit" value="Change">
         </form>
     </div>
-
-
+    <br>
 
 </div>
 
