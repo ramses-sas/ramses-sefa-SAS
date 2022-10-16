@@ -56,6 +56,14 @@ BuildNRun() {
   fi
 }
 
+BuildOnly() {
+  if [ "$IS_REMOTE" = "no" ] ; then
+    bash "$SCRIPTS_PATH/dockerBuild.sh"
+  else
+    bash "$SCRIPTS_PATH/dockerBuild.sh" -r
+  fi
+}
+
 cd "../libs/config-parser/" || return
 ./gradlew clean; ./gradlew build
 cd "../load-balancer/"
@@ -93,11 +101,15 @@ for d in */; do
     if [ "${d: -8}" = "proxies/" ]; then
       cd "$d" || return
       for dd in */; do
-        if [ "${dd: -10}" = "1-service/" ]; then
           echo; echo; echo
-          PrintSuccess "Starting $dd"
           cd "$dd" || return
-          BuildNRun
+          if [ "${dd: -10}" = "1-service/" ]; then
+            PrintSuccess "Starting $dd"
+            BuildNRun
+          else
+            PrintSuccess "Building $dd"
+            BuildOnly
+          fi
           cd ..
           echo; echo; echo
         fi
