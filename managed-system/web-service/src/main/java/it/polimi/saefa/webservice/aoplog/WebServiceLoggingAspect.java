@@ -63,7 +63,7 @@ public class WebServiceLoggingAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="webServiceMethods()", throwing="exception")
+    @AfterThrowing(value="webServiceMethods() || webServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }
