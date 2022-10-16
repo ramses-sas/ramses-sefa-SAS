@@ -47,5 +47,7 @@ while getopts ":ih:" option; do
    esac
 done
 
-docker start $DEFOPT $SERVICE_IMPLEMENTATION_NAME
+CONTAINER_ID=`docker ps -a | grep ${SERVICE_IMPLEMENTATION_NAME} | awk '{print $1}'`
+
+docker start $DEFOPT $CONTAINER_ID
 PrintSuccess "Container $SERVICE_IMPLEMENTATION_NAME running."
