@@ -4,6 +4,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.persistence.ConfigurationRepository;
 import it.polimi.saefa.knowledge.parser.AdaptationParamParser;
@@ -62,7 +63,7 @@ public class KnowledgeInit implements InitializingBean {
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))
                     throw new RuntimeException("Service " + service.getServiceId() + " has more than one running implementation");
-                service.createInstance(instanceInfo.getInstanceId().split("@")[1]);
+                service.createInstance(instanceInfo.getInstanceId().split("@")[1]).setCurrentStatus(InstanceStatus.ACTIVE);
             });
             service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
             configurationRepository.save(service.getConfiguration());

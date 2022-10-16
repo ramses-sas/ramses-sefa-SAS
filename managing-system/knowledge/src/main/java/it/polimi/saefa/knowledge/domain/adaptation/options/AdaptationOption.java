@@ -19,7 +19,7 @@ import java.util.Date;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AddInstanceOption.class),
-        @JsonSubTypes.Type(value = RemoveInstanceOption.class),
+        @JsonSubTypes.Type(value = ShutdownInstanceOption.class),
         @JsonSubTypes.Type(value = ChangeLoadBalancerWeightsOption.class),
         @JsonSubTypes.Type(value = ChangeImplementationOption.class),
 })

@@ -135,13 +135,6 @@ public class Service {
         return configuration.getLoadBalancerWeights().get(instance.getInstanceId());
     }
 
-    public void setLoadBalancerWeight(Instance instance, double value) {
-        if (value == 0.0)
-            configuration.getLoadBalancerWeights().remove(instance.getInstanceId());
-        else
-            configuration.getLoadBalancerWeights().put(instance.getInstanceId(), value);
-    }
-
     public void setLoadBalancerWeights(Map<String, Double> newWeights) {
         configuration.setLoadBalancerWeights(newWeights);
     }
@@ -149,11 +142,13 @@ public class Service {
 
     public void removeInstance(Instance shutdownInstance) {
         getCurrentImplementation().removeInstance(shutdownInstance);
-        if(configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)
+        /*if(configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)
             if(configuration.getLoadBalancerWeights().remove(shutdownInstance.getInstanceId())!=null)
                 throw new RuntimeException("THIS SHOULD NOT HAPPEN: Error while removing instance from load balancer weights");
+         */
     }
 
+    /*
     public void removeShutdownInstances() {
         List<Instance> shutdownInstances = new LinkedList<>();
         getCurrentImplementation().getInstances().values().forEach(instance -> {
@@ -162,6 +157,8 @@ public class Service {
         });
         shutdownInstances.forEach(this::removeInstance);
     }
+
+     */
 
     public Instance getInstance(String instanceId) {
         return getCurrentImplementation().getInstance(instanceId);

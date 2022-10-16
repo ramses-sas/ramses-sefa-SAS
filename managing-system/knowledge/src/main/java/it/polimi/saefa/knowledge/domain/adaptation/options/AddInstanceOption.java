@@ -9,8 +9,7 @@ import lombok.Setter;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -22,6 +21,8 @@ public class AddInstanceOption extends AdaptationOption {
     // <instanceId, newWeight>
     private Map<String, Double> oldInstancesNewWeights;
     private Double newInstanceWeight;
+    @ElementCollection // TODO TODO TODO VA POPOLATO!!!!!!!
+    private List<String> instancesToShutdownIds = new LinkedList<>(); //There could be instances whose weight have gone below the shutdown threshold after redistributing the weights
 
 
     public AddInstanceOption(String serviceId, String implementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {

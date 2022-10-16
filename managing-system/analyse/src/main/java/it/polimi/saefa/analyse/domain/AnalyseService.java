@@ -129,7 +129,7 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.BOOTING) {
                     if ((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
                         log.debug("Instance " + instance.getInstanceId() + " is still booting after " + maxBootTimeSeconds + " seconds. Forcing it to shutdown.");
-                        forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
+                        forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
                     } else {
                         atLeastOneBootingInstance = true;
                     }
@@ -137,7 +137,7 @@ public class AnalyseService {
                 }
 
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
-                    forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
+                    forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
 
@@ -154,7 +154,7 @@ public class AnalyseService {
                 double inactiveRate = failureRate + unreachableRate;
 
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
-                    forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
+                    forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     continue;
                     /*
                     Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
@@ -217,7 +217,7 @@ public class AnalyseService {
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
 
         for(Service service : currentArchitectureMap.values()){
-            if(!service.getBootingInstances().isEmpty() || !service.getShutdownInstances().isEmpty()) //We do not perform adaptation if at least one instance of the service is booting or shutdown
+            if(service.getBootingInstances().isEmpty() && service.getShutdownInstances().isEmpty()) //We do not perform adaptation if at least one instance of the service is booting or shutdown
                 proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
         }
 
@@ -308,9 +308,7 @@ public class AnalyseService {
         if (!availabilitySpecs.isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)){
             List<Instance> instances = service.getInstances();
             List<Instance> lessAvailableInstances = instances.stream().filter(
-                    i -> !availabilitySpecs.isSatisfied(
-                            i.getLatestFilledAnalysisWindowForParam(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow()
-                    )
+                    i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForParam(Availability.class).getValue())
             ).toList();
 
             if(service.shouldConsiderChangingImplementation())
@@ -329,9 +327,7 @@ public class AnalyseService {
         if (!avgRespTimeSpecs.isSatisfied(serviceAvgRespTimeHistory, parametersSatisfactionRate)){
             List<Instance> instances = service.getInstances();
             List<Instance> slowInstances = instances.stream().filter(
-                    i -> !avgRespTimeSpecs.isSatisfied(
-                            i.getLatestFilledAnalysisWindowForParam(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow()
-                    )
+                    i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForParam(AverageResponseTime.class).getValue())
             ).toList();
 
             if(service.shouldConsiderChangingImplementation())

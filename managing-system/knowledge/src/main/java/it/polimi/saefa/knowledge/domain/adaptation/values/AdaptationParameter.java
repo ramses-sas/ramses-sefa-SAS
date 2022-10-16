@@ -53,9 +53,8 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
     // Get the latest "size" VALID values from the valueStack. If there are less than "size" VALID values, the current value is replicated
     public List<Double> getLatestFilledAnalysisWindow(int size) {
         List<Double> values = new LinkedList<>();
-        if (valuesStack.size() < size)
-            return null;
-        for (int i = 0; i < size; i++) {
+        int finalSize = Math.min(size, valuesStack.size());
+        for (int i = 0; i < finalSize; i++) {
             if (!valuesStack.get(i).invalidatesThisAndPreviousValues())
                 values.add(valuesStack.get(i).getValue());
             else
