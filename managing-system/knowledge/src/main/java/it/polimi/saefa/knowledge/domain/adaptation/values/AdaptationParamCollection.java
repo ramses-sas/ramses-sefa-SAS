@@ -36,8 +36,8 @@ public class AdaptationParamCollection {
 
     public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int windowSize, boolean fillWithCurrentValue) {
         return fillWithCurrentValue ?
-                adaptationParamsMap.get(adaptationParamClass).getLatestFilledAnalysisWindow(windowSize, getCurrentValueForParam(adaptationParamClass).getValue()) :
-                adaptationParamsMap.get(adaptationParamClass).getLatestFilledAnalysisWindow(windowSize);
+                adaptationParamsMap.get(adaptationParamClass).getLatestFilledAnalysisWindow(windowSize) :
+                adaptationParamsMap.get(adaptationParamClass).getLatestAnalysisWindow(windowSize);
     }
 
     public <T extends AdaptationParamSpecification> void createHistory(T adaptationParam) {

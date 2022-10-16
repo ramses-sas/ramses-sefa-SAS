@@ -22,6 +22,7 @@ public class Availability extends AdaptationParamSpecification {
     @JsonCreator
     public Availability() { super(); }
 
+    // used in AdaptationParamParser: clazz.getDeclaredConstructor(String.class)
     public Availability(String json) {
         super();
         fromJson(json);

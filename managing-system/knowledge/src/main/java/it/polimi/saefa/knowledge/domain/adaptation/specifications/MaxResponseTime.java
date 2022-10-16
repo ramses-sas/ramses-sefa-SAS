@@ -19,6 +19,7 @@ public class MaxResponseTime extends AdaptationParamSpecification {
     @JsonCreator
     public MaxResponseTime() { super(); }
 
+    // used in AdaptationParamParser: clazz.getDeclaredConstructor(String.class)
     public MaxResponseTime(String json) {
         super();
         fromJson(json);

@@ -1,6 +1,8 @@
 package it.polimi.saefa.dashboard.adapters;
 
 import it.polimi.saefa.dashboard.domain.DashboardWebService;
+import it.polimi.saefa.dashboard.externalinterfaces.AnalyseClient;
+import it.polimi.saefa.dashboard.externalinterfaces.MonitorClient;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
@@ -270,10 +272,22 @@ public class DashboardWebController {
 	/* Show configuration page */
 	@GetMapping("/configuration")
 	public String configuration(Model model) {
-		model.addAttribute("monitorSchedulingPeriod", dashboardWebService.getMonitorSchedulingPeriod()/1000);
+		// MONITOR
+		MonitorClient.GetInfoResponse monitorInfo = dashboardWebService.getMonitorInfo();
+		model.addAttribute("monitorSchedulingPeriod", monitorInfo.getSchedulingPeriod()/1000);
+		model.addAttribute("isMonitorRunning", monitorInfo.isRoutineRunning());
+
+		// ANALYSE
+		AnalyseClient.GetInfoResponse analyseInfo = dashboardWebService.getAnalyseInfo();
+		model.addAttribute("metricsWindowSize", analyseInfo.getMetricsWindowSize());
+		model.addAttribute("analysisWindowSize", analyseInfo.getAnalysisWindowSize());
+		model.addAttribute("failureRateThreshold", analyseInfo.getFailureRateThreshold());
+		model.addAttribute("unreachableRateThreshold", analyseInfo.getUnreachableRateThreshold());
+		model.addAttribute("parametersSatisfactionRate", analyseInfo.getParametersSatisfactionRate());
 		return "webpages/configuration";
 	}
 
+	// Monitor Configuration Endpoints
 	@PostMapping("/configuration/changeMonitorSchedulingPeriod")
 	public String changeMonitorSchedulingPeriod(Model model, @RequestParam(value = "monitorSchedulingPeriod") int monitorSchedulingPeriod) {
 		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod*1000);
@@ -292,5 +306,35 @@ public class DashboardWebController {
 		return configuration(model);
 	}
 
+	// Analyse Configuration Endpoints
+	@PostMapping("/configuration/changeMetricsWindowSize")
+	public String changeMetricsWindowSize(Model model, @RequestParam(value = "metricsWindowSize") int metricsWindowSize) {
+		dashboardWebService.changeMetricsWindowSize(metricsWindowSize);
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/changeAnalysisWindowSize")
+	public String changeAnalysisWindowSize(Model model, @RequestParam(value = "analysisWindowSize") int analysisWindowSize) {
+		dashboardWebService.changeAnalysisWindowSize(analysisWindowSize);
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/changeFailureRateThreshold")
+	public String changeFailureRateThreshold(Model model, @RequestParam(value = "failureRateThreshold") double failureRateThreshold) {
+		dashboardWebService.changeFailureRateThreshold(failureRateThreshold);
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/changeUnreachableRateThreshold")
+	public String changeUnreachableRateThreshold(Model model, @RequestParam(value = "unreachableRateThreshold") double unreachableRateThreshold) {
+		dashboardWebService.changeUnreachableRateThreshold(unreachableRateThreshold);
+		return configuration(model);
+	}
+
+	@PostMapping("/configuration/changeParametersSatisfactionRate")
+	public String changeParametersSatisfactionRate(Model model, @RequestParam(value = "parametersSatisfactionRate") double parametersSatisfactionRate) {
+		dashboardWebService.changeParametersSatisfactionRate(parametersSatisfactionRate);
+		return configuration(model);
+	}
 
 }

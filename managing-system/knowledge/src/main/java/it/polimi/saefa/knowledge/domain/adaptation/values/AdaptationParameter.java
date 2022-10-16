@@ -3,6 +3,7 @@ package it.polimi.saefa.knowledge.domain.adaptation.values;
 import com.fasterxml.jackson.annotation.*;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
@@ -33,62 +34,62 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
         return null;
     }
 
-    // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
-    // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
-    // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
-    public List<Double> getLatestFilledAnalysisWindow(int size) {
+    // Get the latest "size" VALID values from the valueStack. If there are less than "size" VALID values, returns NULL
+    public List<Double> getLatestAnalysisWindow(int size) {
         List<Double> values = new LinkedList<>();
-        int i = Math.min(valuesStack.size(), size) - 1;
-        int validValues = 0;
-        while (validValues < size) {
-            if (i < 0) {
-                return null;
-            } else {
-                Value v = valuesStack.get(i);
-                if (!v.invalidatesThisAndPreviousValues) {
-                    values.add(v.getValue());
-                    validValues++;
-                }
-                i--;
-            }
+        if (valuesStack.size() < size)
+            return null;
+        for (int i = 0; i < size; i++) {
+            if (!valuesStack.get(i).invalidatesThisAndPreviousValues())
+                values.add(valuesStack.get(i).getValue());
+            else
+                break;
         }
+        if (values.size() < size)
+            return null;
         return values;
     }
 
-    public List<Double> getLatestFilledAnalysisWindow(int size, double currentValue) {
+    // Get the latest "size" VALID values from the valueStack. If there are less than "size" VALID values, the current value is replicated
+    public List<Double> getLatestFilledAnalysisWindow(int size) {
         List<Double> values = new LinkedList<>();
-        int i = Math.min(valuesStack.size(), size) - 1;
-        int validValues = 0;
-        while (validValues < size) {
-            if (i < 0) {
-                values.add(currentValue);
-                validValues++;
-            } else {
-                Value v = valuesStack.get(i);
-                if (!v.invalidatesThisAndPreviousValues) {
-                    values.add(v.getValue());
-                    validValues++;
-                }
-                i--;
-            }
+        if (valuesStack.size() < size)
+            return null;
+        for (int i = 0; i < size; i++) {
+            if (!valuesStack.get(i).invalidatesThisAndPreviousValues())
+                values.add(valuesStack.get(i).getValue());
+            else
+                break;
         }
+        while (values.size() < size)
+            values.add(currentValue.getValue());
         return values;
     }
 
     public void invalidateLatestAndPreviousValues() {
         if (valuesStack.size() > 0)
-            valuesStack.get(0).invalidatesThisAndPreviousValues = true;
+            valuesStack.get(0).invalidateThisAndPreviousValues();
     }
 
-    @Data
+
     public static class Value {
         private boolean invalidatesThisAndPreviousValues = false;
-        private double value;
-        private Date timestamp;
+        @Getter
+        private final double value;
+        @Getter
+        private final Date timestamp;
 
-        public Value(double value, Date timestamp){
+        public Value(double value, Date timestamp) {
             this.value = value;
             this.timestamp = timestamp;
+        }
+
+        public boolean invalidatesThisAndPreviousValues() {
+            return invalidatesThisAndPreviousValues;
+        }
+
+        public void invalidateThisAndPreviousValues() {
+            this.invalidatesThisAndPreviousValues = true;
         }
 
         @Override

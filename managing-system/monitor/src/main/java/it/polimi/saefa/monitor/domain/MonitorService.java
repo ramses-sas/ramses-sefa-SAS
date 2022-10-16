@@ -34,6 +34,7 @@ public class MonitorService {
     private final KnowledgeClient knowledgeClient;
 
     ThreadPoolTaskScheduler taskScheduler;
+    @Getter
     private ScheduledFuture<?> monitorRoutine;
 
     @Autowired
@@ -61,10 +62,13 @@ public class MonitorService {
         knowledgeClient.getServices().forEach(service -> managedServices.add(service.getServiceId()));
     }
 
+    /*
+    // TODO decomment to start routine on startup
     @PostConstruct
     public void initRoutine() {
         monitorRoutine = taskScheduler.scheduleWithFixedDelay(new MonitorRoutine(), schedulingPeriod);
     }
+     */
 
     // ASSUNZIONE: IL PERIODO DEVE ESSERE "ABBASTANZA" MINORE DEL PERIODO DI AGGIORNAMENTO DEL DISCOVERY SERVICE (PER EUREKA DI DEFAULT 90SEC)
     // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)

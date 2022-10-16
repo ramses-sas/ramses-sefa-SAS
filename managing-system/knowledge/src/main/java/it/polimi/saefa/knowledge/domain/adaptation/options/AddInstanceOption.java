@@ -14,8 +14,8 @@ import java.util.Map;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor
 @DiscriminatorValue("ADD_INSTANCE")
 public class AddInstanceOption extends AdaptationOption {
     @ElementCollection

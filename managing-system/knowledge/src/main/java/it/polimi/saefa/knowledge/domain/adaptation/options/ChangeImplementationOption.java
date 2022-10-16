@@ -1,14 +1,17 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @DiscriminatorValue("CHANGE_IMPLEMENTATION")
