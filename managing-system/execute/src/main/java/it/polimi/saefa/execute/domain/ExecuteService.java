@@ -98,7 +98,7 @@ public class ExecuteService {
         String newInstanceId = service.createInstance(newInstancesAddress).getInstanceId();
         log.info("Adding instance to service" + addInstanceOption.getServiceId() + " with new instance " + newInstanceId);
         Map<String, Double> newWeights = addInstanceOption.getFinalWeights(newInstanceId);
-        knowledgeClient.notifyAddInstance(new AddInstanceRequest(addInstanceOption.getServiceId(), newInstanceId));
+        knowledgeClient.notifyAddInstance(new AddInstanceRequest(addInstanceOption.getServiceId(), newInstancesAddress));
         if (newWeights != null) {
             for(String instanceId : addInstanceOption.getInstancesToShutdownIds()){
                 knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, shutdownInstance(instanceId)));

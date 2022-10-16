@@ -11,7 +11,7 @@
 					"cost_per_boot" : 0.1,
 					"implementation_trust" : 1,
 					"score" : 1,
-					"instance_load_shutdown_threshold" : 0.9
+					"instance_load_shutdown_threshold" : 0.7
 				}
 
 			],

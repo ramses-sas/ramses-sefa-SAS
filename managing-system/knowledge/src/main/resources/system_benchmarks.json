@@ -16,7 +16,7 @@
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.95
+							"benchmark": 0.951
 						}
 					]
 				}

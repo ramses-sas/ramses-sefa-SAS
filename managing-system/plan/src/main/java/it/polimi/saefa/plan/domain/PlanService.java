@@ -126,22 +126,31 @@ public class PlanService {
     //We assume that only one AddInstance option per service for each loop iteration is proposed by the Analyse module.
     private AddInstanceOption handleAddInstance(AddInstanceOption addInstanceOption, Service service) {
         if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
-            int oldNumberOfInstances = service.getInstances().size();
-            int newNumberOfInstances = oldNumberOfInstances + 1;
-            Map<String, Double> oldWeightsRedistributed = reduceWeightsForNewInstance(service.getLoadBalancerWeights(), newNumberOfInstances);
-
             Set<String> instancesToRemove = new HashSet<>();
             double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
+            boolean allWeightsOverThreshold = false;
+            Map<String, Double> oldWeightsRedistributed = service.getLoadBalancerWeights();
 
-            Double newWeight = 1.0 / (newNumberOfInstances);
-            for (String instanceId : oldWeightsRedistributed.keySet()) {
-                if (oldWeightsRedistributed.get(instanceId) < shutdownThreshold) {
-                    instancesToRemove.add(instanceId);
+            while(!allWeightsOverThreshold) {
+                List<String> instancesToRemoveCurrentIteration = new LinkedList<>();
+                allWeightsOverThreshold = true;
+                int newNumberOfInstances = oldWeightsRedistributed.size()+1;
+                oldWeightsRedistributed = reduceWeightsForNewInstance(oldWeightsRedistributed, newNumberOfInstances);
+                for (String instanceId : oldWeightsRedistributed.keySet()) {
+                    if (oldWeightsRedistributed.get(instanceId) < shutdownThreshold) {
+                        instancesToRemoveCurrentIteration.add(instanceId);
+                        allWeightsOverThreshold = false;
+                    }
                 }
+                for (String instanceId : instancesToRemoveCurrentIteration) {
+                    oldWeightsRedistributed = redistributeWeight(oldWeightsRedistributed, instanceId);
+                }
+                instancesToRemove.addAll(instancesToRemoveCurrentIteration);
             }
-            for (String instanceId : instancesToRemove) {
-                oldWeightsRedistributed = redistributeWeight(oldWeightsRedistributed, instanceId);
-            }
+
+            int newNumberOfInstances = oldWeightsRedistributed.size()+1;
+            Double newWeight = 1.0 / (newNumberOfInstances);
+
             addInstanceOption.setNewInstanceWeight(newWeight);
             addInstanceOption.setOldInstancesNewWeights(oldWeightsRedistributed);
             addInstanceOption.setInstancesToShutdownIds(instancesToRemove.stream().toList());
