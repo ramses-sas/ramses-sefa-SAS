@@ -18,10 +18,10 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = AddInstance.class),
-        @JsonSubTypes.Type(value = RemoveInstance.class),
-        @JsonSubTypes.Type(value = ChangeLoadBalancerWeights.class),
-        @JsonSubTypes.Type(value = ChangeImplementation.class),
+        @JsonSubTypes.Type(value = AddInstanceOption.class),
+        @JsonSubTypes.Type(value = RemoveInstanceOption.class),
+        @JsonSubTypes.Type(value = ChangeLoadBalancerWeightsOption.class),
+        @JsonSubTypes.Type(value = ChangeImplementationOption.class),
 })
 public abstract class AdaptationOption {
     @Id

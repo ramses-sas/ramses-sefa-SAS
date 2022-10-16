@@ -87,10 +87,10 @@ public class KnowledgeService {
 
     public void addMetricsFromBuffer(Queue<List<InstanceMetricsSnapshot>> metricsBuffer) {
         try {
+            Set<Instance> shutdownInstancesStillMonitored = new HashSet<>();
             log.info("Saving new set of metrics");
             for (List<InstanceMetricsSnapshot> metricsList : metricsBuffer) {
                 Set<Instance> currentlyActiveInstances = new HashSet<>();
-                Set<Instance> shutdownInstances = new HashSet<>();
                 for (InstanceMetricsSnapshot metricsSnapshot : metricsList) {
                     Service service = servicesMap.get(metricsSnapshot.getServiceId());
                     if(!Objects.equals(metricsSnapshot.getServiceImplementationId(), service.getCurrentImplementationId())) //Skip the metricsSnapshot if it is not related to the current implementation
@@ -106,14 +106,16 @@ public class KnowledgeService {
                             log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
                         if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
                             currentlyActiveInstances.add(instance);
-                    } else
-                        shutdownInstances.add(instance);
+                    }
+                    else {
+                        shutdownInstancesStillMonitored.add(instance);
+                    }
                 }
                 // Failure detection of instances
                 if (!previouslyActiveInstances.isEmpty()) {
                     Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
                     failedInstances.removeAll(currentlyActiveInstances);
-                    failedInstances.removeAll(shutdownInstances);
+                    failedInstances.removeAll(shutdownInstancesStillMonitored);
                     failedInstances.forEach(instance -> {
                         instance.setCurrentStatus(InstanceStatus.FAILED);
                         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
@@ -124,8 +126,14 @@ public class KnowledgeService {
                 }
                 previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
             }
-            // For each service, remove from the map of instances the instances that have been shutdown and their weights in the service configuration
-            servicesMap.values().forEach(Service::removeShutdownInstances);
+            // For each service, remove from the map of instances the instances that have been shutdown that are not monitored anymore
+            for (Service service : servicesMap.values()) {
+                Set<Instance> instancesToBeRemoved = new HashSet<>(service.getShutdownInstances());
+                instancesToBeRemoved.removeAll(shutdownInstancesStillMonitored);
+                for (Instance instance : instancesToBeRemoved) {
+                    service.removeInstance(instance);
+                }
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();

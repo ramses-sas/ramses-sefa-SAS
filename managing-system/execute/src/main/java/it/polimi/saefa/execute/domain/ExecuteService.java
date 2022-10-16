@@ -4,7 +4,6 @@ import it.polimi.saefa.configparser.CustomPropertiesWriter;
 import it.polimi.saefa.execute.externalInterfaces.*;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
-import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 import it.polimi.saefa.knowledge.rest.AddInstanceRequest;
@@ -35,21 +34,21 @@ public class ExecuteService {
             knowledgeClient.notifyModuleStart(Modules.EXECUTE);
             Map<String, List<AdaptationOption>> chosenAdaptationOptions = knowledgeClient.getChosenAdaptationOptions();
             chosenAdaptationOptions.values().forEach(adaptationOptions -> {
-                adaptationOptions.forEach(adaptationOption -> {
+                for(AdaptationOption adaptationOption : adaptationOptions){
                     log.info("Executing adaptation option: " + adaptationOption.getDescription());
                     Class<? extends AdaptationOption> clazz = adaptationOption.getClass();
-                    if (AddInstance.class.equals(clazz)) {
-                        handleAddInstanceOption((AddInstance) (adaptationOption));
-                    } else if (RemoveInstance.class.equals(clazz)) {
-                        handleRemoveInstanceOption((RemoveInstance) (adaptationOption));
-                    } else if (ChangeLoadBalancerWeights.class.equals(clazz)) {
-                        handleChangeLBWeightsOption((ChangeLoadBalancerWeights) (adaptationOption));
-                    } else if(ChangeImplementation.class.equals(clazz)){
-                        handleChangeImplementationOption((ChangeImplementation) (adaptationOption));
+                    if (AddInstanceOption.class.equals(clazz)) {
+                        handleAddInstanceOption((AddInstanceOption) (adaptationOption));
+                    } else if (RemoveInstanceOption.class.equals(clazz)) {
+                        handleRemoveInstanceOption((RemoveInstanceOption) (adaptationOption));
+                    } else if (ChangeLoadBalancerWeightsOption.class.equals(clazz)) {
+                        handleChangeLBWeightsOption((ChangeLoadBalancerWeightsOption) (adaptationOption));
+                    } else if(ChangeImplementationOption.class.equals(clazz)){
+                        handleChangeImplementationOption((ChangeImplementationOption) (adaptationOption));
                     } else {
                         log.error("Unknown adaptation option type: " + adaptationOption.getClass());
                     }
-                });
+                }
             });
             log.info("Ending execute. Notifying Monitor module to continue the loop.");
             monitorClient.notifyFinishedIteration();
@@ -61,12 +60,12 @@ public class ExecuteService {
         }
     }
 
-    private void handleChangeImplementationOption(ChangeImplementation changeImplementation) {
-        String serviceId = changeImplementation.getServiceId();
+    private void handleChangeImplementationOption(ChangeImplementationOption changeImplementationOption) {
+        String serviceId = changeImplementationOption.getServiceId();
         Service service = knowledgeClient.getService(serviceId);
         ServiceImplementation oldImplementation = service.getCurrentImplementation();
 
-        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(changeImplementation.getNewImplementationId(), changeImplementation.getNumberOfInstances()));
+        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(changeImplementationOption.getNewImplementationId(), changeImplementationOption.getNumberOfInstances()));
 
         List<StartNewInstancesResponse.SingleInstanceResponse> newInstances = instancesResponse.getDockerizedInstances();
         if (newInstances.isEmpty())
@@ -79,11 +78,11 @@ public class ExecuteService {
             removeInstance(instanceId);
         }
         removeLoadBalancerWeights(serviceId, oldInstancesIds);
-        knowledgeClient.notifyChangeOfImplementation(new ChangeOfImplementationRequest(serviceId, changeImplementation.getNewImplementationId(), newInstancesAddresses));
+        knowledgeClient.notifyChangeOfImplementation(new ChangeOfImplementationRequest(serviceId, changeImplementationOption.getNewImplementationId(), newInstancesAddresses));
 
     }
 
-    private void handleAddInstanceOption(AddInstance addInstanceOption) {
+    private void handleAddInstanceOption(AddInstanceOption addInstanceOption) {
         String serviceId = addInstanceOption.getServiceId();
         Service service = knowledgeClient.getService(serviceId);
         if (!service.getCurrentImplementationId().equals(addInstanceOption.getServiceImplementationId()))
@@ -110,15 +109,15 @@ public class ExecuteService {
         }
     }
 
-    private void handleRemoveInstanceOption(RemoveInstance removeInstancesOption) {
-        String serviceId = removeInstancesOption.getServiceId();
-        knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, removeInstance(removeInstancesOption.getInstanceId())));
-        if(removeInstancesOption.getNewWeights()!=null) {
-            knowledgeClient.setLoadBalancerWeights(serviceId, updateConfigLoadbalancerWeights(serviceId, removeInstancesOption.getNewWeights()));
+    private void handleRemoveInstanceOption(RemoveInstanceOption removeInstancesOptionOption) {
+        String serviceId = removeInstancesOptionOption.getServiceId();
+        knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, removeInstance(removeInstancesOptionOption.getInstanceId())));
+        if(removeInstancesOptionOption.getNewWeights()!=null) {
+            knowledgeClient.setLoadBalancerWeights(serviceId, updateConfigLoadbalancerWeights(serviceId, removeInstancesOptionOption.getNewWeights()));
         }
     }
 
-    private void handleChangeLBWeightsOption(ChangeLoadBalancerWeights changeLoadBalancerWeightsOption) {
+    private void handleChangeLBWeightsOption(ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption) {
         String serviceId = changeLoadBalancerWeightsOption.getServiceId();
         Map<String, Double> newWeights = changeLoadBalancerWeightsOption.getNewWeights();
         newWeights.forEach((instanceId, weight) -> {

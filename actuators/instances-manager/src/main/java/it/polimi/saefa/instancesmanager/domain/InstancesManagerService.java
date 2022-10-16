@@ -1,6 +1,8 @@
 package it.polimi.saefa.instancesmanager.domain;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -95,11 +97,18 @@ public class InstancesManagerService {
         List<Container> containers = dockerClient.listContainersCmd().withNameFilter(Collections.singleton(serviceImplementationName+"_"+port)).exec();
         if (containers.size() == 1) {
             Container container = containers.get(0);
-            dockerClient.stopContainerCmd(container.getId()).exec();
-            dockerClient.removeContainerCmd(container.getId()).exec();
+            try {
+                dockerClient.stopContainerCmd(container.getId()).exec();
+                dockerClient.removeContainerCmd(container.getId()).exec();
+            } catch (NotFoundException|NotModifiedException e){
+                log.warn("Container {} already removed", container.getId());
+            }
+            return;
+        } else if (containers.size() == 0){
+            log.warn("Container {}:{} not found. Considering it as crashed.", serviceImplementationName, port);
             return;
         }
-        throw new RuntimeException("Container not found");
+        throw new RuntimeException("Too many containers found: " + containers);
     }
 
     private List<String> buildContainerEnvVariables(int serverPort, SimulationInstanceParams simulationInstanceParams) {

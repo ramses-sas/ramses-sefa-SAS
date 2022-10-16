@@ -15,8 +15,8 @@ import java.util.Queue;
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
 
-    @PostMapping("/rest/notifyModuleStart")
-    ResponseEntity<String> notifyModuleStart(@RequestBody Modules module);
+    @PutMapping("/rest/activeModule")
+    ResponseEntity<String> notifyModuleStart(@RequestParam Modules module);
 
     @PostMapping("/rest/metrics/addMetricsBuffer")
     void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer);
@@ -45,6 +45,6 @@ public interface KnowledgeClient {
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
 
-    @PutMapping("/rest/activeModule")
+    @PutMapping("/rest/failedModule")
     String setFailedModule(@RequestParam Modules module);
 }

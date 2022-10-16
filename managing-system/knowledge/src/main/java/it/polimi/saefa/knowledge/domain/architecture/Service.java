@@ -40,6 +40,41 @@ public class Service {
         return new LinkedList<>(getCurrentImplementation().getInstances().values());
     }
 
+    @JsonIgnore
+    public List<Instance> getBootingInstances(){
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.BOOTING).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getShutdownInstances(){
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.SHUTDOWN).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getFailedInstances(){
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.FAILED).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getActiveInstances(){
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.ACTIVE).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getUnreachableInstances(){
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.UNREACHABLE).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getAvailableInstances() {
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.ACTIVE || instance.getCurrentStatus() == InstanceStatus.UNREACHABLE).toList());
+    }
+
+    @JsonIgnore
+    public List<Instance> getAvailableAndBootingInstances() {
+        return new LinkedList<>(getCurrentImplementation().getInstances().values().stream().filter(instance -> instance.getCurrentStatus() == InstanceStatus.ACTIVE || instance.getCurrentStatus() == InstanceStatus.UNREACHABLE || instance.getCurrentStatus() == InstanceStatus.BOOTING).toList());
+    }
+
     public void setConfiguration(ServiceConfiguration configuration) {
         this.configuration = configuration;
         if(this.configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
@@ -115,7 +150,8 @@ public class Service {
     public void removeInstance(Instance shutdownInstance) {
         getCurrentImplementation().removeInstance(shutdownInstance);
         if(configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)
-            configuration.getLoadBalancerWeights().remove(shutdownInstance.getInstanceId());
+            if(configuration.getLoadBalancerWeights().remove(shutdownInstance.getInstanceId())!=null)
+                throw new RuntimeException("THIS SHOULD NOT HAPPEN: Error while removing instance from load balancer weights");
     }
 
     public void removeShutdownInstances() {

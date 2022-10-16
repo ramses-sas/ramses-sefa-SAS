@@ -2,7 +2,6 @@ package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,13 +16,13 @@ import java.util.Map;
 @Entity
 @NoArgsConstructor
 @DiscriminatorValue("CHANGE_LOAD_BALANCER_WEIGHTS")
-public class ChangeLoadBalancerWeights extends AdaptationOption {
+public class ChangeLoadBalancerWeightsOption extends AdaptationOption {
     @ElementCollection
     // <instanceId, newWeight>
     private Map<String, Double> newWeights;
 
 
-    public ChangeLoadBalancerWeights(String serviceId, String serviceImplementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeLoadBalancerWeightsOption(String serviceId, String serviceImplementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
         super.setAdaptationParametersGoal(goal);
     }

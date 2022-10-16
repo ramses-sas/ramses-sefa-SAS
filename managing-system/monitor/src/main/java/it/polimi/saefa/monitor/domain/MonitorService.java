@@ -131,6 +131,7 @@ public class MonitorService {
                     knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
                     instanceMetricsListBuffer.clear();
                     loopIterationFinished.set(false);
+                    log.debug("Starting analysis");
                     analyseClient.start();
                 }
             } catch (Exception e) {

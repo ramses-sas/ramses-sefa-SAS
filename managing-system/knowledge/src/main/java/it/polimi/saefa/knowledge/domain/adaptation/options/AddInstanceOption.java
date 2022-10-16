@@ -17,19 +17,19 @@ import java.util.Map;
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("ADD_INSTANCE")
-public class AddInstance extends AdaptationOption {
+public class AddInstanceOption extends AdaptationOption {
     @ElementCollection
     // <instanceId, newWeight>
     private Map<String, Double> oldInstancesNewWeights;
     private Double newInstanceWeight;
 
 
-    public AddInstance(String serviceId, String implementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public AddInstanceOption(String serviceId, String implementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
         super(serviceId, implementationId, comment);
         super.setAdaptationParametersGoal(goal);
     }
 
-    public AddInstance(String serviceId, String implementationId, String comment, boolean isForced) {
+    public AddInstanceOption(String serviceId, String implementationId, String comment, boolean isForced) {
         super(serviceId, implementationId, comment);
         super.setForced(isForced);
     }

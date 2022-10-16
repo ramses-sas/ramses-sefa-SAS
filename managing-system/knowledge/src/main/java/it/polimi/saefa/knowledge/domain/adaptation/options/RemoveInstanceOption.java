@@ -8,7 +8,6 @@ import lombok.Setter;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -16,19 +15,19 @@ import java.util.Map;
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("REMOVE_INSTANCES")
-public class RemoveInstance extends AdaptationOption {
+public class RemoveInstanceOption extends AdaptationOption {
     private String instanceId;
     @ElementCollection
     // <instanceId, newWeight>
     private Map<String, Double> newWeights;
 
 
-    public RemoveInstance(String serviceId, String serviceImplementationId, String instanceId, String comment) {
+    public RemoveInstanceOption(String serviceId, String serviceImplementationId, String instanceId, String comment) {
         super(serviceId, serviceImplementationId, comment);
         this.instanceId = instanceId;
     }
 
-    public RemoveInstance(String serviceId, String serviceImplementationId, String instanceId, String comment, boolean isForced) {
+    public RemoveInstanceOption(String serviceId, String serviceImplementationId, String instanceId, String comment, boolean isForced) {
         super(serviceId, serviceImplementationId, comment);
         this.instanceId = instanceId;
         super.setForced(isForced);

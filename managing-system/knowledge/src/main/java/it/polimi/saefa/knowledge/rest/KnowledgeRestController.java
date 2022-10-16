@@ -2,7 +2,6 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.options.AddInstance;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -23,14 +22,13 @@ public class KnowledgeRestController {
     @Autowired
     private KnowledgeService knowledgeService;
 
-
     @GetMapping("/activeModule")
     public Modules getActiveModule() {
         return knowledgeService.getActiveModule();
     }
 
-    @PostMapping("/notifyModuleStart")
-    public ResponseEntity<String> notifyModuleStart(@RequestBody Modules module) {
+    @PutMapping("/activeModule")
+    public ResponseEntity<String> notifyModuleStart(@RequestParam Modules module) {
         knowledgeService.setActiveModule(module);
         return ResponseEntity.ok().body("Module start correctly notified");
     }
@@ -44,7 +42,7 @@ public class KnowledgeRestController {
     @PutMapping("/failedModule")
     public String setFailedModule(@RequestParam Modules module) {
         knowledgeService.setFailedModule(module);
-        return "Failed module correctly set";
+        return "Failed module " + module + " correctly set";
     }
 
 

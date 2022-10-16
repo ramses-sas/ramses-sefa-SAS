@@ -113,26 +113,31 @@ public class AnalyseService {
     // their value to compute each new AdaptationParameterValue of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
     private List<AdaptationOption> analyse() {
-        List<AdaptationOption> adaptationOptions = new ArrayList<>();
+        Map<String, AdaptationOption> forcedAdaptationOptions = new HashMap<>();
         for (Service service : currentArchitectureMap.values()) {
             boolean existsInstanceWithNewMetricsWindow = false;
+            boolean atLeastOneBootingInstance = false;
             List<InstanceStats> instancesStats = new ArrayList<>();
             // Analyze all the instances
             for (Instance instance : service.getInstances()) {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
 
-                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
-                    throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
-
-                if (instance.getCurrentStatus() == InstanceStatus.BOOTING)
+                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) { //TODO abbiamo quindi questo caso cambiando la knowledge
+                    continue;
+                    //throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
+                }
+                if (instance.getCurrentStatus() == InstanceStatus.BOOTING) {
                     if ((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
                         log.debug("Instance " + instance.getInstanceId() + " is still booting after " + maxBootTimeSeconds + " seconds. Forcing it to shutdown.");
-                        adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
-                        continue;
+                        forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
+                    } else {
+                        atLeastOneBootingInstance = true;
                     }
+                    continue;
+                }
 
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
-                    adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
+                    forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
 
@@ -149,7 +154,7 @@ public class AnalyseService {
                 double inactiveRate = failureRate + unreachableRate;
 
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
-                    adaptationOptions.add(new RemoveInstance(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
+                    forcedAdaptationOptions.put(service.getServiceId(), new RemoveInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     continue;
                     /*
                     Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
@@ -182,9 +187,9 @@ public class AnalyseService {
                 }
             }
 
-            if (instancesStats.isEmpty()) {
-                adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
-                log.warn("Service {} has no active instances", service.getServiceId());
+            if (instancesStats.isEmpty() && !atLeastOneBootingInstance) {
+                forcedAdaptationOptions.put(service.getServiceId(), new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
+                log.warn("Service {} has no active or booting instances", service.getServiceId());
                 continue;
             }
             if (!existsInstanceWithNewMetricsWindow) {
@@ -199,7 +204,7 @@ public class AnalyseService {
             updateAdaptationParametersHistory(service, instancesStats);
             computeServiceAndInstancesCurrentValues(service);
         }
-        return adaptationOptions;
+        return forcedAdaptationOptions.values().stream().toList();
     }
 
     // Creates and proposes to the knowledge a list of adaptation options for all the services that have filled their
@@ -212,7 +217,8 @@ public class AnalyseService {
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
 
         for(Service service : currentArchitectureMap.values()){
-            proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
+            if(!service.getBootingInstances().isEmpty() || !service.getShutdownInstances().isEmpty()) //We do not perform adaptation if at least one instance of the service is booting or shutdown
+                proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
         }
 
         for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
@@ -293,7 +299,7 @@ public class AnalyseService {
                 if(!possibleImplementationId.equals(service.getCurrentImplementationId()))
                     possibleImplementations.add(possibleImplementationId);
         }
-        return new ChangeImplementation(service.getServiceId(), service.getCurrentImplementationId(), service.getInstances().size(), possibleImplementations, goal, "Changing implementation");
+        return new ChangeImplementationOption(service.getServiceId(), service.getCurrentImplementationId(), service.getInstances().size(), possibleImplementations, goal, "Changing implementation");
     }
 
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, List<Double> serviceAvailabilityHistory) {
@@ -311,8 +317,8 @@ public class AnalyseService {
                 adaptationOptions.add(createChangeImplementationOption(service, Availability.class));
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
-                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
-            adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "The service avg availability specification is not satisfied"));
+                adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
+            adaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "The service avg availability specification is not satisfied"));
         }
         return adaptationOptions;
     }
@@ -332,8 +338,8 @@ public class AnalyseService {
                 adaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
             // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
-                adaptationOptions.add(new ChangeLoadBalancerWeights(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));
-            adaptationOptions.add(new AddInstance(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "The service avg response time specification is not satisfied"));
+                adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));
+            adaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "The service avg response time specification is not satisfied"));
         }
         return adaptationOptions;
     }

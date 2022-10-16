@@ -12,20 +12,20 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @DiscriminatorValue("CHANGE_IMPLEMENTATION")
-public class ChangeImplementation extends AdaptationOption {
+public class ChangeImplementationOption extends AdaptationOption {
     @ElementCollection
     private List<String> possibleImplementations;
     private String newImplementationId;
     private int numberOfInstances;
 
-    public ChangeImplementation(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, boolean forced, String comment) {
+    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, boolean forced, String comment) {
         super(serviceId, serviceImplementationId, comment);
         super.setForced(forced);
         this.numberOfInstances = numberOfInstances;
         this.possibleImplementations = possibleImplementations;
     }
 
-    public ChangeImplementation(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends AdaptationParamSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
         super.setAdaptationParametersGoal(goal);
         this.numberOfInstances = numberOfInstances;
