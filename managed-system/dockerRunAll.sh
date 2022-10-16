@@ -56,6 +56,14 @@ BuildNRun() {
   fi
 }
 
+BuildOnly() {
+  if [ "$IS_REMOTE" = "no" ] ; then
+    bash "$SCRIPTS_PATH/dockerBuild.sh"
+  else
+    bash "$SCRIPTS_PATH/dockerBuild.sh" -r
+  fi
+}
+
 cd "../libs/config-parser/" || return
 ./gradlew clean; ./gradlew build
 cd "../load-balancer/"
@@ -66,6 +74,7 @@ if [ "$IS_REMOTE" = "no" ] ; then
   cd "servers/eureka-registry-server/" || return
   bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
   cd ../..
+  sleep 2
   cd "servers/config-server/" || return
   bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
   cd ../..
@@ -82,25 +91,28 @@ echo
 
 for d in */; do
   if [ "${d: -8}" = "service/" ] ; then
-    echo; echo; echo; echo
+    echo; echo; echo
     PrintSuccess "Starting $d"
     cd "$d" || return
     BuildNRun
     cd ..
-    echo; echo; echo; echo
+    echo; echo; echo
   else
     if [ "${d: -8}" = "proxies/" ]; then
-      echo; echo; echo; echo
-      PrintSuccess "Starting proxies..."
-      echo
       cd "$d" || return
       for dd in */; do
-        echo; echo; echo; echo
-        PrintSuccess "Starting $dd"
-        cd "$dd" || return
-        BuildNRun
-        cd ..
-        echo; echo; echo; echo
+          echo; echo; echo
+          cd "$dd" || return
+          if [ "${dd: -10}" = "1-service/" ]; then
+            PrintSuccess "Starting $dd"
+            BuildNRun
+          else
+            PrintSuccess "Building $dd"
+            BuildOnly
+          fi
+          cd ..
+          echo; echo; echo
+        fi
       done
       cd ..
     fi
@@ -109,63 +121,3 @@ done
 
 echo
 PrintSuccess "SETUP DONE. All containers should be up and running."
-echo "Press 'q' to exit and stop all containers."
-echo "Press 'x' to exit and keep all containers running."
-echo
-
-DockerStop() {
-  SERVICE_IMPLEMENTATION_NAME=`awk -v FS="IMPLEMENTATION_NAME=" 'NF>1{print $2}' ./src/main/resources/application.properties`
-  if [ "$SERVICE_IMPLEMENTATION_NAME" = "" ]; then
-    PrintError "UNKNOWN SERVICE IMPLEMENTATION NAME. Make sure that IMPLEMENTATION_NAME is set in application.properties. Using spring.application.name property"
-    SERVICE_IMPLEMENTATION_NAME=`awk -v FS="spring.application.name=" 'NF>1{print $2}' ./src/main/resources/application.properties`
-  fi
-  docker stop $SERVICE_IMPLEMENTATION_NAME
-}
-
-while : ; do
-  read -n 1 k <&1
-  if [[ $k = q ]] ; then
-    echo
-    PrintSuccess "Stopping all containers..."
-    for d in */; do
-      if [ "${d: -8}" = "service/" ] ; then
-        cd "$d" || return
-        DockerStop
-        cd ..
-      else
-        if [ "${d: -8}" = "proxies/" ] ; then
-          cd "$d" || return
-          for dd in */; do
-            cd "$dd" || return
-            DockerStop
-            cd ..
-          done
-          cd ..
-        fi
-      fi
-    done
-    if [ "$IS_REMOTE" = "no" ] ; then
-      cd "servers/eureka-registry-server/" || return
-      DockerStop
-      cd ../..
-      cd "servers/config-server/" || return
-      DockerStop
-      cd ../..
-    fi
-    echo
-    PrintSuccess "Exiting..."
-    exit
-  else
-    if [[ $k = x ]] ; then
-      echo
-      PrintSuccess "Exiting..."
-      exit
-    else 
-      echo
-      echo "Press 'q' to exit and stop all containers."
-      echo "Press 'x' to exit and keep all containers running."
-      echo
-    fi
-  fi
-done
-
