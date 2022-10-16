@@ -1,5 +1,6 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
 import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
@@ -32,14 +33,10 @@ public class Instance {
         adaptationParamCollection = new AdaptationParamCollection();
     }
 
-    // TODO verifica di poter togliere il JsonIgnore
-    //@JsonIgnore
     public <T extends AdaptationParamSpecification> List<Double> getLatestFilledAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
         return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
     }
 
-    // TODO verifica di poter togliere il JsonIgnore
-    //@JsonIgnore
     public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
         return getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
     }
@@ -52,8 +49,7 @@ public class Instance {
         getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
     }
 
-
-
+    @JsonIgnore
     public String getAddress(){
         return instanceId.split("@")[1];
     }
@@ -66,10 +62,4 @@ public class Instance {
         return instanceId.equals(instance.instanceId);
     }
 
-    /*
-    @JsonIgnore
-    public boolean isJustBorn() {
-        return this.getAdaptationParamCollection().existsEmptyHistory();
-    }
-     */
 }

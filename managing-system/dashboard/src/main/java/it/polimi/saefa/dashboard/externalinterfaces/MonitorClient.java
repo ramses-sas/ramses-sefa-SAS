@@ -10,11 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "MONITOR", url = "${MONITOR_URL}")
 public interface MonitorClient {
 
-    /*
-    @GetMapping("/rest/schedulingPeriod")
-    int getSchedulingPeriod();
-     */
-
     @PutMapping("/rest/schedulingPeriod")
     void changeSchedulingPeriod(@RequestParam("period") int period);
 
@@ -23,11 +18,6 @@ public interface MonitorClient {
 
     @GetMapping("/rest/stopRoutine")
     void stopRoutine();
-
-    /*
-    @GetMapping("/rest/isRoutineRunning")
-    boolean isMonitorRunning();
-     */
 
     @GetMapping("/rest/")
     GetInfoResponse getInfo();

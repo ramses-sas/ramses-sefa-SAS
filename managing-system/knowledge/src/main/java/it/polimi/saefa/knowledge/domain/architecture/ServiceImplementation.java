@@ -28,7 +28,9 @@ public class ServiceImplementation {
     private int implementationTrust; //valutazione di quanto è affidabile questa implementazione
     private int penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
     //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
-    private double instanceLoadShutdownThreshold; // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
+    // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
+    // should be seen as rate/threshold (i.e., shutdown the instances which process less than this threshold percentage with respect to the ideal case)
+    private double instanceLoadShutdownThreshold;
 
     public ServiceImplementation(String implementationId, double score, int implementationTrust, double instanceLoadShutdownThreshold) {
         this.implementationId = implementationId;

@@ -77,16 +77,6 @@ public class HttpEndpointMetrics {
         return httpMethod.equals(that.httpMethod) && getTotalCount() == that.getTotalCount();
     }
 
-    /*
-    @Override
-    public int hashCode() {
-        int result = endpoint.hashCode();
-        result = 31 * result + httpMethod.hashCode();
-        result = 31 * result + getTotalCount();
-        return result;
-    }
-     */
-
     @JsonIgnore
     public double getAverageDuration(){
         double totalDuration = 0;
