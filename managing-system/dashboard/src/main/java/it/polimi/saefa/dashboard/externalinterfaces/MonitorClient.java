@@ -1,6 +1,6 @@
 package it.polimi.saefa.dashboard.externalinterfaces;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,7 +32,7 @@ public interface MonitorClient {
     @GetMapping("/rest/")
     GetInfoResponse getInfo();
 
-    @Getter
+    @Data
     class GetInfoResponse {
         private int schedulingPeriod;
         private boolean isRoutineRunning;

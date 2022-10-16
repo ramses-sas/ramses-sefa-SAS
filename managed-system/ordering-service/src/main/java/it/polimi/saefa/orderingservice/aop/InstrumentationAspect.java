@@ -92,7 +92,7 @@ public class InstrumentationAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="orderingServiceMethods()", throwing="exception")
+    @AfterThrowing(value="orderingServiceMethods() || orderingServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }

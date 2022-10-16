@@ -97,7 +97,7 @@ public class InstrumentationAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="restaurantServiceMethods()", throwing="exception")
+    @AfterThrowing(value="restaurantServiceMethods() || restaurantServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }

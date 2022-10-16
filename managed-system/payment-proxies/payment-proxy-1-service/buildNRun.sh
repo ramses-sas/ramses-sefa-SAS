@@ -1,1 +1,1 @@
-bash ../scripts/dockerBuild.sh; bash ../scripts/dockerRun.sh
+bash ../../scripts/dockerBuild.sh; bash ../../scripts/dockerRun.sh

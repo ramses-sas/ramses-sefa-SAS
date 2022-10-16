@@ -93,7 +93,7 @@ public class InstrumentationAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="deliveryProxyServiceMethods()", throwing="exception")
+    @AfterThrowing(value="deliveryProxyServiceMethods() || deliveryProxyServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }
