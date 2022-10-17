@@ -58,7 +58,7 @@ public class KnowledgeInit implements InitializingBean {
                 serviceImplementationBenchmarks.getQoSBenchmarks().forEach((adaptationClass, value) ->
                         service.getPossibleImplementations()
                                 .get(serviceImplementationBenchmarks.getServiceImplementationId())
-                                .setBootBenchmark(adaptationClass, value));
+                                .setBenchmark(adaptationClass, value));
             });
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))

@@ -11,12 +11,7 @@
 				}
 
 			],
-			"dependencies" : [
-				{
-					"name" : "ORDERING-SERVICE"
-				}
-
-			]
+			"dependencies" : []
 		},
 		{
 			"service_id":"ORDERING-SERVICE",

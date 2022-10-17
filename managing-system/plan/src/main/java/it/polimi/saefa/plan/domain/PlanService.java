@@ -45,15 +45,16 @@ public class PlanService {
             Map<String, List<AdaptationOption>> chosenAdaptationOptions = new HashMap<>();
 
             proposedAdaptationOptions.forEach((serviceId, options) -> {
-                log.debug("\n\nAnalysing service: {}", serviceId);
+                log.debug("Analysing service: {}", serviceId);
                 List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
                 // Initialized with all the forced options
                 List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
                 List<AdaptationOption> optionsToCompare = new LinkedList<>();
 
                 if (forcedAdaptationOptions.isEmpty()) {
+                    log.debug("{} has no forced options. Analysing proposed adaptation options.", serviceId);
                     for (AdaptationOption option : options) {
-                        log.info("Adaptation option: {}", option.getDescription());
+                        log.debug(option.getDescription());
                         if (option.getClass().equals(ChangeLoadBalancerWeightsOption.class)) {
                             ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) option;
                             Map<String, Double> newWeights = handleChangeLoadBalancerWeights(servicesMap.get(option.getServiceId()));
@@ -84,10 +85,11 @@ public class PlanService {
                 }
                 else {
                     // If there is at least a forced option, all the other options are ignored
-                    log.info("Forced adaptation options: {}", forcedAdaptationOptions);
+                    log.debug("{} has forced Adaptation options", serviceId);
 
                     //We first perform all the RemoveOptions and then perform the final AddInstanceOption, if any. This same order must be respected by the Execute.
                     for(AdaptationOption option : forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(ShutdownInstanceOption.class)).toList()) {
+                        log.debug(option.toString());
                         chosenAdaptationOptionList.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), true));
                     }
                     List<AddInstanceOption> addInstanceOptions = forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(AddInstanceOption.class)).map(option -> (AddInstanceOption) option).toList();
@@ -96,6 +98,7 @@ public class PlanService {
                         throw new RuntimeException("More than one add instance option is forced");
                     }else if (addInstanceOptions.size()==1) {
                         chosenAdaptationOptionList.add(handleAddInstance(addInstanceOptions.get(0), servicesMap.get(addInstanceOptions.get(0).getServiceId())));
+                        log.debug(addInstanceOptions.get(0).toString());
                     }
                 }
                 chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
@@ -225,7 +228,7 @@ public class PlanService {
                 continue;
             }
 
-            MPConstraint growthConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, z_i, instance_i + "constraint5"); // w_i<= z_i * [P_i + ∑(P_j * (1-a_j))] <=> w_i + z_i*∑ P_j * a_j <=z_i
+            MPConstraint growthConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, z_i, instance_i.getInstanceId() + "constraint5"); // w_i<= z_i * [P_i + ∑(P_j * (1-a_j))] <=> w_i + z_i*∑ P_j * a_j <=z_i
             growthConstraint.setCoefficient(weight_i, 1);
 
             for (Instance instance_j : service.getInstances()) {
@@ -266,7 +269,8 @@ public class PlanService {
         objective.setMinimization();
         final MPSolver.ResultStatus resultStatus = solver.solve();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n Minimization problem for service ").append(service.getServiceId()).append(" solved with status ").append(resultStatus);
         sb.append("\nSoglia: ").append(shutdownThreshold).append("\n");
         sb.append("Service response time: ").append(serviceAvgRespTime).append("\n");
         sb.append("Service availability: ").append(serviceAvgAvailability).append("\n");
@@ -317,9 +321,9 @@ public class PlanService {
         double bestImplementationBenefit = 0;
         //Deve prendere la lista di possible implementation,
         for(String implementationId: changeImplementationOption.getPossibleImplementations()){
-            Class<? extends QoSSpecification> goal = changeImplementationOption.getAdaptationParametersGoal();
+            Class<? extends QoSSpecification> goal = changeImplementationOption.getQosGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
-            double benchmark = implementation.getBootBenchmark(changeImplementationOption.getAdaptationParametersGoal()) * implementation.getScore();
+            double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal()) * implementation.getScore();
             if(bestImplementationId == null) {
                 bestImplementationId = implementationId;
                 bestImplementationBenefit = benchmark;
@@ -349,10 +353,11 @@ public class PlanService {
             return null;
         Map<Class<? extends QoSSpecification>, Double> benefits = new HashMap<>();
         Map<Class<? extends QoSSpecification>, AdaptationOption> bestOptionForGoal = new HashMap<>();
+        log.debug("{}: Extracting best option from {} options", service.getServiceId(), toCompare.size());
 
         for (AdaptationOption adaptationOption : toCompare) {
             List<Instance> instances = service.getInstances();
-            if(adaptationOption.getAdaptationParametersGoal() == Availability.class) {
+            if(adaptationOption.getQosGoal() == Availability.class) {
                 double availabilityEstimation = 0.0;
                 if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
                     if (ChangeLoadBalancerWeightsOption.class.equals(adaptationOption.getClass())) {
@@ -368,7 +373,7 @@ public class PlanService {
                             if(!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
                                 availabilityEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getValue();
                         }
-                        availabilityEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBootBenchmark(Availability.class);
+                        availabilityEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBenchmark(Availability.class);
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
@@ -383,7 +388,7 @@ public class PlanService {
                         for (Instance instance : instances) {
                             availabilityEstimation += instance.getCurrentValueForQoS(Availability.class).getValue();
                         }
-                        availabilityEstimation += service.getCurrentImplementation().getBootBenchmark(Availability.class);
+                        availabilityEstimation += service.getCurrentImplementation().getBenchmark(Availability.class);
                         availabilityEstimation /= instances.size() + 1;
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
@@ -396,17 +401,17 @@ public class PlanService {
                 }
                 if(ChangeImplementationOption.class.equals(adaptationOption.getClass())) {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
-                    availabilityEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBootBenchmark(Availability.class);
+                    availabilityEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(Availability.class);
                 }
                 double newBenefit = availabilityEstimation / service.getCurrentValueForQoS(Availability.class).getValue();
-                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for availability: " + newBenefit);
+                log.debug(service.getServiceId() + ": " + adaptationOption.getClass().getSimpleName() + " option for Availability. BENEFIT: " + newBenefit);
 
                 if(newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))){
                     benefits.put(Availability.class, newBenefit);
                     bestOptionForGoal.put(Availability.class, adaptationOption);
                 }
             }
-            else if(adaptationOption.getAdaptationParametersGoal() == AverageResponseTime.class){
+            else if(adaptationOption.getQosGoal() == AverageResponseTime.class){
                 double avgResponseTimeEstimation = 0.0;
                 if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
                     if (ChangeLoadBalancerWeightsOption.class.equals(adaptationOption.getClass())) {
@@ -421,7 +426,7 @@ public class PlanService {
                             if(!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
                                 avgResponseTimeEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
                         }
-                        avgResponseTimeEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
+                        avgResponseTimeEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBenchmark(AverageResponseTime.class);
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
@@ -436,7 +441,7 @@ public class PlanService {
                         for (Instance instance : instances) {
                             avgResponseTimeEstimation += instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
                         }
-                        avgResponseTimeEstimation += service.getCurrentImplementation().getBootBenchmark(AverageResponseTime.class);
+                        avgResponseTimeEstimation += service.getCurrentImplementation().getBenchmark(AverageResponseTime.class);
                         avgResponseTimeEstimation /= instances.size() + 1;
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
@@ -450,10 +455,10 @@ public class PlanService {
                 }
                 if(ChangeImplementationOption.class.equals(adaptationOption.getClass())) {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
-                    avgResponseTimeEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBootBenchmark(AverageResponseTime.class);
+                    avgResponseTimeEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(AverageResponseTime.class);
                 }
                 double newBenefit =  service.getCurrentValueForQoS(AverageResponseTime.class).getValue() / avgResponseTimeEstimation;
-                log.debug("New benefit brought by " + adaptationOption.getClass().getSimpleName() + " for response time: " + newBenefit);
+                log.debug(service.getServiceId() + ": " + adaptationOption.getClass().getSimpleName() + " option for AVG RT. BENEFIT: " + newBenefit);
                 if(newBenefit > 1 && (!benefits.containsKey(AverageResponseTime.class) || newBenefit > benefits.get(AverageResponseTime.class))){
                     benefits.put(AverageResponseTime.class, newBenefit);
                     bestOptionForGoal.put(AverageResponseTime.class, adaptationOption);
@@ -463,14 +468,17 @@ public class PlanService {
 
         Class<? extends QoSSpecification> bestBenefitClass = null;
 
-        for (Class<? extends QoSSpecification> adaptationParamSpecification : benefits.keySet()) {
-            if(bestBenefitClass == null || benefits.get(adaptationParamSpecification) > benefits.get(bestBenefitClass))
-                bestBenefitClass = adaptationParamSpecification;
+        for (Class<? extends QoSSpecification> qosSpecification : benefits.keySet()) {
+            if(bestBenefitClass == null || benefits.get(qosSpecification) > benefits.get(bestBenefitClass))
+                bestBenefitClass = qosSpecification;
         }
         if(bestBenefitClass == null){
-            log.error("No beneficial adaptation option found for service " + service.getServiceId());
+            log.error("{}: No beneficial adaptation option", service.getServiceId());
             return null;
         }
+
+        log.debug("{}: Selected option {} for {} with benefit {}", service.getServiceId(), bestOptionForGoal.get(bestBenefitClass).getClass().getSimpleName(), bestBenefitClass.getSimpleName(), benefits.get(bestBenefitClass));
+        log.debug("Details: {}", bestOptionForGoal.get(bestBenefitClass));
 
         return bestOptionForGoal.get(bestBenefitClass);
     }

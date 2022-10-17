@@ -36,7 +36,7 @@ public class ShutdownInstanceOption extends AdaptationOption {
     @JsonIgnore
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getAdaptationParametersGoal().getSimpleName())) + " - Remove instances " + instanceToShutdownId + " of service " + super.getServiceId() + ".\n" + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Remove instances. Service:" + super.getServiceId() + ".\n\t\t\t\t\tInstances: " + instanceToShutdownId + "\n\t\t\t\t\t" + getComment();
     }
 }
 

@@ -19,7 +19,7 @@ public class Service {
     private List<String> dependencies; //names of services that this service depends on
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
-    // <AdaptationParameter class, QoSSpecification>
+    // <QoS class, QoSSpecification>
     private Map<Class<? extends QoSSpecification>, QoSSpecification> qoSSpecifications = new HashMap<>();
     @Setter
     private Date latestAdaptationDate = new Date();
@@ -96,24 +96,24 @@ public class Service {
     // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
-    public <T extends QoSSpecification> List<Double> getLatestAnalysisWindowForQoS(Class<T> adaptationParamClass, int n) {
-        return getCurrentImplementation().getQoSCollection().getLatestAnalysisWindowForQoS(adaptationParamClass, n, false);
+    public <T extends QoSSpecification> List<Double> getLatestAnalysisWindowForQoS(Class<T> qosClass, int n) {
+        return getCurrentImplementation().getQoSCollection().getLatestAnalysisWindowForQoS(qosClass, n, false);
     }
 
-    public <T extends QoSSpecification> List<QoSHistory.Value> getValuesHistoryForQoS(Class<T> adaptationParamClass) {
-        return getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(adaptationParamClass);
+    public <T extends QoSSpecification> List<QoSHistory.Value> getValuesHistoryForQoS(Class<T> qosClass) {
+        return getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(qosClass);
     }
 
-    public <T extends QoSSpecification> QoSHistory.Value getCurrentValueForQoS(Class<T> adaptationParamClass) {
-        return getCurrentImplementation().getQoSCollection().getCurrentValueForQoS(adaptationParamClass);
+    public <T extends QoSSpecification> QoSHistory.Value getCurrentValueForQoS(Class<T> qosClass) {
+        return getCurrentImplementation().getQoSCollection().getCurrentValueForQoS(qosClass);
     }
 
-    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> adaptationParamClass, double newValue) {
-        getCurrentImplementation().getQoSCollection().changeCurrentValueForQoS(adaptationParamClass, newValue);
+    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> qosClass, double newValue) {
+        getCurrentImplementation().getQoSCollection().changeCurrentValueForQoS(qosClass, newValue);
     }
 
-    public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> adaptationParamClass) {
-        getCurrentImplementation().getQoSCollection().invalidateLatestAndPreviousValuesForQoS(adaptationParamClass);
+    public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> qosClass) {
+        getCurrentImplementation().getQoSCollection().invalidateLatestAndPreviousValuesForQoS(qosClass);
     }
 
     @JsonIgnore
@@ -169,7 +169,7 @@ public class Service {
     }
 
     public boolean shouldConsiderChangingImplementation(){
-        return getCurrentImplementation().getImplementationTrust() - getCurrentImplementation().getPenalty() <= 0;
+        return possibleImplementations.size() > 1 && (getCurrentImplementation().getImplementationTrust() - getCurrentImplementation().getPenalty() <= 0);
     }
 
     @Override
@@ -186,7 +186,7 @@ public class Service {
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (qoSSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + qoSSpecifications.values() + "\n" +
+                (qoSSpecifications.size() == 0 ? "" : "\tQoS: " + qoSSpecifications.values() + "\n" +
                         "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 }

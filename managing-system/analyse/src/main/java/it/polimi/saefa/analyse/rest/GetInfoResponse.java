@@ -12,5 +12,5 @@ public class GetInfoResponse {
     private int analysisWindowSize;
     private double failureRateThreshold;
     private double unreachableRateThreshold;
-    private double parametersSatisfactionRate;
+    private double qosSatisfactionRate;
 }

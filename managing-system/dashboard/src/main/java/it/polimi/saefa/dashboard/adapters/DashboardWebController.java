@@ -283,7 +283,7 @@ public class DashboardWebController {
 		model.addAttribute("analysisWindowSize", analyseInfo.getAnalysisWindowSize());
 		model.addAttribute("failureRateThreshold", analyseInfo.getFailureRateThreshold());
 		model.addAttribute("unreachableRateThreshold", analyseInfo.getUnreachableRateThreshold());
-		model.addAttribute("parametersSatisfactionRate", analyseInfo.getParametersSatisfactionRate());
+		model.addAttribute("qosSatisfactionRate", analyseInfo.getQosSatisfactionRate());
 		return "webpages/configuration";
 	}
 
@@ -331,9 +331,9 @@ public class DashboardWebController {
 		return configuration(model);
 	}
 
-	@PostMapping("/configuration/changeParametersSatisfactionRate")
-	public String changeParametersSatisfactionRate(Model model, @RequestParam(value = "parametersSatisfactionRate") double parametersSatisfactionRate) {
-		dashboardWebService.changeParametersSatisfactionRate(parametersSatisfactionRate);
+	@PostMapping("/configuration/changeQoSSatisfactionRate")
+	public String changeQoSSatisfactionRate(Model model, @RequestParam(value = "qosSatisfactionRate") double qosSatisfactionRate) {
+		dashboardWebService.changeQoSSatisfactionRate(qosSatisfactionRate);
 		return configuration(model);
 	}
 

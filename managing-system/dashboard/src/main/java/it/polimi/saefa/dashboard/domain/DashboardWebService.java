@@ -84,8 +84,8 @@ public class DashboardWebService {
 	public void changeUnreachableRateThreshold(double value) {
 		analyseClient.changeUnreachableRateThreshold(value);
 	}
-	public void changeParametersSatisfactionRate(double value) {
-		analyseClient.changeParametersSatisfactionRate(value);
+	public void changeQoSSatisfactionRate(double value) {
+		analyseClient.changeQoSSatisfactionRate(value);
 	}
 
 	public void breakpoint(){

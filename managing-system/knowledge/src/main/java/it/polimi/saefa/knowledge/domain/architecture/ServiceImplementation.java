@@ -21,8 +21,8 @@ public class ServiceImplementation {
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
     private QoSCollection qoSCollection = new QoSCollection();
-    // <adaptParamClass, paramBenchmark>
-    private final Map<Class<? extends QoSSpecification>, Double> qoSBootBenchmarks = new HashMap<>();
+    // <qosClass, qosBenchmark>
+    private final Map<Class<? extends QoSSpecification>, Double> qoSBenchmarks = new HashMap<>();
 
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private int implementationTrust; //valutazione di quanto è affidabile questa implementazione
@@ -39,12 +39,12 @@ public class ServiceImplementation {
         this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
     }
 
-    public double getBootBenchmark(Class<? extends QoSSpecification> adaptationParamSpecificationClass) {
-        return qoSBootBenchmarks.get(adaptationParamSpecificationClass);
+    public double getBenchmark(Class<? extends QoSSpecification> qosSpecificationClass) {
+        return qoSBenchmarks.get(qosSpecificationClass);
     }
 
-    public void setBootBenchmark(Class<? extends QoSSpecification> adaptationParamSpecificationClass, Double benchmark) {
-        qoSBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
+    public void setBenchmark(Class<? extends QoSSpecification> qosSpecificationClass, Double benchmark) {
+        qoSBenchmarks.put(qosSpecificationClass, benchmark);
     }
 
     public boolean addInstance(Instance instance) {
@@ -75,7 +75,7 @@ public class ServiceImplementation {
         Instance instance = new Instance(instanceId, serviceId);
         for (QoSSpecification specification : qoSSpecifications) {
             instance.getQoSCollection().createHistory(specification);
-            instance.getQoSCollection().changeCurrentValueForQoS(specification.getClass(), getBootBenchmark(specification.getClass()));
+            instance.getQoSCollection().changeCurrentValueForQoS(specification.getClass(), getBenchmark(specification.getClass()));
         }
         instances.put(instanceId, instance);
         return instance;
@@ -102,6 +102,6 @@ public class ServiceImplementation {
 
 
     public void incrementPenalty() {
-        this.penalty += penalty;
+        this.penalty += 1;
     }
 }

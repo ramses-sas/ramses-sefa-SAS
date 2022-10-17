@@ -29,13 +29,13 @@ public class SystemBenchmarkParser {
                 ServiceImplementationBenchmarks serviceImplementationBenchmarks = new ServiceImplementationBenchmarks(serviceId, serviceImplementationId);
                 adaptationBenchmarks.forEach(adaptationBenchmark -> {
                     JsonObject adaptationBenchmarkJson = adaptationBenchmark.getAsJsonObject();
-                    String adaptationParamSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + snakeToCamel(adaptationBenchmarkJson.get("name").getAsString());
+                    String qosSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + snakeToCamel(adaptationBenchmarkJson.get("name").getAsString());
                     Class<?> clazz;
                     Double benchmark = adaptationBenchmarkJson.get("benchmark").getAsDouble();
                     try {
-                        clazz = Class.forName(adaptationParamSpecificationClassName);
+                        clazz = Class.forName(qosSpecificationClassName);
                         if (!QoSSpecification.class.isAssignableFrom(clazz))
-                            throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the AdaptationParameter class.");
+                            throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the QoS class.");
                         serviceImplementationBenchmarks.getQoSBenchmarks().put((Class<? extends QoSSpecification>) clazz, benchmark);
 
                     } catch (ClassNotFoundException e) {

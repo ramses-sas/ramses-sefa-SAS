@@ -31,7 +31,7 @@ public abstract class AdaptationOption {
     private String serviceId;
     private String serviceImplementationId;
     private String comment;
-    private Class<? extends QoSSpecification> adaptationParametersGoal;
+    private Class<? extends QoSSpecification> qosGoal;
 
     private boolean forced = false;
 

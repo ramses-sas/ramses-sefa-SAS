@@ -76,11 +76,11 @@ public interface KnowledgeClient {
     @PostMapping("/rest/proposeAdaptationOptions")
     ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
 
-    @PostMapping("/rest/updateServicesAdaptationParamCollection")
-    ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, QoSCollection> serviceAdaptationParameters);
+    @PostMapping("/rest/updateServicesQoSCollection")
+    ResponseEntity<String> updateServicesQoSCollection(@RequestBody Map<String, QoSCollection> serviceQoSMap);
 
-    @PostMapping("/rest/updateInstancesAdaptationParamCollection")
-    ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceAdaptationParameters);
+    @PostMapping("/rest/updateInstancesQoSCollection")
+    ResponseEntity<String> updateInstancesQoSCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceQoSMap);
 
     @PutMapping("/rest/activeModule")
     String setFailedModule(@RequestParam Modules module);

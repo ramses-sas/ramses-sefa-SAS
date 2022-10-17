@@ -30,7 +30,7 @@ public class ChangeImplementationOption extends AdaptationOption {
 
     public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
-        super.setAdaptationParametersGoal(goal);
+        super.setQosGoal(goal);
         this.numberOfInstances = numberOfInstances;
         this.possibleImplementations = possibleImplementations;
     }
@@ -38,6 +38,6 @@ public class ChangeImplementationOption extends AdaptationOption {
 
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getAdaptationParametersGoal().getSimpleName())) + " - Change implementation of service " + super.getServiceId() + ".\n" + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Change implementation. Service " + super.getServiceId() + ". " + getComment();
     }
 }

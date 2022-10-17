@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class TotalCost extends AdaptationParamSpecification {
+public class TotalCost extends qosSpecification {
     @JsonProperty("max_threshold")
     private double maxThreshold;
 

@@ -227,6 +227,10 @@ public class KnowledgeService {
 
     public void proposeAdaptationOptions(Map<String, List<AdaptationOption>> proposedAdaptationOptions) {
         this.proposedAdaptationOptions = proposedAdaptationOptions;
+        for (String serviceId : proposedAdaptationOptions.keySet()) {
+            Service service = servicesMap.get(serviceId);
+            service.getCurrentImplementation().incrementPenalty();
+        }
     }
 
     // Called by the Plan module to choose the adaptation options
@@ -241,12 +245,12 @@ public class KnowledgeService {
         });
     }
 
-    public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends QoSSpecification> adaptationParameterClass, Double value) {
-        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().addNewQoSValue(adaptationParameterClass, value);
+    public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value) {
+        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().addNewQoSValue(qosClass, value);
     }
 
-    public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends QoSSpecification> adaptationParameterClass, Double value) {
-        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().addNewQoSValue(adaptationParameterClass, value);
+    public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value) {
+        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, value);
     }
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
@@ -262,16 +266,20 @@ public class KnowledgeService {
         configurationRepository.save(service.getConfiguration());
     }
 
-    public void updateServiceAdaptationParamCollection(String serviceId, QoSCollection qoSCollection) {
+    public void updateServiceQoSCollection(String serviceId, QoSCollection qoSCollection) {
         servicesMap.get(serviceId).getCurrentImplementation().setQoSCollection(qoSCollection);
     }
 
-    public void updateInstanceParamAdaptationCollection(String serviceId, String instanceId, QoSCollection qoSCollection) {
+    public void updateInstanceQoSCollection(String serviceId, String instanceId, QoSCollection qoSCollection) {
         servicesMap.get(serviceId).getInstance(instanceId).setQoSCollection(qoSCollection);
     }
 
     public void updateService(Service service) {
         servicesMap.put(service.getServiceId(), service);
+    }
+
+    public void updateBenchmark(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> qosClass, Double value) { //TODO è thread safe?
+        servicesMap.get(serviceId).getPossibleImplementations().get(serviceImplementationId).getQoSBenchmarks().put(qosClass, value);
     }
 
 

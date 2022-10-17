@@ -33,7 +33,7 @@ public class AnalyseService {
     private int metricsWindowSize;
     private double failureRateThreshold;
     private double unreachableRateThreshold;
-    private double parametersSatisfactionRate;
+    private double qosSatisfactionRate;
     private long maxBootTimeSeconds;
 
     // Variables to temporary store the new values specified by an admin until they are applied during the next loop iteration
@@ -57,7 +57,7 @@ public class AnalyseService {
         @Value("${METRICS_WINDOW_SIZE}") int metricsWindowSize,
         @Value("${FAILURE_RATE_THRESHOLD}") double failureRateThreshold,
         @Value("${UNREACHABLE_RATE_THRESHOLD}") double unreachableRateThreshold,
-        @Value("${PARAMETERS_SATISFACTION_RATE}") double parametersSatisfactionRate,
+        @Value("${QOS_SATISFACTION_RATE}") double qosSatisfactionRate,
         @Value("${MAX_BOOT_TIME_SECONDS}") long maxBootTimeSeconds
     ) {
         if (analysisWindowSize < 1)
@@ -72,15 +72,15 @@ public class AnalyseService {
             throw new IllegalArgumentException("Unreachable rate threshold must be between 0 and 1.");
         if (failureRateThreshold + unreachableRateThreshold >= 1)
             throw new IllegalArgumentException("Failure rate threshold + unreachable rate threshold must be less than 1.");
-        if (parametersSatisfactionRate < 0 || parametersSatisfactionRate > 1)
-            throw new IllegalArgumentException("Parameters satisfaction rate must be between 0 and 1.");
+        if (qosSatisfactionRate < 0 || qosSatisfactionRate > 1)
+            throw new IllegalArgumentException("Qos satisfaction rate must be between 0 and 1.");
         if (maxBootTimeSeconds < 1)
             throw new IllegalArgumentException("Max boot time seconds must be greater than 0.");
         this.analysisWindowSize = analysisWindowSize;
         this.metricsWindowSize = metricsWindowSize;
         this.failureRateThreshold = failureRateThreshold;
         this.unreachableRateThreshold = unreachableRateThreshold;
-        this.parametersSatisfactionRate = parametersSatisfactionRate;
+        this.qosSatisfactionRate = qosSatisfactionRate;
         this.maxBootTimeSeconds = maxBootTimeSeconds;
     }
 
@@ -95,7 +95,7 @@ public class AnalyseService {
             proposedAdaptationOptions = adapt();
             proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             for (AdaptationOption adaptationOption : forcedAdaptationOptions) {
-                log.debug("Forced adaptation option: {}", adaptationOption.getDescription());
+                log.debug("Forced adaptation options: {}", adaptationOption.getDescription());
             }
             for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
                 log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
@@ -119,6 +119,7 @@ public class AnalyseService {
     private List<AdaptationOption> analyse() {
         Map<String, AdaptationOption> forcedAdaptationOptions = new HashMap<>();
         for (Service service : currentArchitectureMap.values()) {
+            log.debug("Analysing service {}", service.getServiceId());
             boolean existsInstanceWithNewMetricsWindow = false;
             boolean atLeastOneBootingInstance = false;
             List<InstanceStats> instancesStats = new ArrayList<>();
@@ -126,7 +127,7 @@ public class AnalyseService {
             for (Instance instance : service.getInstances()) {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
 
-                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) { //TODO abbiamo quindi questo caso cambiando la knowledge
+                if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) {
                     continue;
                     //throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
                 }
@@ -193,11 +194,11 @@ public class AnalyseService {
 
             if (instancesStats.isEmpty() && !atLeastOneBootingInstance) {
                 forcedAdaptationOptions.put(service.getServiceId(), new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
-                log.warn("Service {} has no active or booting instances", service.getServiceId());
+                log.warn("{} has no active or booting instances. Forcing AddInstance option.", service.getServiceId());
                 continue;
             }
             if (!existsInstanceWithNewMetricsWindow) {
-                log.warn("Service {} has no instances with enough metrics to compute new values for the QoSes", service.getServiceId());
+                log.warn("{} has no instances with enough metrics to compute new values for the QoSes. Skipping its analysis.", service.getServiceId());
                 continue;
             }
 
@@ -238,6 +239,7 @@ public class AnalyseService {
                 instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
 
             });
+            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
         }
     }
 
@@ -260,13 +262,15 @@ public class AnalyseService {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         if (analysedServices.contains(service.getServiceId())) // The service has already been analysed, so we can stop the recursion
             return adaptationOptions;
+        log.debug("{}: Computing adaptation options", service.getServiceId());
         analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
         if (!service.getBootingInstances().isEmpty() || !service.getShutdownInstances().isEmpty()) { //We do not perform adaptation if at least one instance of the service is booting or shutdown
-            log.warn("Service {} has at least one instance booting or shutdown. Skipping adaptation for that service.", service.getServiceId());
+            log.warn("{} has at least one instance booting or shutdown. Skipping adaptation for that service.", service.getServiceId());
             return adaptationOptions;
         }
         List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
         for (Service serviceDependency : serviceDependencies) {
+            log.debug("{}: Computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
             adaptationOptions.addAll(computeAdaptationOptions(serviceDependency, analysedServices));
         }
 
@@ -281,33 +285,31 @@ public class AnalyseService {
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) {
             // Null if there are not AnalysisWindowSize VALID values in the history
             // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
-            log.debug("Service {} -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentValueForQoS(AverageResponseTime.class));
+            log.debug("{} current QoS values -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentValueForQoS(AverageResponseTime.class));
             // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
-            if(!adaptationOptions.isEmpty())
-                service.getCurrentImplementation().incrementPenalty();
             invalidateQoSesHistories(service);
-
-
+        } else {
+            log.debug("{} has not a full analysis window. Skipping adaptation for that service.", service.getServiceId());
         }
+        log.debug("{} ending adaptation options computation", service.getServiceId());
         return adaptationOptions;
     }
 
     private AdaptationOption createChangeImplementationOption(Service service, Class<? extends QoSSpecification> goal) {
         List<String> possibleImplementations = new LinkedList<>();
-        if(service.getPossibleImplementations().size() > 1){
-            for(String possibleImplementationId : service.getPossibleImplementations().keySet())
-                if(!possibleImplementationId.equals(service.getCurrentImplementationId()))
-                    possibleImplementations.add(possibleImplementationId);
-        }
+        for (String possibleImplementationId : service.getPossibleImplementations().keySet())
+            if (!possibleImplementationId.equals(service.getCurrentImplementationId()))
+                possibleImplementations.add(possibleImplementationId);
         return new ChangeImplementationOption(service.getServiceId(), service.getCurrentImplementationId(), service.getInstances().size(), possibleImplementations, goal, "Changing implementation");
     }
 
     private List<AdaptationOption> handleAvailabilityAnalysis(Service service, List<Double> serviceAvailabilityHistory) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         Availability availabilitySpecs = (Availability) service.getQoSSpecifications().get(Availability.class);
-        if (!availabilitySpecs.isSatisfied(serviceAvailabilityHistory, parametersSatisfactionRate)){
+        if (!availabilitySpecs.isSatisfied(serviceAvailabilityHistory, qosSatisfactionRate)){
+            log.debug("{}: Availability is not satisfied at rate {}. Current value= {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(Availability.class));
             List<Instance> instances = service.getInstances();
             List<Instance> lessAvailableInstances = instances.stream().filter(
                     i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getValue())
@@ -315,10 +317,12 @@ public class AnalyseService {
 
             if(service.shouldConsiderChangingImplementation())
                 adaptationOptions.add(createChangeImplementationOption(service, Availability.class));
-            // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
-            if (lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
+            // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
+            if (instances.size()>1 && lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
             adaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "The service avg availability specification is not satisfied"));
+        }else{
+            log.debug("{}: Availability is satisfied at rate {}", service.getServiceId(), qosSatisfactionRate);
         }
         return adaptationOptions;
     }
@@ -326,7 +330,9 @@ public class AnalyseService {
     private List<AdaptationOption> handleAverageResponseTimeAnalysis(Service service, List<Double> serviceAvgRespTimeHistory) {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         AverageResponseTime avgRespTimeSpecs = (AverageResponseTime) service.getQoSSpecifications().get(AverageResponseTime.class);
-        if (!avgRespTimeSpecs.isSatisfied(serviceAvgRespTimeHistory, parametersSatisfactionRate)){
+        if (!avgRespTimeSpecs.isSatisfied(serviceAvgRespTimeHistory, qosSatisfactionRate)){
+            log.debug("{}: AVG RT is not satisfied at rate {}. Current value= {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(AverageResponseTime.class));
+
             List<Instance> instances = service.getInstances();
             List<Instance> slowInstances = instances.stream().filter(
                     i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForQoS(AverageResponseTime.class).getValue())
@@ -334,10 +340,13 @@ public class AnalyseService {
 
             if(service.shouldConsiderChangingImplementation())
                 adaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
-            // If at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
-            if (slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
+            // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
+            if (instances.size()>1 && slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));
             adaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "The service avg response time specification is not satisfied"));
+        }
+        else{
+            log.debug("{}: AVG RT is satisfied at rate {}", service.getServiceId(), qosSatisfactionRate);
         }
         return adaptationOptions;
     }
@@ -430,8 +439,8 @@ public class AnalyseService {
             }
             serviceInstancesNewQoSCollections.put(service.getServiceId(), instanceNewQoSCollections);
         }
-        knowledgeClient.updateInstancesAdaptationParamCollection(serviceInstancesNewQoSCollections);
-        knowledgeClient.updateServicesAdaptationParamCollection(serviceNewQoSCollections);
+        knowledgeClient.updateInstancesQoSCollection(serviceInstancesNewQoSCollections);
+        knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
     }
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {

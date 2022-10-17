@@ -75,8 +75,11 @@ public class KnowledgeRestController {
     public void updateService(@RequestBody Service service) {
         knowledgeService.updateService(service);
     }
-
-
+    
+    @PostMapping("/service/{serviceId}/updateBenchmarks")
+    public void updateServiceBenchmarks(@PathVariable String serviceId, @RequestBody UpdateBenchmarkRequest request) {
+        knowledgeService.updateBenchmark(serviceId, request.getServiceImplementationId(), request.getQos(), request.getNewValue());
+    }
 
     // Monitor-related functions
     @PostMapping("/metrics/addMetricsBuffer")
@@ -112,19 +115,19 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation options correctly proposed");
     }
 
-    @PostMapping("/updateServicesAdaptationParamCollection")
-    public ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, QoSCollection> serviceAdaptationParameters) {
-        serviceAdaptationParameters.forEach((serviceId, adaptationParamCollection) -> {
-            knowledgeService.updateServiceAdaptationParamCollection(serviceId, adaptationParamCollection);
+    @PostMapping("/updateServicesQoSCollection")
+    public ResponseEntity<String> updateServicesQoSCollection(@RequestBody Map<String, QoSCollection> serviceQoSMap) {
+        serviceQoSMap.forEach((serviceId, qosCollection) -> {
+            knowledgeService.updateServiceQoSCollection(serviceId, qosCollection);
         });
         return ResponseEntity.ok().body("Service QoS correctly updated");
     }
 
-    @PostMapping("/updateInstancesAdaptationParamCollection")
-    public ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceAdaptationParameters) {
-        instanceAdaptationParameters.forEach((serviceId, instanceAdaptationParamCollection) -> {
-            instanceAdaptationParamCollection.forEach((instanceId, adaptationParamCollection) -> {
-                knowledgeService.updateInstanceParamAdaptationCollection(serviceId, instanceId, adaptationParamCollection);
+    @PostMapping("/updateInstancesQoSCollection")
+    public ResponseEntity<String> updateInstancesQoSCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceQoSMap) {
+        instanceQoSMap.forEach((serviceId, instanceqosCollection) -> {
+            instanceqosCollection.forEach((instanceId, qosCollection) -> {
+                knowledgeService.updateInstanceQoSCollection(serviceId, instanceId, qosCollection);
             });
         });
         return ResponseEntity.ok().body("Instance QoS correctly updated");
@@ -156,9 +159,9 @@ public class KnowledgeRestController {
     @PostMapping("/addNewQoSValue")
     public ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request){
         if(request.getInstanceId() == null){
-            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getQoSClass(), request.getValue());
+            knowledgeService.addNewServiceQoSValue(request.getServiceId(), request.getQoSClass(), request.getValue());
         } else if (request.getInstanceId() != null){
-            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue());
+            knowledgeService.addNewInstanceQoSValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue());
         }
         return ResponseEntity.ok().body("QoS value added");
     }
