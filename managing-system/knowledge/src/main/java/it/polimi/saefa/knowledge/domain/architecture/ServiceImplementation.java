@@ -1,8 +1,8 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,14 +20,14 @@ public class ServiceImplementation {
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
-    private AdaptationParamCollection adaptationParamCollection = new AdaptationParamCollection();
+    private QoSCollection qoSCollection = new QoSCollection();
     // <adaptParamClass, paramBenchmark>
-    private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParamBootBenchmarks = new HashMap<>();
+    private final Map<Class<? extends QoSSpecification>, Double> qoSBootBenchmarks = new HashMap<>();
 
     private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private int implementationTrust; //valutazione di quanto è affidabile questa implementazione
     private int penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
-    //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui parametri di adattamento
+    //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui QoS
     // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
     // should be seen as rate/threshold (i.e., shutdown the instances which process less than this threshold percentage with respect to the ideal case)
     private double instanceLoadShutdownThreshold;
@@ -39,12 +39,12 @@ public class ServiceImplementation {
         this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
     }
 
-    public double getBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass) {
-        return adaptationParamBootBenchmarks.get(adaptationParamSpecificationClass);
+    public double getBootBenchmark(Class<? extends QoSSpecification> adaptationParamSpecificationClass) {
+        return qoSBootBenchmarks.get(adaptationParamSpecificationClass);
     }
 
-    public void setBootBenchmark(Class<? extends AdaptationParamSpecification> adaptationParamSpecificationClass, Double benchmark) {
-        adaptationParamBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
+    public void setBootBenchmark(Class<? extends QoSSpecification> adaptationParamSpecificationClass, Double benchmark) {
+        qoSBootBenchmarks.put(adaptationParamSpecificationClass, benchmark);
     }
 
     public boolean addInstance(Instance instance) {
@@ -68,14 +68,14 @@ public class ServiceImplementation {
         return instances.containsKey(instanceId);
     }
 
-    public Instance createInstance(String instanceAddress, List<AdaptationParamSpecification> adaptationParamSpecifications) {
+    public Instance createInstance(String instanceAddress, List<QoSSpecification> qoSSpecifications) {
         String instanceId = implementationId + "@" + instanceAddress;
         if(instances.containsKey(instanceId))
             throw new RuntimeException("Instance already exists");
         Instance instance = new Instance(instanceId, serviceId);
-        for (AdaptationParamSpecification specification : adaptationParamSpecifications) {
-            instance.getAdaptationParamCollection().createHistory(specification);
-            instance.getAdaptationParamCollection().changeCurrentValueForParam(specification.getClass(), getBootBenchmark(specification.getClass()));
+        for (QoSSpecification specification : qoSSpecifications) {
+            instance.getQoSCollection().createHistory(specification);
+            instance.getQoSCollection().changeCurrentValueForQoS(specification.getClass(), getBootBenchmark(specification.getClass()));
         }
         instances.put(instanceId, instance);
         return instance;
@@ -86,9 +86,9 @@ public class ServiceImplementation {
         return this.penalty;
     }
 
-    protected void setAdaptationParameterSpecifications(List<AdaptationParamSpecification> specs) {
-        for (AdaptationParamSpecification specification : specs) {
-            adaptationParamCollection.createHistory(specification);
+    protected void setAllQoSSpecifications(List<QoSSpecification> specs) {
+        for (QoSSpecification specification : specs) {
+            qoSCollection.createHistory(specification);
         }
     }
 

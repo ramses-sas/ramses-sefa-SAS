@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class ChangeLoadBalancerWeightsOption extends AdaptationOption {
     private List<String> instancesToShutdownIds = new LinkedList<>();
 
 
-    public ChangeLoadBalancerWeightsOption(String serviceId, String serviceImplementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeLoadBalancerWeightsOption(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
         super.setAdaptationParametersGoal(goal);
     }

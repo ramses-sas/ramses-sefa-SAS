@@ -5,10 +5,6 @@
 			"implementations" : [
 				{
 					"implementation_id" : "restaurant-service",
-					"cost_per_instance" : 0.05,
-					"cost_per_request" : 0.001,
-					"cost_per_second" : 0.001,
-					"cost_per_boot" : 0.1,
 					"implementation_trust" : 1,
 					"score" : 1,
 					"instance_load_shutdown_threshold" : 0.7
@@ -27,10 +23,6 @@
 			"implementations" : [
 				{
 					"implementation_id" : "ordering-service",
-					"cost_per_instance" : 0.2,
-					"cost_per_request" : 0.03,
-					"cost_per_second" : 0.03,
-					"cost_per_boot" : 0.08,
 					"implementation_trust" : 1,
 					"score" : 1,
 					"instance_load_shutdown_threshold" : 0.1
@@ -53,30 +45,18 @@
 			"implementations" : [
 				{
 					"implementation_id" : "payment-proxy-1-service",
-					"cost_per_instance" : 0.1,
-					"cost_per_request" : 0.01,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.2,
 					"implementation_trust" : 1,
 					"score" : 0.4,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "payment-proxy-2-service",
-					"cost_per_instance" : 0.02,
-					"cost_per_request" : 0.02,
-					"cost_per_second" : 0.02,
-					"cost_per_boot" : 0.02,
 					"implementation_trust" : 1,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "payment-proxy-3-service",
-					"cost_per_instance" : 0.4,
-					"cost_per_request" : 0.05,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.1,
 					"implementation_trust" : 1,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
@@ -89,30 +69,18 @@
 			"implementations" : [
 				{
 					"implementation_id" : "delivery-proxy-1-service",
-					"cost_per_instance" : 0.1,
-					"cost_per_request" : 0.01,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.2,
 					"implementation_trust" : 1,
 					"score" : 0.4,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "delivery-proxy-2-service",
-					"cost_per_instance" : 0.02,
-					"cost_per_request" : 0.02,
-					"cost_per_second" : 0.02,
-					"cost_per_boot" : 0.02,
 					"implementation_trust" : 1,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "delivery-proxy-3-service",
-					"cost_per_instance" : 0.4,
-					"cost_per_request" : 0.05,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.1,
 					"implementation_trust" : 1,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
@@ -127,10 +95,6 @@
 			"implementations" : [
 				{
 					"implementation_id" : "api-gateway-service",
-					"cost_per_instance" : 0.1,
-					"cost_per_request" : 0.01,
-					"cost_per_second" : 0.01,
-					"cost_per_boot" : 0.2,
 					"implementation_trust" : 1,
 					"score" : 1,
 					"instance_load_shutdown_threshold" : 0.1
@@ -150,10 +114,6 @@
 			"implementations" : [
 				{
 					"implementation_id" : "web-service",
-					"cost_per_instance" : 0.2,
-					"cost_per_request" : 0.02,
-					"cost_per_second" : 0.02,
-					"cost_per_boot" : 0.3,
 					"implementation_trust" : 1,
 					"score" : 1,
 					"instance_load_shutdown_threshold" : 0.1

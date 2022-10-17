@@ -1,5 +1,5 @@
 package it.polimi.saefa.knowledge.domain.adaptation.specifications;
-
+/*
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,5 +42,5 @@ public class TotalCost extends AdaptationParamSpecification {
     public String getConstraintDescription() {
         return "value < " + maxThreshold;
     }
-
 }
+ */

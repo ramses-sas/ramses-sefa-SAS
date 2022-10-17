@@ -11,10 +11,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.951
 						}
@@ -30,10 +26,6 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
 							"benchmark": 5
 						},
 						{
@@ -56,10 +48,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.8
 						}
@@ -73,10 +61,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.8
 						}
@@ -87,10 +71,6 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
 							"benchmark": 5
 						},
 						{
@@ -112,10 +92,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.8
 						}
@@ -129,10 +105,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.8
 						}
@@ -143,10 +115,6 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
 							"benchmark": 5
 						},
 						{
@@ -170,10 +138,6 @@
 							"benchmark": 5
 						},
 						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
 							"name": "availability",
 							"benchmark": 0.8
 						}
@@ -189,10 +153,6 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
 							"benchmark": 5
 						},
 						{

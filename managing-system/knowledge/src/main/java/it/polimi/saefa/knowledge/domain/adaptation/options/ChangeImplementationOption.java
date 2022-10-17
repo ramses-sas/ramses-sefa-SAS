@@ -1,6 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,7 +28,7 @@ public class ChangeImplementationOption extends AdaptationOption {
         this.possibleImplementations = possibleImplementations;
     }
 
-    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
         super.setAdaptationParametersGoal(goal);
         this.numberOfInstances = numberOfInstances;

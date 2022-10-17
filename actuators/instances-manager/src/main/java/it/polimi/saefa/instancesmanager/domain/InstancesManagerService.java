@@ -38,6 +38,8 @@ public class InstancesManagerService {
     public InstancesManagerService(Environment env) throws UnknownHostException {
         this.env = env;
         localIp = InetAddress.getLocalHost().getHostAddress();
+        if (localIp.equals("127.0.0.1"))
+            throw new RuntimeException("The local IP address cannot be retrieved");
         dockerIp = env.getProperty("DOCKER_IP") != null ? env.getProperty("DOCKER_IP") : localIp;
         String dockerPort = env.getProperty("DOCKER_PORT");
         if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())

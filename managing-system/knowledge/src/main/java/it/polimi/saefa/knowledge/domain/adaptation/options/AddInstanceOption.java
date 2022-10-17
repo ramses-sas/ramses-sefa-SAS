@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,7 +25,7 @@ public class AddInstanceOption extends AdaptationOption {
     private List<String> instancesToShutdownIds = new LinkedList<>(); //There could be instances whose weight have gone below the shutdown threshold after redistributing the weights
 
 
-    public AddInstanceOption(String serviceId, String implementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public AddInstanceOption(String serviceId, String implementationId, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, implementationId, comment);
         super.setAdaptationParametersGoal(goal);
     }

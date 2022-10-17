@@ -1,8 +1,8 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,8 +19,8 @@ public class Service {
     private List<String> dependencies; //names of services that this service depends on
     // <ServiceImplementationId, ServiceImplementation>
     private Map<String, ServiceImplementation> possibleImplementations = new HashMap<>();
-    // <AdaptationParameter class, AdaptationParamSpecification>
-    private Map<Class<? extends AdaptationParamSpecification>, AdaptationParamSpecification> adaptationParamSpecifications = new HashMap<>();
+    // <AdaptationParameter class, QoSSpecification>
+    private Map<Class<? extends QoSSpecification>, QoSSpecification> qoSSpecifications = new HashMap<>();
     @Setter
     private Date latestAdaptationDate = new Date();
 
@@ -90,30 +90,30 @@ public class Service {
     }
 
     public Instance createInstance(String instanceAddress) {
-        return getCurrentImplementation().createInstance(instanceAddress, adaptationParamSpecifications.values().stream().toList());
+        return getCurrentImplementation().createInstance(instanceAddress, qoSSpecifications.values().stream().toList());
     }
 
     // Get the latest "size" VALID values from the valueStack. If "replicateLastValue" is true, the last value is replicated
     // until the size is reached, even if invalid. If "replicateLastValue" is false, the last value is not replicated.
     // The method returns null if the valueStack is empty or if "replicateLastValue" is false and there are less than "size" VALID values.
-    public <T extends AdaptationParamSpecification> List<Double> getLatestAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
-        return getCurrentImplementation().getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, false);
+    public <T extends QoSSpecification> List<Double> getLatestAnalysisWindowForQoS(Class<T> adaptationParamClass, int n) {
+        return getCurrentImplementation().getQoSCollection().getLatestAnalysisWindowForQoS(adaptationParamClass, n, false);
     }
 
-    public <T extends AdaptationParamSpecification> List<AdaptationParameter.Value> getValuesHistoryForParam(Class<T> adaptationParamClass) {
-        return getCurrentImplementation().getAdaptationParamCollection().getValuesHistoryForParam(adaptationParamClass);
+    public <T extends QoSSpecification> List<QoSHistory.Value> getValuesHistoryForQoS(Class<T> adaptationParamClass) {
+        return getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(adaptationParamClass);
     }
 
-    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
-        return getCurrentImplementation().getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
+    public <T extends QoSSpecification> QoSHistory.Value getCurrentValueForQoS(Class<T> adaptationParamClass) {
+        return getCurrentImplementation().getQoSCollection().getCurrentValueForQoS(adaptationParamClass);
     }
 
-    public <T extends AdaptationParamSpecification> void changeCurrentValueForParam(Class<T> adaptationParamClass, double newValue) {
-        getCurrentImplementation().getAdaptationParamCollection().changeCurrentValueForParam(adaptationParamClass, newValue);
+    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> adaptationParamClass, double newValue) {
+        getCurrentImplementation().getQoSCollection().changeCurrentValueForQoS(adaptationParamClass, newValue);
     }
 
-    public <T extends AdaptationParamSpecification> void invalidateAdaptationParametersHistory(Class<T> adaptationParamClass) {
-        getCurrentImplementation().getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
+    public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> adaptationParamClass) {
+        getCurrentImplementation().getQoSCollection().invalidateLatestAndPreviousValuesForQoS(adaptationParamClass);
     }
 
     @JsonIgnore
@@ -121,12 +121,12 @@ public class Service {
         return possibleImplementations.get(currentImplementationId);
     }
 
-    public void setAdaptationParameters(List<AdaptationParamSpecification> specs) {
+    public void setAllQoS(List<QoSSpecification> specs) {
         for (ServiceImplementation impl : possibleImplementations.values()) {
-            impl.setAdaptationParameterSpecifications(specs);
+            impl.setAllQoSSpecifications(specs);
         }
-        for (AdaptationParamSpecification spec : specs) {
-            adaptationParamSpecifications.put(spec.getClass(), spec);
+        for (QoSSpecification spec : specs) {
+            qoSSpecifications.put(spec.getClass(), spec);
         }
     }
 
@@ -186,7 +186,7 @@ public class Service {
                 (configuration == null ? "" : "\t" + configuration.toString().replace("\n", "\n\t").replace(",\t",",\n")) +
                 "\n\tPossible Implementations: [" + possibleImplementations + "]\n" +
                 "\tDependencies: " + dependencies + "\n" +
-                (adaptationParamSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + adaptationParamSpecifications.values() + "\n" +
+                (qoSSpecifications.size() == 0 ? "" : "\tAdaptationParameters: " + qoSSpecifications.values() + "\n" +
                         "\tInstances: " + getInstances().stream().map(Instance::getInstanceId).reduce((s1, s2) -> s1 + ", " + s2).orElse("[]"));
     }
 }

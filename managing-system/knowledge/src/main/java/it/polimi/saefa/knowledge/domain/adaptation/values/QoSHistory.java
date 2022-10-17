@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.domain.adaptation.values;
 
 import com.fasterxml.jackson.annotation.*;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,13 +12,13 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class AdaptationParameter<T extends AdaptationParamSpecification> {
+public class QoSHistory<T extends QoSSpecification> {
 
     private T specification;
     private List<Value> valuesStack = new LinkedList<>();
-    private AdaptationParameter.Value currentValue;
+    private QoSHistory.Value currentValue;
 
-    public AdaptationParameter( T specification) {
+    public QoSHistory(T specification) {
         this.specification = specification;
     }
 

@@ -2,7 +2,7 @@ package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,7 +31,7 @@ public abstract class AdaptationOption {
     private String serviceId;
     private String serviceImplementationId;
     private String comment;
-    private Class<? extends AdaptationParamSpecification> adaptationParametersGoal;
+    private Class<? extends QoSSpecification> adaptationParametersGoal;
 
     private boolean forced = false;
 
@@ -49,6 +49,11 @@ public abstract class AdaptationOption {
         this.serviceId = serviceId;
         this.serviceImplementationId = serviceImplementationId;
         this.comment = comment;
+    }
+
+    @Override
+    public String toString() {
+        return getDescription();
     }
 
 }

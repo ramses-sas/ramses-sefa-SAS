@@ -5,10 +5,10 @@ import it.polimi.saefa.dashboard.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.dashboard.externalinterfaces.MonitorClient;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
@@ -47,8 +47,8 @@ public class DashboardWebController {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		// <serviceId, [[Property, Value]]>
 		Map<String, List<String[]>> servicesConfigurationTable = new HashMap<>();
-		// <serviceId, [[ParameterName, Value, Threshold, Weight, Priority]]>
-		Map<String, List<String[]>> servicesAdaptationParametersTable = new HashMap<>();
+		// <serviceId, [[QoSName, Value, Threshold, Weight]]>
+		Map<String, List<String[]>> servicesQoSTable = new HashMap<>();
 		Map<String, List<String[]>> servicesCurrentImplementationTable = new HashMap<>();
 		for (Service s : services) {
 			ServiceConfiguration conf = s.getConfiguration();
@@ -74,17 +74,17 @@ public class DashboardWebController {
 			table.remove(table.size() - 1);
 			servicesConfigurationTable.put(s.getServiceId(), table);
 
-			// List <ParameterName, Value, Threshold, Weight>
-			List<String[]> serviceAdaptationParametersTable = new ArrayList<>();
-			for (AdaptationParameter<? extends AdaptationParamSpecification> ap : s.getCurrentImplementation().getAdaptationParamCollection().getAdaptationParamsMap().values()) {
-				serviceAdaptationParametersTable.add(new String[]{
+			// List <QoSName, Value, Threshold, Weight>
+			List<String[]> serviceQoSTable = new ArrayList<>();
+			for (QoSHistory<? extends QoSSpecification> ap : s.getCurrentImplementation().getQoSCollection().getQoSHistoryMap().values()) {
+				serviceQoSTable.add(new String[]{
 						ap.getSpecification().getClass().getSimpleName(),
 						ap.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.3f", ap.getCurrentValue().getValue()),
 						ap.getSpecification().getConstraintDescription(),
 						ap.getSpecification().getWeight().toString()}
 				);
 			}
-			servicesAdaptationParametersTable.put(s.getServiceId(), serviceAdaptationParametersTable);
+			servicesQoSTable.put(s.getServiceId(), serviceQoSTable);
 
 			ServiceImplementation currentImplementation = s.getCurrentImplementation();
 			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
@@ -97,7 +97,7 @@ public class DashboardWebController {
 
 		model.addAttribute("servicesIds", services.stream().map(Service::getServiceId).toList());
 		model.addAttribute("servicesConfigurationTable", servicesConfigurationTable);
-		model.addAttribute("servicesAdaptationParametersTable", servicesAdaptationParametersTable);
+		model.addAttribute("servicesQoSTable", servicesQoSTable);
 		model.addAttribute("servicesCurrentImplementationTable", servicesCurrentImplementationTable);
 		return "index";
 	}
@@ -127,7 +127,7 @@ public class DashboardWebController {
 		List<String[]> resourceTable = new ArrayList<>();
 		List<String[]> httpMetricsTable = new ArrayList<>();
 		List<String[]> circuitBreakersTable = new ArrayList<>();
-		if (latestMetrics != null) {
+		if (latestMetrics != null && !latestMetrics.isBooting()) {
 			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
 			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
 			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
@@ -192,16 +192,16 @@ public class DashboardWebController {
 	private GraphData[] computeServiceGraphs(Service service) {
 		GraphData[] graphs = new GraphData[2];
 		// Values is ordered by timestamp ASC
-		List<AdaptationParameter.Value> values;
+		List<QoSHistory.Value> values;
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
 		graph = new GraphData("Instant", "Availability");
-		values = service.getValuesHistoryForParam(Availability.class);
+		values = service.getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
-			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
 				graph.addPointBefore(v.getValue());
 			} else {
@@ -213,11 +213,11 @@ public class DashboardWebController {
 		graphs[0] = graph;
 
 		graph = new GraphData("Instant", "Average Response Time [ms]");
-		values = service.getValuesHistoryForParam(AverageResponseTime.class);
+		values = service.getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
-			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
 				graph.addPointBefore(v.getValue() * 1000);
 			} else
@@ -232,16 +232,16 @@ public class DashboardWebController {
 	private GraphData[] computeInstanceGraphs(Instance instance, Date serviceLatestAdaptationDate) {
 		GraphData[] graphs = new GraphData[2];
 		// Values is ordered by timestamp ASC
-		List<AdaptationParameter.Value> values;
+		List<QoSHistory.Value> values;
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
 		graph = new GraphData("Instant", "Availability");
-		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(Availability.class);
+		values = instance.getQoSCollection().getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
-			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
 				graph.addPointBefore(v.getValue());
 			} else
@@ -250,11 +250,11 @@ public class DashboardWebController {
 		graphs[0] = graph;
 
 		graph = new GraphData("Instant", "Average Response Time [ms]");
-		values = instance.getAdaptationParamCollection().getValuesHistoryForParam(AverageResponseTime.class);
+		values = instance.getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
-			AdaptationParameter.Value v = values.get(oldestValueIndex-i);
+			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
 				graph.addPointBefore(v.getValue()*1000);
 			} else

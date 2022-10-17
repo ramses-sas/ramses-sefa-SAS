@@ -101,18 +101,17 @@ for d in */; do
     if [ "${d: -8}" = "proxies/" ]; then
       cd "$d" || return
       for dd in */; do
-          echo; echo; echo
-          cd "$dd" || return
-          if [ "${dd: -10}" = "1-service/" ]; then
-            PrintSuccess "Starting $dd"
-            BuildNRun
-          else
-            PrintSuccess "Building $dd"
-            BuildOnly
-          fi
-          cd ..
-          echo; echo; echo
+        echo; echo; echo
+        cd "$dd" || return
+        if [ "${dd: -10}" = "1-service/" ]; then
+          PrintSuccess "Starting $dd"
+          BuildNRun
+        else
+          PrintSuccess "Building $dd"
+          BuildOnly
         fi
+        cd ..
+        echo; echo; echo
       done
       cd ..
     fi

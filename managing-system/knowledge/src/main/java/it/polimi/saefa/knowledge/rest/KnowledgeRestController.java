@@ -2,7 +2,7 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
@@ -113,21 +113,21 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/updateServicesAdaptationParamCollection")
-    public ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, AdaptationParamCollection> serviceAdaptationParameters) {
+    public ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, QoSCollection> serviceAdaptationParameters) {
         serviceAdaptationParameters.forEach((serviceId, adaptationParamCollection) -> {
             knowledgeService.updateServiceAdaptationParamCollection(serviceId, adaptationParamCollection);
         });
-        return ResponseEntity.ok().body("Service adaptation parameters correctly updated");
+        return ResponseEntity.ok().body("Service QoS correctly updated");
     }
 
     @PostMapping("/updateInstancesAdaptationParamCollection")
-    public ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, AdaptationParamCollection>> instanceAdaptationParameters) {
+    public ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceAdaptationParameters) {
         instanceAdaptationParameters.forEach((serviceId, instanceAdaptationParamCollection) -> {
             instanceAdaptationParamCollection.forEach((instanceId, adaptationParamCollection) -> {
                 knowledgeService.updateInstanceParamAdaptationCollection(serviceId, instanceId, adaptationParamCollection);
             });
         });
-        return ResponseEntity.ok().body("Instance adaptation parameters correctly updated");
+        return ResponseEntity.ok().body("Instance QoS correctly updated");
     }
 
 
@@ -153,14 +153,14 @@ public class KnowledgeRestController {
         return ResponseEntity.ok("Configuration changed");
     }
 
-    @PostMapping("/addNewAdaptationParameterValue")
-    public ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request){
+    @PostMapping("/addNewQoSValue")
+    public ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request){
         if(request.getInstanceId() == null){
-            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getAdaptationParameterClass(), request.getValue());
+            knowledgeService.addNewServiceAdaptationParameterValue(request.getServiceId(), request.getQoSClass(), request.getValue());
         } else if (request.getInstanceId() != null){
-            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getAdaptationParameterClass(), request.getValue());
+            knowledgeService.addNewInstanceAdaptationParameterValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue());
         }
-        return ResponseEntity.ok().body("Adaptation parameter value added");
+        return ResponseEntity.ok().body("QoS value added");
     }
 
     @PostMapping("/service/{serviceId}/setLoadBalancerWeights")

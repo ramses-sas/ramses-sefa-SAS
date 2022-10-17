@@ -12,14 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class AverageResponseTime extends AdaptationParamSpecification {
+public class AverageResponseTime extends QoSSpecification {
     @JsonProperty("max_threshold")
     private double maxThreshold;
 
     @JsonCreator
     public AverageResponseTime() { super(); }
 
-    // used in AdaptationParamParser: clazz.getDeclaredConstructor(String.class)
+    // used in QoSParser: clazz.getDeclaredConstructor(String.class)
     public AverageResponseTime(String json) {
         super();
         fromJson(json);
