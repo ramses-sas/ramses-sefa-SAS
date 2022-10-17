@@ -109,13 +109,17 @@ public class DashboardWebController {
 		log.info("Service: " + service);
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
-		for (Instance instance : service.getInstances())
-			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString()});
+		for (Instance instance : service.getInstances()) {
+			Double weight = null;
+			if (service.getConfiguration().getLoadBalancerType() != ServiceConfiguration.LoadBalancerType.UNKNOWN)
+				weight = service.getConfiguration().getLoadBalancerWeights().get(instance.getInstanceId());
+			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString(), weight == null ? "N/A" : String.format(Locale.ROOT,"%.3f", weight)});
+		}
 		model.addAttribute("serviceId", serviceId);
+		model.addAttribute("isLoadBalanced", service.getConfiguration().getLoadBalancerType() != ServiceConfiguration.LoadBalancerType.UNKNOWN);
 		model.addAttribute("latestAdaptationDate", service.getLatestAdaptationDate());
 		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
-
 		model.addAttribute("graphs", computeServiceGraphs(service));
 		return "webpages/serviceDetails";
 	}
@@ -209,7 +213,6 @@ public class DashboardWebController {
 			}
 		}
 		graph.generateAggregatedPoints();
-		log.debug(graph.getPoints().toString());
 		graphs[0] = graph;
 
 		graph = new GraphData("Instant", "Average Response Time [ms]");
@@ -247,6 +250,7 @@ public class DashboardWebController {
 			} else
 				graph.addPointAfter(v.getValue());
 		}
+		graph.generateAggregatedPoints();
 		graphs[0] = graph;
 
 		graph = new GraphData("Instant", "Average Response Time [ms]");
@@ -260,6 +264,7 @@ public class DashboardWebController {
 			} else
 				graph.addPointAfter(v.getValue()*1000);
 		}
+		graph.generateAggregatedPoints();
 		graphs[1] = graph;
 
 		return graphs;

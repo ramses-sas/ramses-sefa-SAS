@@ -86,24 +86,24 @@ public class AnalyseService {
 
     public void startAnalysis() {
         try {
-            log.debug("Starting analysis");
+            log.debug("\nStarting analysis");
             knowledgeClient.notifyModuleStart(Modules.ANALYSE);
             updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
             currentArchitectureMap = knowledgeClient.getServicesMap();
             List<AdaptationOption> forcedAdaptationOptions, proposedAdaptationOptions;
             forcedAdaptationOptions = analyse();
             proposedAdaptationOptions = adapt();
-            proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             for (AdaptationOption adaptationOption : forcedAdaptationOptions) {
                 log.debug("Forced adaptation options: {}", adaptationOption.getDescription());
             }
             for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
                 log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
             }
+            proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
             updateQoSCollectionsInKnowledge();
-            log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.");
+            log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.\n");
             planClient.start();
         }  catch (Exception e) {
             knowledgeClient.setFailedModule(Modules.ANALYSE);
@@ -120,7 +120,7 @@ public class AnalyseService {
         Map<String, AdaptationOption> forcedAdaptationOptions = new HashMap<>();
         for (Service service : currentArchitectureMap.values()) {
             log.debug("Analysing service {}", service.getServiceId());
-            boolean existsInstanceWithNewMetricsWindow = false;
+            boolean existsInstanceWithNewQoSValues = false;
             boolean atLeastOneBootingInstance = false;
             List<InstanceStats> instancesStats = new ArrayList<>();
             // Analyze all the instances
@@ -146,6 +146,7 @@ public class AnalyseService {
                     continue;
                 }
 
+                // Get the latest "metricsWindowSize" metrics of the instance collected after the latest adaptation of the service
                 List<InstanceMetricsSnapshot> metrics = knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getServiceId(), instance.getInstanceId(), metricsWindowSize);
 
                 // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
@@ -188,7 +189,7 @@ public class AnalyseService {
                     /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
                     (perché il CB può cambiare spontaneamente solo una volta) */
                     instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(instance, oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
-                    existsInstanceWithNewMetricsWindow = true;
+                    existsInstanceWithNewQoSValues = true;
                 }
             }
 
@@ -197,7 +198,7 @@ public class AnalyseService {
                 log.warn("{} has no active or booting instances. Forcing AddInstance option.", service.getServiceId());
                 continue;
             }
-            if (!existsInstanceWithNewMetricsWindow) {
+            if (!existsInstanceWithNewQoSValues) {
                 log.warn("{} has no instances with enough metrics to compute new values for the QoSes. Skipping its analysis.", service.getServiceId());
                 continue;
             }
@@ -230,20 +231,18 @@ public class AnalyseService {
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
-            // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
             // Update the current values for the QoS of the service and of its instances. Then invalidates the values in the values history
             service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
             service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
             service.getInstances().forEach(instance -> {
                 instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
                 instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-
             });
             log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
         }
     }
 
-    private void invalidateQoSesHistories(Service service) {
+    private void invalidateAllQoSHistories(Service service) {
         service.getInstances().forEach(instance -> {
             instance.invalidateQoSHistory(Availability.class);
             instance.invalidateQoSHistory(AverageResponseTime.class);
@@ -251,6 +250,7 @@ public class AnalyseService {
         service.invalidateQoSHistory(Availability.class);
         service.invalidateQoSHistory(AverageResponseTime.class);
     }
+
     /**
      * Computes the adaptation options for a service and the current value of the QoS of the service and its instances.
      * Recursive.
@@ -286,10 +286,9 @@ public class AnalyseService {
             // Null if there are not AnalysisWindowSize VALID values in the history
             // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
             log.debug("{} current QoS values -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentValueForQoS(AverageResponseTime.class));
-            // HERE THE LOGIC FOR CHOOSING THE ADAPTATION OPTIONS TO PROPOSE
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
-            invalidateQoSesHistories(service);
+            invalidateAllQoSHistories(service);
         } else {
             log.debug("{} has not a full analysis window. Skipping adaptation for that service.", service.getServiceId());
         }
@@ -410,7 +409,6 @@ public class AnalyseService {
     private void updateQoSHistory(Service service, List<InstanceStats> instancesStats) {
         double availability = 0;
         double averageResponseTime = 0;
-        double count = 0;
         for (InstanceStats instanceStats : instancesStats) {
             if (instanceStats.isFromNewData()) {
                 QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
@@ -421,7 +419,6 @@ public class AnalyseService {
                     service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
             availability += instanceStats.getAvailability() * weight;
             averageResponseTime += instanceStats.getAverageResponseTime() * weight;
-            count++;
         }
         QoSCollection currentImplementationQoSCollection = service.getCurrentImplementation().getQoSCollection();
         currentImplementationQoSCollection.addNewQoSValue(AverageResponseTime.class, averageResponseTime);

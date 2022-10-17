@@ -86,7 +86,8 @@
         /*]]>*/
         var data = new google.visualization.DataTable();
         data.addColumn('string', xAxisName);
-        data.addColumn('number', yAxisName);
+        data.addColumn('number', "Before Adaptation");
+        data.addColumn('number', "After Adaptation");
         data.addRows(pointsList);
 
         var options = {
@@ -104,6 +105,10 @@
                 x: {
                     0: {side: 'bottom'}
                 }
+            },
+            series: {
+                0: {color: '#3072f6'},
+                1: {color: 'rgb(70,252,10)'}
             }
         };
         var chart = new google.charts.Line(document.getElementById(yAxisName));

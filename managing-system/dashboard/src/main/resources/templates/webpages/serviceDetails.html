@@ -28,12 +28,14 @@
                                     <tr>
                                         <th>InstanceId</th>
                                         <th>Status</th>
+                                        <th th:if="${isLoadBalanced}">LB Weight</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
                                         <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
+                                        <td th:if="${isLoadBalanced}" th:text="${entry[2]}">Weight goes here</td>
                                     </tr>
                                     </tbody>
                                 </table>
