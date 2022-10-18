@@ -8,7 +8,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5000
+							"benchmark": 450
 						},
 						{
 							"name": "availability",

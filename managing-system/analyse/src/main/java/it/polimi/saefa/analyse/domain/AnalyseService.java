@@ -46,6 +46,9 @@ public class AnalyseService {
     private Map<String, Service> currentArchitectureMap;
 
 
+    //TODO TEST
+    private boolean windowRestaurantPiena = false;
+
     @Autowired
     private KnowledgeClient knowledgeClient;
 
@@ -105,6 +108,12 @@ public class AnalyseService {
                     log.debug("|--- {}", adaptationOption.getDescription());
                 }
             }
+            //TODO volendo cambiare con la map
+            for(Service service : currentArchitectureMap.values()) {
+                if(forcedAdaptationOptions.stream().anyMatch(adaptationOption -> adaptationOption.getServiceId().equals(service.getServiceId()))) {
+                    invalidateAllQoSHistories(service);
+                }
+            }
             proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
@@ -135,6 +144,7 @@ public class AnalyseService {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
 
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) {
+                    log.debug("Instance {} is shutdown, ignoring it", instance.getInstanceId());
                     continue;
                     //throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
                 }
@@ -149,6 +159,7 @@ public class AnalyseService {
                 }
 
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
+                    log.debug("Instance " + instance.getInstanceId() + " is in FAILED status. Forcing it to shutdown.");
                     forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
@@ -278,7 +289,7 @@ public class AnalyseService {
         }
         List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
         for (Service serviceDependency : serviceDependencies) {
-            log.debug("{}: Computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
+            log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
             adaptationOptions.addAll(computeAdaptationOptions(serviceDependency, analysedServices));
         }
 
@@ -291,6 +302,12 @@ public class AnalyseService {
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) {
+
+            //TODO TEST
+            if(service.getServiceId().equalsIgnoreCase("restaurant-service")){
+                windowRestaurantPiena = true;
+            }
+
             // Null if there are not AnalysisWindowSize VALID values in the history
             // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
             log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
@@ -300,6 +317,11 @@ public class AnalyseService {
             invalidateAllQoSHistories(service);
         } else {
             log.debug("{} has not a full analysis window. Skipping adaptation for that service.", service.getServiceId());
+
+            //TODO TEST
+            if(service.getServiceId().equalsIgnoreCase("restaurant-service")){
+                windowRestaurantPiena = false;
+            }
         }
         log.debug("{} ending adaptation options computation", service.getServiceId());
         return adaptationOptions;
@@ -449,10 +471,6 @@ public class AnalyseService {
         knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
     }
 
-
-
-
-
     // Methods to update the Analyse configuration
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
@@ -484,18 +502,22 @@ public class AnalyseService {
     private void updateWindowAndThresholds() {
         if (newMetricsWindowSize != null) {
             this.metricsWindowSize = newMetricsWindowSize;
+            log.debug("Metrics window size updated to " + metricsWindowSize);
             newMetricsWindowSize = null;
         }
         if (newFailureRateThreshold != null) {
             failureRateThreshold = newFailureRateThreshold;
+            log.debug("Failure rate threshold updated to " + failureRateThreshold);
             newFailureRateThreshold = null;
         }
         if (newUnreachableRateThreshold != null) {
             unreachableRateThreshold = newUnreachableRateThreshold;
+            log.debug("Unreachable rate threshold updated to " + unreachableRateThreshold);
             newUnreachableRateThreshold = null;
         }
         if (newAnalysisWindowSize != null) {
             analysisWindowSize = newAnalysisWindowSize;
+            log.debug("Analysis window size updated to " + analysisWindowSize);
             newAnalysisWindowSize = null;
         }
     }

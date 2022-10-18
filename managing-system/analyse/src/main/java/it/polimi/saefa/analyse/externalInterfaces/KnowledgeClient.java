@@ -84,4 +84,7 @@ public interface KnowledgeClient {
 
     @PutMapping("/rest/activeModule")
     String setFailedModule(@RequestParam Modules module);
+
+    @PostMapping("/rest/service/{serviceId}/invalidateQosHistory")
+    ResponseEntity<String> invalidateQosHistory(@RequestParam String serviceId);
 }

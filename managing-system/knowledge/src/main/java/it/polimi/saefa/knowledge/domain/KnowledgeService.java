@@ -1,6 +1,8 @@
 package it.polimi.saefa.knowledge.domain;
 
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
@@ -123,6 +125,7 @@ public class KnowledgeService {
                         metrics.setStatus(InstanceStatus.FAILED);
                         metrics.applyTimestamp();
                         metricsRepository.save(metrics);
+                        instance.setLatestInstanceMetricsSnapshot(metrics);
                     });
                 }
                 previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
@@ -230,6 +233,7 @@ public class KnowledgeService {
         for (String serviceId : proposedAdaptationOptions.keySet()) {
             Service service = servicesMap.get(serviceId);
             service.getCurrentImplementation().incrementPenalty();
+            invalidateAllQoSHistories(serviceId); //TODO SECONDO ME CI VUOLE!
         }
     }
 
@@ -313,6 +317,15 @@ public class KnowledgeService {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
+    public void invalidateAllQoSHistories(String serviceId) {
+        Service service = servicesMap.get(serviceId);
+        service.getInstances().forEach(instance -> {
+            instance.invalidateQoSHistory(Availability.class);
+            instance.invalidateQoSHistory(AverageResponseTime.class);
+        });
+        service.invalidateQoSHistory(Availability.class);
+        service.invalidateQoSHistory(AverageResponseTime.class);
+    }
 }
 
 
