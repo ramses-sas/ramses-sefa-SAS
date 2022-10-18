@@ -137,10 +137,11 @@ public class PlanService {
     private AddInstanceOption handleAddInstance(AddInstanceOption addInstanceOption, Service service) {
         if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             Set<String> instancesToRemove = new HashSet<>();
-            double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
+            double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / (service.getInstances().size()+1);
             boolean allWeightsOverThreshold = false;
             Map<String, Double> oldWeightsRedistributed = service.getLoadBalancerWeights();
 
+            // TODO valuta ricorsione
             while(!allWeightsOverThreshold) {
                 List<String> instancesToRemoveCurrentIteration = new LinkedList<>();
                 allWeightsOverThreshold = true;
@@ -150,6 +151,10 @@ public class PlanService {
                     if (oldWeightsRedistributed.get(instanceId) < shutdownThreshold) {
                         instancesToRemoveCurrentIteration.add(instanceId);
                         allWeightsOverThreshold = false;
+                        // TODO verifica che sia corretta
+                        log.debug("Instance {} has weight {} and will be removed. Shutdown threshold: {}", instanceId, oldWeightsRedistributed.get(instanceId), shutdownThreshold);
+                        shutdownThreshold = shutdownThreshold*(newNumberOfInstances-instancesToRemoveCurrentIteration.size()-1)/(newNumberOfInstances-instancesToRemoveCurrentIteration.size());
+                        log.debug("New shutdown threshold: {}", shutdownThreshold);
                     }
                 }
                 for (String instanceId : instancesToRemoveCurrentIteration) {
@@ -218,7 +223,7 @@ public class PlanService {
                 objective.setCoefficient(activation, -z_i);
             }else{
                 MPConstraint forceZeroWeight = solver.makeConstraint(0, 0, instance.getInstanceId() + "_forceZeroWeight");
-                forceZeroWeight.setCoefficient(weight, 1);
+                forceZeroWeight.setCoefficient(activation, 1);
             }
         }
 

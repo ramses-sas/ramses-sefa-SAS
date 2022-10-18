@@ -139,7 +139,7 @@ public class DashboardWebController {
 				for(String outcome : httpMetrics.getOutcomes())
 					httpMetricsTable.add(new String[]{httpMetrics.getHttpMethod() + " " + httpMetrics.getEndpoint(),
 						outcome, String.valueOf(httpMetrics.getCountByOutcome(outcome)),
-							httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.1f", httpMetrics.getAverageDurationByOutcome(outcome)*1000)+" ms"});
+							httpMetrics.getAverageDurationByOutcome(outcome)==-1 ? "N/A" : String.format(Locale.ROOT,"%.1f", httpMetrics.getAverageDurationByOutcome(outcome))+" ms"});
 			for (CircuitBreakerMetrics cbMetrics : latestMetrics.getCircuitBreakerMetrics().values()) {
 				circuitBreakersTable.add(new String[]{"Circuit Breaker Name", cbMetrics.getName()});
 				double failureRate = cbMetrics.getFailureRate();
@@ -222,9 +222,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
-				graph.addPointBefore(v.getValue() * 1000);
+				graph.addPointBefore(v.getValue());
 			} else
-				graph.addPointAfter(v.getValue()*1000);
+				graph.addPointAfter(v.getValue());
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;
@@ -260,9 +260,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
-				graph.addPointBefore(v.getValue()*1000);
+				graph.addPointBefore(v.getValue());
 			} else
-				graph.addPointAfter(v.getValue()*1000);
+				graph.addPointAfter(v.getValue());
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;
@@ -281,7 +281,7 @@ public class DashboardWebController {
 
 		// MONITOR
 		MonitorClient.GetInfoResponse monitorInfo = dashboardWebService.getMonitorInfo();
-		model.addAttribute("monitorSchedulingPeriod", monitorInfo.getSchedulingPeriod()/1000);
+		model.addAttribute("monitorSchedulingPeriod", monitorInfo.getSchedulingPeriod());
 		model.addAttribute("isMonitorRunning", monitorInfo.isRoutineRunning());
 
 		// ANALYSE
@@ -297,7 +297,7 @@ public class DashboardWebController {
 	// Monitor Configuration Endpoints
 	@PostMapping("/configuration/changeMonitorSchedulingPeriod")
 	public String changeMonitorSchedulingPeriod(Model model, @RequestParam(value = "monitorSchedulingPeriod") int monitorSchedulingPeriod) {
-		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod*1000);
+		dashboardWebService.changeMonitorSchedulingPeriod(monitorSchedulingPeriod);
 		return configuration(model);
 	}
 

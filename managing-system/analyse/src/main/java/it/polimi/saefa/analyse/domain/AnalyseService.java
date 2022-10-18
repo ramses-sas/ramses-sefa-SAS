@@ -86,7 +86,7 @@ public class AnalyseService {
 
     public void startAnalysis() {
         try {
-            log.debug("\nStarting analysis");
+            log.debug("Starting Analyse routine");
             knowledgeClient.notifyModuleStart(Modules.ANALYSE);
             updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
             currentArchitectureMap = knowledgeClient.getServicesMap();
@@ -109,7 +109,7 @@ public class AnalyseService {
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
             updateQoSCollectionsInKnowledge();
-            log.debug("Ending analysis and adaptation. Notifying the Plan to start the next iteration.\n");
+            log.debug("Ending Analyse routine. Notifying the Plan to start the next iteration.\n");
             planClient.start();
         }  catch (Exception e) {
             knowledgeClient.setFailedModule(Modules.ANALYSE);
@@ -123,6 +123,7 @@ public class AnalyseService {
     // their value to compute each new QoS.Value of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
     private List<AdaptationOption> analyse() {
+        log.debug("\nStarting analysis logic");
         Map<String, AdaptationOption> forcedAdaptationOptions = new HashMap<>();
         for (Service service : currentArchitectureMap.values()) {
             log.debug("Analysing service {}", service.getServiceId());
@@ -225,6 +226,7 @@ public class AnalyseService {
     // the values in the analysis window, and it is used as the reference value for that QoS
     // for the service.
     private List<AdaptationOption> adapt() {
+        log.debug("\nStarting adaptation logic");
         Set<String> analysedServices = new HashSet<>();
         List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
@@ -291,7 +293,8 @@ public class AnalyseService {
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) {
             // Null if there are not AnalysisWindowSize VALID values in the history
             // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
-            log.debug("{} current QoS values -> avail: {}, ART: {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentValueForQoS(AverageResponseTime.class));
+            log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
+            log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
             adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
             adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
             invalidateAllQoSHistories(service);
@@ -314,7 +317,7 @@ public class AnalyseService {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         Availability availabilitySpecs = (Availability) service.getQoSSpecifications().get(Availability.class);
         if (!availabilitySpecs.isSatisfied(serviceAvailabilityHistory, qosSatisfactionRate)){
-            log.debug("{}: Availability is not satisfied at rate {}. Current value= {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(Availability.class));
+            log.debug("{}: Availability is not satisfied at rate {}. Current value: {}. Threshold: {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(Availability.class), ((Availability) service.getQoSSpecifications().get(Availability.class)).getMinThreshold());
             List<Instance> instances = service.getInstances();
             List<Instance> lessAvailableInstances = instances.stream().filter(
                     i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getValue())
@@ -336,7 +339,7 @@ public class AnalyseService {
         List<AdaptationOption> adaptationOptions = new LinkedList<>();
         AverageResponseTime avgRespTimeSpecs = (AverageResponseTime) service.getQoSSpecifications().get(AverageResponseTime.class);
         if (!avgRespTimeSpecs.isSatisfied(serviceAvgRespTimeHistory, qosSatisfactionRate)){
-            log.debug("{}: AVG RT is not satisfied at rate {}. Current value= {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(AverageResponseTime.class));
+            log.debug("{}: AVG RT is not satisfied at rate {}. Current value: {}. Threshold: {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(AverageResponseTime.class), ((AverageResponseTime) service.getQoSSpecifications().get(AverageResponseTime.class)).getMaxThreshold());
 
             List<Instance> instances = service.getInstances();
             List<Instance> slowInstances = instances.stream().filter(
@@ -370,6 +373,7 @@ public class AnalyseService {
             }
         }
         if (successfulRequestsCount == 0) {
+            log.warn("{}: No successful requests for instance {}", instance.getServiceId(), instance.getInstanceId());
             return instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
         }
         return successfulRequestsDuration/successfulRequestsCount;
@@ -388,8 +392,7 @@ public class AnalyseService {
                 successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
             }
         }
-
-        if(totalRequestsCount == 0)
+        if (totalRequestsCount == 0)
             throw new RuntimeException("THIS SHOULD NOT HAPPEN");
         return successfulRequestsCount/totalRequestsCount;
     }

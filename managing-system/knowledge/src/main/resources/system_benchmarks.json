@@ -8,7 +8,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -26,7 +26,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -45,7 +45,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -58,7 +58,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -71,7 +71,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -89,7 +89,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -102,7 +102,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -115,7 +115,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -135,7 +135,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
@@ -153,7 +153,7 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
+							"benchmark": 5000
 						},
 						{
 							"name": "availability",
