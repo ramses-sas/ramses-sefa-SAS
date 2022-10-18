@@ -8,14 +8,13 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 
 import static com.github.dockerjava.api.model.HostConfig.newHostConfig;
@@ -35,11 +34,11 @@ public class InstancesManagerService {
     private final Map<String, List<SimulationInstanceParams>> simulationInstanceParamsMap;
 
 
-    public InstancesManagerService(Environment env) throws UnknownHostException {
+    public InstancesManagerService(Environment env) {
         this.env = env;
-        localIp = InetAddress.getLocalHost().getHostAddress();
-        if (localIp.equals("127.0.0.1"))
-            throw new RuntimeException("The local IP address cannot be retrieved");
+        localIp = getMachineLocalIp();//InetAddress.getLocalHost().getHostAddress();
+        //if (localIp.equals("127.0.0.1"))
+        //    throw new RuntimeException("The local IP address cannot be retrieved");
         dockerIp = env.getProperty("DOCKER_IP") != null ? env.getProperty("DOCKER_IP") : localIp;
         String dockerPort = env.getProperty("DOCKER_PORT");
         if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())
@@ -164,8 +163,15 @@ public class InstancesManagerService {
         return dockerClient;
     }
 
-
-
+    private String getMachineLocalIp() {
+        try (Socket socket = new Socket("1.1.1.1", 80)) {
+            InetSocketAddress addr = (InetSocketAddress) socket.getLocalSocketAddress();
+            log.info("Local address: {}", addr.getAddress().getHostAddress());
+            return addr.getAddress().getHostAddress();
+        } catch (IOException e) {
+            throw new RuntimeException("Impossible to get local IP address", e);
+        }
+    }
 
     // Test methods
     public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances, double exceptionRate, double sleepDuration, double sleepVariance) {
