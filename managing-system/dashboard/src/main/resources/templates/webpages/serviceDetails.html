@@ -33,8 +33,8 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td th:if="!${entry[1]}.equals('ACTIVE')"><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
-                                        <td th:if="${entry[1]}.equals('ACTIVE')"><p th:text="${entry[0]}">instanceId here</p></td>
+                                        <td th:if="${!#strings.equals(entry[1],'SHUTDOWN')}"><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td th:if="${#strings.equals(entry[1],'SHUTDOWN')}"><p th:text="${entry[0]}">instanceId here</p></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
                                         <td th:if="${isLoadBalanced}" th:text="${entry[2]}">Weight goes here</td>
                                     </tr>
@@ -64,12 +64,17 @@
                     </div>
                 </td>
                 <td class="col2">
-                    <div class="row">
+                    <div class="row" th:each="graph : ${graphs}">
+                        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+                        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+                        <br>
+                    </div>
+                    <!--div class="row">
                         <div class="column" th:each="graph : ${graphs}">
                             <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
                             <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
                         </div>
-                    </div>
+                    </div-->
                 </td>
             </tr>
         </tbody>
@@ -109,9 +114,10 @@
             },
             backgroundColor: '#f1f1f1',
             chartArea: {
-                backgroundColor: '#f1f1f1'
+                backgroundColor: '#f1f1f1',
+                width:'100%'
             },
-            width: Math.max(screen.availWidth/3.1, 450),
+            //width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
             series: {
                 0: {color: 'blue'},

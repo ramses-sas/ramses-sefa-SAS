@@ -233,7 +233,6 @@ public class KnowledgeService {
         for (String serviceId : proposedAdaptationOptions.keySet()) {
             Service service = servicesMap.get(serviceId);
             service.getCurrentImplementation().incrementPenalty();
-            invalidateAllQoSHistories(serviceId); //TODO SECONDO ME CI VUOLE!
         }
     }
 
@@ -315,16 +314,6 @@ public class KnowledgeService {
 
     public InstanceMetricsSnapshot getLatestActiveByInstanceId(String instanceId) {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
-    }
-
-    public void invalidateAllQoSHistories(String serviceId) {
-        Service service = servicesMap.get(serviceId);
-        service.getInstances().forEach(instance -> {
-            instance.invalidateQoSHistory(Availability.class);
-            instance.invalidateQoSHistory(AverageResponseTime.class);
-        });
-        service.invalidateQoSHistory(Availability.class);
-        service.invalidateQoSHistory(AverageResponseTime.class);
     }
 }
 

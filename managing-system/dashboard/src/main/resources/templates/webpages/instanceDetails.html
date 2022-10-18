@@ -57,12 +57,17 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" th:each="graph : ${graphs}">
+        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+        <br>
+    </div>
+    <!--div class="row">
         <div class="column" th:each="graph : ${graphs}">
             <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
             <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
         </div>
-    </div>
+    </div-->
 </div>
 
 <th:block th:include="fragments/footer :: footer"></th:block>
@@ -98,9 +103,10 @@
             },
             backgroundColor: '#f1f1f1',
             chartArea: {
-                backgroundColor: '#f1f1f1'
+                backgroundColor: '#f1f1f1',
+                width: '100%'
             },
-            width: Math.max(screen.availWidth/3.1, 450),
+            //width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
             series: {
                 0: {color: 'blue'},

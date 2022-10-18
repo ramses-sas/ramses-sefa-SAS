@@ -35,8 +35,6 @@ public class KnowledgeInit implements InitializingBean {
     private ConfigurationRepository configurationRepository;
     @Autowired
     private EurekaClient discoveryClient;
-    @Autowired
-    private DiscoveryClient discoveryClient2;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -53,8 +51,6 @@ public class KnowledgeInit implements InitializingBean {
                 throw new RuntimeException("Service " + service.getServiceId() + " not found in Eureka");
             List<InstanceInfo> instances = serviceApplication.getInstances();
             if (instances == null || instances.isEmpty()){
-                Application serviceApp2 = discoveryClient2.getApplication(service.getServiceId());
-                List<InstanceInfo> instances2 = serviceApp2.getInstances();
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
             }
             service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
