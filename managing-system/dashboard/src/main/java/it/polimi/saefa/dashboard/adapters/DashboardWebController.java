@@ -76,14 +76,20 @@ public class DashboardWebController {
 
 			// List <QoSName, Value, Threshold, Weight>
 			List<String[]> serviceQoSTable = new ArrayList<>();
-			for (QoSHistory<? extends QoSSpecification> ap : s.getCurrentImplementation().getQoSCollection().getQoSHistoryMap().values()) {
-				serviceQoSTable.add(new String[]{
-						ap.getSpecification().getClass().getSimpleName(),
-						ap.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.3f", ap.getCurrentValue().getValue()),
-						ap.getSpecification().getConstraintDescription(),
-						ap.getSpecification().getWeight().toString()}
-				);
-			}
+			QoSHistory<? extends QoSSpecification> serviceAvailability = s.getCurrentImplementation().getQoSCollection().getQoSHistoryMap().get(Availability.class);
+			QoSHistory<? extends QoSSpecification> serviceART = s.getCurrentImplementation().getQoSCollection().getQoSHistoryMap().get(AverageResponseTime.class);
+			serviceQoSTable.add(new String[]{
+					"Availability",
+					serviceAvailability.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", serviceAvailability.getCurrentValue().getValue()*100)+"%",
+					serviceAvailability.getSpecification().getConstraintDescription(),
+					serviceAvailability.getSpecification().getWeight().toString()}
+			);
+			serviceQoSTable.add(new String[]{
+					"Average Response Time [ms]",
+					serviceART.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.1f", serviceART.getCurrentValue().getValue()),
+					serviceART.getSpecification().getConstraintDescription(),
+					serviceART.getSpecification().getWeight().toString()}
+			);
 			servicesQoSTable.put(s.getServiceId(), serviceQoSTable);
 
 			ServiceImplementation currentImplementation = s.getCurrentImplementation();
