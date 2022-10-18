@@ -169,7 +169,7 @@ public class Service {
     }
 
     public boolean shouldConsiderChangingImplementation(){
-        return possibleImplementations.size() > 1 && (getCurrentImplementation().getImplementationTrust() - getCurrentImplementation().getPenalty() <= 0);
+        return possibleImplementations.size() > 1 && (getCurrentImplementation().getTrust() - getCurrentImplementation().getPenalty() <= 0);
     }
 
     @Override

@@ -91,6 +91,7 @@ public class DashboardWebController {
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
 			currentImplementationTable.add(new String[]{"Score", String.valueOf(currentImplementation.getScore())});
+			currentImplementationTable.add(new String[]{"Trust", String.valueOf(currentImplementation.getTrust())});
 			currentImplementationTable.add(new String[]{"Penalty", String.valueOf(currentImplementation.getPenalty())});
 			servicesCurrentImplementationTable.put(s.getServiceId(), currentImplementationTable);
 		}
@@ -126,6 +127,7 @@ public class DashboardWebController {
 
 	@GetMapping("/service/{serviceId}/{instanceId}")
 	public String instanceDetails(Model model, @PathVariable String serviceId, @PathVariable String instanceId) {
+		Service service = dashboardWebService.getService(serviceId);
 		Instance instance = dashboardWebService.getInstance(serviceId, instanceId);
 		InstanceMetricsSnapshot latestMetrics = instance.getLatestInstanceMetricsSnapshot();
 		List<String[]> resourceTable = new ArrayList<>();
@@ -158,7 +160,10 @@ public class DashboardWebController {
 		model.addAttribute("resourceTable", resourceTable);
 		model.addAttribute("httpMetricsTable", httpMetricsTable);
 		model.addAttribute("circuitBreakersTable", circuitBreakersTable);
-		model.addAttribute("graphs", computeInstanceGraphs(instance, dashboardWebService.getServiceLatestAdaptationDate(serviceId)));
+		model.addAttribute("graphs", computeInstanceGraphs(instance,
+				((Availability)service.getQoSSpecifications().get(Availability.class)).getMinThreshold(),
+				((AverageResponseTime)service.getQoSSpecifications().get(AverageResponseTime.class)).getMaxThreshold(),
+				service.getLatestAdaptationDate()));
 		return "webpages/instanceDetails";
 	}
 
@@ -200,7 +205,7 @@ public class DashboardWebController {
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		graph = new GraphData("Instant", "Availability");
+		graph = new GraphData("Instant", "Availability", ((Availability)service.getQoSSpecifications().get(Availability.class)).getMinThreshold());
 		values = service.getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
@@ -215,7 +220,7 @@ public class DashboardWebController {
 		graph.generateAggregatedPoints();
 		graphs[0] = graph;
 
-		graph = new GraphData("Instant", "Average Response Time [ms]");
+		graph = new GraphData("Instant", "Average Response Time [ms]", ((AverageResponseTime)service.getQoSSpecifications().get(AverageResponseTime.class)).getMaxThreshold());
 		values = service.getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
@@ -232,14 +237,14 @@ public class DashboardWebController {
 		return graphs;
 	}
 
-	private GraphData[] computeInstanceGraphs(Instance instance, Date serviceLatestAdaptationDate) {
+	private GraphData[] computeInstanceGraphs(Instance instance, Double availabilityThreshold, Double artThreshold, Date serviceLatestAdaptationDate) {
 		GraphData[] graphs = new GraphData[2];
 		// Values is ordered by timestamp ASC
 		List<QoSHistory.Value> values;
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		graph = new GraphData("Instant", "Availability");
+		graph = new GraphData("Instant", "Availability", availabilityThreshold);
 		values = instance.getQoSCollection().getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
@@ -253,7 +258,7 @@ public class DashboardWebController {
 		graph.generateAggregatedPoints();
 		graphs[0] = graph;
 
-		graph = new GraphData("Instant", "Average Response Time [ms]");
+		graph = new GraphData("Instant", "Average Response Time [ms]", artThreshold);
 		values = instance.getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
