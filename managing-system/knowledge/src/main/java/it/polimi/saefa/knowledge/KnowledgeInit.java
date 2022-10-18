@@ -1,6 +1,7 @@
 package it.polimi.saefa.knowledge;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
@@ -34,6 +35,8 @@ public class KnowledgeInit implements InitializingBean {
     private ConfigurationRepository configurationRepository;
     @Autowired
     private EurekaClient discoveryClient;
+    @Autowired
+    private DiscoveryClient discoveryClient2;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -44,14 +47,16 @@ public class KnowledgeInit implements InitializingBean {
         FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
         Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
 
-
         serviceList.forEach(service -> {
             Application serviceApplication = discoveryClient.getApplication(service.getServiceId());
             if (serviceApplication == null)
                 throw new RuntimeException("Service " + service.getServiceId() + " not found in Eureka");
             List<InstanceInfo> instances = serviceApplication.getInstances();
-            if (instances == null || instances.isEmpty())
+            if (instances == null || instances.isEmpty()){
+                Application serviceApp2 = discoveryClient2.getApplication(service.getServiceId());
+                List<InstanceInfo> instances2 = serviceApp2.getInstances();
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
+            }
             service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
             service.setAllQoS(servicesQoS.get(service.getServiceId()));
             servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {

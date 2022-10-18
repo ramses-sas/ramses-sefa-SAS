@@ -125,6 +125,7 @@ public class KnowledgeService {
                         metrics.setStatus(InstanceStatus.FAILED);
                         metrics.applyTimestamp();
                         metricsRepository.save(metrics);
+                        instance.setLatestInstanceMetricsSnapshot(metrics);
                     });
                 }
                 previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);

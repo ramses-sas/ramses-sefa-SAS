@@ -144,6 +144,7 @@ public class AnalyseService {
                 // Ignore shutdown instances (they will disappear from the architecture map in the next iterations)
 
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) {
+                    log.debug("Instance {} is shutdown, ignoring it", instance.getInstanceId());
                     continue;
                     //throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
                 }
@@ -158,6 +159,7 @@ public class AnalyseService {
                 }
 
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
+                    log.debug("Instance " + instance.getInstanceId() + " is in FAILED status. Forcing it to shutdown.");
                     forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
