@@ -88,6 +88,7 @@
         data.addColumn('string', xAxisName);
         data.addColumn('number', "Before Adaptation");
         data.addColumn('number', "After Adaptation");
+        data.addColumn('number', "Threshold");
         data.addRows(pointsList);
 
         var options = {
@@ -101,14 +102,10 @@
             },
             width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
-            axes: {
-                x: {
-                    0: {side: 'bottom'}
-                }
-            },
             series: {
-                0: {color: '#3072f6'},
-                1: {color: 'rgb(70,252,10)'}
+                0: {color: 'blue'},
+                1: {color: 'yellowgreen'},
+                2: {color: 'red'}
             }
         };
         var chart = new google.charts.Line(document.getElementById(yAxisName));

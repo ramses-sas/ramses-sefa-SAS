@@ -314,6 +314,21 @@ label {
     font-size: 15px;
 }
 
+.green-color-box {
+    background-color: yellowgreen;
+    width: 12px;
+    height: 12px;
+}
+.red-color-box {
+    background-color: red;
+    width: 12px;
+    height: 12px;
+}
+.blue-color-box {
+    background-color: blue;
+    width: 12px;
+    height: 12px;
+}
 
 /*
 

@@ -42,6 +42,25 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="column">
+                            <div class="card">
+                                <h5 class="cardElementTitle">Graph legend</h5>
+                                <div>
+                                    <span class="blue-color-box"></span>
+                                    <span><h6 class="cardElementContent">Before Adaptation</h6></span>
+                                </div>
+                                <div>
+                                    <span class="green-color-box"></span>
+                                    <span><h6 class="cardElementContent">After Adaptation</h6></span>
+                                </div>
+                                <div>
+                                    <span class="red-color-box"></span>
+                                    <span><h6 class="cardElementContent">Threshold</h6></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
                 <td class="col2">
                     <div class="row">
@@ -79,6 +98,7 @@
         data.addColumn('string', xAxisName);
         data.addColumn('number', "Before Adaptation");
         data.addColumn('number', "After Adaptation");
+        data.addColumn('number', "Threshold");
         data.addRows(pointsList);
 
         var options = {
@@ -92,19 +112,16 @@
             },
             width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
-            axes: {
-                x: {
-                    0: {side: 'bottom'}
-                }
-            },
             series: {
-                0: {color: '#3072f6'},
-                1: {color: 'rgb(70,252,10)'}
+                0: {color: 'blue'},
+                1: {color: 'yellowgreen'},
+                2: {color: 'red'}
             }
         };
 
         var chart = new google.charts.Line(document.getElementById(yAxisName));
         chart.draw(data, google.charts.Line.convertOptions(options));
+
     }
 </script>
 

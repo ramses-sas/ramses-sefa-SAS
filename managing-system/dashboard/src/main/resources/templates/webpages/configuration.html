@@ -31,7 +31,7 @@
             <input id="startMonitorRoutine" type="submit" value="Start">
         </form>
         <form action="/configuration/changeMonitorSchedulingPeriod" method="POST">
-            <label for="monitorSchedulingPeriod">Monitor scheduling period (in seconds):</label>
+            <label for="monitorSchedulingPeriod">Monitor scheduling period [ms]:</label>
             <input type="number" id="monitorSchedulingPeriod" name="monitorSchedulingPeriod" min="1" th:value="${monitorSchedulingPeriod}">
             <input type="submit" value="Change">
         </form>

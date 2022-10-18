@@ -9,24 +9,26 @@ import java.util.List;
 public class GraphData {
     private String xAxisName;
     private String yAxisName;
+    private Double threshold;
     // List of points for series 1. [y1]
     private List<Object> pointsBefore = new ArrayList<>();
     // List of points for series 2. [y2]
     private List<Object> pointsAfter = new ArrayList<>();
-    // List of points for series. [[x, y1, y2]]
+    // List of points for series + threshold. [[x, y1, y2]]
     private List<List<Object>> points;
 
-    public GraphData(String xAxisName, String yAxisName) {
+    public GraphData(String xAxisName, String yAxisName, Double threshold) {
         this.xAxisName = xAxisName;
         this.yAxisName = yAxisName;
-    }
-
-    public void addPointBefore(Object y1) {
-        pointsBefore.add(y1);
+        this.threshold = threshold;
     }
 
     public boolean isEmpty() {
         return points == null || points.isEmpty();
+    }
+
+    public void addPointBefore(Object y1) {
+        pointsBefore.add(y1);
     }
 
     public void addPointAfter(Object y2) {
@@ -38,18 +40,18 @@ public class GraphData {
         int pointsBeforeSize = pointsBefore.size();
         for (int i = 0; i < pointsBefore.size() + pointsAfter.size(); i++) {
             List<Object> point = new ArrayList<>();
+            point.add(String.valueOf(i+1));
             if (i < pointsBeforeSize) {
-                point.add(String.valueOf(i+1));
                 point.add(pointsBefore.get(i));
                 if (i == pointsBeforeSize-1) {
                     point.add(pointsBefore.get(i));
                 } else
                     point.add(null);
             } else {
-                point.add(String.valueOf(i+1));
                 point.add(null);
                 point.add(pointsAfter.get(i-pointsBeforeSize));
             }
+            point.add(threshold);
             points.add(point);
         }
     }
