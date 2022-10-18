@@ -133,6 +133,11 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Instance QoS correctly updated");
     }
 
+    @PostMapping("/service/{serviceId}/invalidateQosHistory")
+    public ResponseEntity<String> invalidateQosHistory(@RequestParam String serviceId) {
+        knowledgeService.invalidateAllQoSHistories(serviceId);
+        return ResponseEntity.ok().body("QoS histories correctly invalidated");
+    }
 
 
     // Plan-related functions

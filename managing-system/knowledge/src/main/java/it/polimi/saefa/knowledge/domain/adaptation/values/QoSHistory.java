@@ -5,6 +5,7 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecificati
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -70,12 +71,10 @@ public class QoSHistory<T extends QoSSpecification> {
             valuesStack.get(0).invalidateThisAndPreviousValues();
     }
 
-
+    @Data
     public static class Value {
         private boolean invalidatesThisAndPreviousValues = false;
-        @Getter
         private final double value;
-        @Getter
         private final Date timestamp;
 
         public Value(double value, Date timestamp) {
