@@ -9,6 +9,8 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageRespons
 import it.polimi.saefa.knowledge.domain.architecture.*;
 import it.polimi.saefa.plan.externalInterfaces.ExecuteClient;
 import it.polimi.saefa.plan.externalInterfaces.KnowledgeClient;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
@@ -24,6 +26,10 @@ public class PlanService {
 
     @Autowired
     private ExecuteClient executeClient;
+
+    @Getter
+    @Setter
+    private boolean adaptationAuthorized = false;
 
     static {
         try {
@@ -44,66 +50,67 @@ public class PlanService {
             Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
             Map<String, List<AdaptationOption>> chosenAdaptationOptions = new HashMap<>();
 
-            proposedAdaptationOptions.forEach((serviceId, options) -> {
-                log.debug("Analysing service: {}", serviceId);
-                List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
-                // Initialized with all the forced options
-                List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
-                List<AdaptationOption> optionsToCompare = new LinkedList<>();
+            if (adaptationAuthorized) {
+                proposedAdaptationOptions.forEach((serviceId, options) -> {
+                    log.debug("Analysing service: {}", serviceId);
+                    List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
+                    // Initialized with all the forced options
+                    List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
+                    List<AdaptationOption> optionsToCompare = new LinkedList<>();
 
-                if (forcedAdaptationOptions.isEmpty()) {
-                    log.debug("{} has no forced options. Analysing proposed adaptation options.", serviceId);
-                    for (AdaptationOption option : options) {
-                        log.debug(option.getDescription());
-                        if (option.getClass().equals(ChangeLoadBalancerWeightsOption.class)) {
-                            ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) option;
-                            Map<String, Double> newWeights = handleChangeLoadBalancerWeights(servicesMap.get(option.getServiceId()));
-                            if (newWeights != null) { //If it's null it means that the problem has no solution
-                                List<String> instancesToShutdownIds = new LinkedList<>();
-                                newWeights.forEach((instanceId, weight) -> {
-                                    if (weight == 0.0) {
-                                        instancesToShutdownIds.add(instanceId);
-                                    }
-                                });
-                                instancesToShutdownIds.forEach(newWeights::remove);
-                                changeLoadBalancerWeightsOption.setNewWeights(newWeights);
-                                changeLoadBalancerWeightsOption.setInstancesToShutdownIds(instancesToShutdownIds);
+                    if (forcedAdaptationOptions.isEmpty()) {
+                        log.debug("{} has no forced options. Analysing proposed adaptation options.", serviceId);
+                        for (AdaptationOption option : options) {
+                            log.debug(option.getDescription());
+                            if (option.getClass().equals(ChangeLoadBalancerWeightsOption.class)) {
+                                ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) option;
+                                Map<String, Double> newWeights = handleChangeLoadBalancerWeights(servicesMap.get(option.getServiceId()));
+                                if (newWeights != null) { //If it's null it means that the problem has no solution
+                                    List<String> instancesToShutdownIds = new LinkedList<>();
+                                    newWeights.forEach((instanceId, weight) -> {
+                                        if (weight == 0.0) {
+                                            instancesToShutdownIds.add(instanceId);
+                                        }
+                                    });
+                                    instancesToShutdownIds.forEach(newWeights::remove);
+                                    changeLoadBalancerWeightsOption.setNewWeights(newWeights);
+                                    changeLoadBalancerWeightsOption.setInstancesToShutdownIds(instancesToShutdownIds);
 
-                                optionsToCompare.add(changeLoadBalancerWeightsOption);
+                                    optionsToCompare.add(changeLoadBalancerWeightsOption);
+                                }
                             }
+                            if (option.getClass().equals(AddInstanceOption.class))
+                                optionsToCompare.add(handleAddInstance((AddInstanceOption) option, servicesMap.get(option.getServiceId())));
+                            if (option.getClass().equals(ShutdownInstanceOption.class))
+                                optionsToCompare.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false));
+                            if (option.getClass().equals(ChangeImplementationOption.class))
+                                optionsToCompare.add(handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId())));
                         }
-                        if (option.getClass().equals(AddInstanceOption.class))
-                            optionsToCompare.add(handleAddInstance((AddInstanceOption) option, servicesMap.get(option.getServiceId())));
-                        if (option.getClass().equals(ShutdownInstanceOption.class))
-                            optionsToCompare.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false));
-                        if (option.getClass().equals(ChangeImplementationOption.class))
-                            optionsToCompare.add(handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId())));
-                    }
-                    AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
-                    if (chosenOption != null)
-                        chosenAdaptationOptionList.add(chosenOption);
-                }
-                else {
-                    // If there is at least a forced option, all the other options are ignored
-                    log.debug("{} has forced Adaptation options", serviceId);
+                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
+                        if (chosenOption != null)
+                            chosenAdaptationOptionList.add(chosenOption);
+                    } else {
+                        // If there is at least a forced option, all the other options are ignored
+                        log.debug("{} has forced Adaptation options", serviceId);
 
-                    //We first perform all the RemoveOptions and then perform the final AddInstanceOption, if any. This same order must be respected by the Execute.
-                    for(AdaptationOption option : forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(ShutdownInstanceOption.class)).toList()) {
-                        log.debug(option.toString());
-                        chosenAdaptationOptionList.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), true));
+                        //We first perform all the RemoveOptions and then perform the final AddInstanceOption, if any. This same order must be respected by the Execute.
+                        for (AdaptationOption option : forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(ShutdownInstanceOption.class)).toList()) {
+                            log.debug(option.toString());
+                            chosenAdaptationOptionList.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), true));
+                        }
+                        List<AddInstanceOption> addInstanceOptions = forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(AddInstanceOption.class)).map(option -> (AddInstanceOption) option).toList();
+                        if (addInstanceOptions.size() > 1) {
+                            log.error("More than one add instance option is forced");
+                            throw new RuntimeException("More than one add instance option is forced");
+                        } else if (addInstanceOptions.size() == 1) {
+                            chosenAdaptationOptionList.add(handleAddInstance(addInstanceOptions.get(0), servicesMap.get(addInstanceOptions.get(0).getServiceId())));
+                            log.debug(addInstanceOptions.get(0).toString());
+                        }
                     }
-                    List<AddInstanceOption> addInstanceOptions = forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(AddInstanceOption.class)).map(option -> (AddInstanceOption) option).toList();
-                    if (addInstanceOptions.size()>1) {
-                        log.error("More than one add instance option is forced");
-                        throw new RuntimeException("More than one add instance option is forced");
-                    }else if (addInstanceOptions.size()==1) {
-                        chosenAdaptationOptionList.add(handleAddInstance(addInstanceOptions.get(0), servicesMap.get(addInstanceOptions.get(0).getServiceId())));
-                        log.debug(addInstanceOptions.get(0).toString());
-                    }
-                }
-                chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
-            });
-            knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
+                    chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
+                });
+                knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
+            }
             log.info("Ending plan. Notifying the Execute module to start the next iteration.");
             executeClient.start();
         } catch (Exception e) {

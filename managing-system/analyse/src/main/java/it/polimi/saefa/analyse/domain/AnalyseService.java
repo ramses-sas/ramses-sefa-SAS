@@ -93,11 +93,17 @@ public class AnalyseService {
             List<AdaptationOption> forcedAdaptationOptions, proposedAdaptationOptions;
             forcedAdaptationOptions = analyse();
             proposedAdaptationOptions = adapt();
-            for (AdaptationOption adaptationOption : forcedAdaptationOptions) {
-                log.debug("Forced adaptation options: {}", adaptationOption.getDescription());
+            if (!forcedAdaptationOptions.isEmpty()) {
+                log.debug("Forced adaptation options:");
+                for (AdaptationOption adaptationOption : forcedAdaptationOptions) {
+                    log.debug("|--- {}", adaptationOption.getDescription());
+                }
             }
-            for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
-                log.debug("Adaptation option proposed: {}", adaptationOption.getDescription());
+            if (!proposedAdaptationOptions.isEmpty()) {
+                log.debug("Proposed adaptation options:");
+                for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
+                    log.debug("|--- {}", adaptationOption.getDescription());
+                }
             }
             proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
@@ -439,6 +445,12 @@ public class AnalyseService {
         knowledgeClient.updateInstancesQoSCollection(serviceInstancesNewQoSCollections);
         knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
     }
+
+
+
+
+
+    // Methods to update the Analyse configuration
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
         if (newMetricsWindowSize < 3)

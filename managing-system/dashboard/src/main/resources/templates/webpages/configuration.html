@@ -8,6 +8,16 @@
 
 
 <div class="content">
+    <br>
+    <form th:if="${isAdaptationEnabled}" action="/configuration/stopAdaptation" method="POST">
+        <label for="stopAdaptation">Adaptation Status: Enabled  </label>
+        <input id="stopAdaptation" type="submit" value="Stop">
+    </form>
+    <form th:if="${!isAdaptationEnabled}" action="/configuration/startAdaptation" method="POST">
+        <label for="startAdaptation">Adaptation Status: Disabled  </label>
+        <input id="startAdaptation" type="submit" value="Start">
+    </form>
+    <br>
     <!-- MONITOR -->
     <div>
         <h2>Monitor Module configuration</h2>

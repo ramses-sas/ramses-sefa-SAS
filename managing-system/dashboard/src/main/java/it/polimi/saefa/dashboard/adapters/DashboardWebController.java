@@ -277,6 +277,8 @@ public class DashboardWebController {
 	/* Show configuration page */
 	@GetMapping("/configuration")
 	public String configuration(Model model) {
+		model.addAttribute("isAdaptationEnabled", dashboardWebService.isAdaptationEnabled());
+
 		// MONITOR
 		MonitorClient.GetInfoResponse monitorInfo = dashboardWebService.getMonitorInfo();
 		model.addAttribute("monitorSchedulingPeriod", monitorInfo.getSchedulingPeriod()/1000);
@@ -339,6 +341,18 @@ public class DashboardWebController {
 	@PostMapping("/configuration/changeQoSSatisfactionRate")
 	public String changeQoSSatisfactionRate(Model model, @RequestParam(value = "qosSatisfactionRate") double qosSatisfactionRate) {
 		dashboardWebService.changeQoSSatisfactionRate(qosSatisfactionRate);
+		return configuration(model);
+	}
+
+	// Adaptation start/stop
+	@PostMapping("/configuration/startAdaptation")
+	public String startAdaptation(Model model) {
+		dashboardWebService.changeAdaptationStatus(true);
+		return configuration(model);
+	}
+	@PostMapping("/configuration/stopAdaptation")
+	public String stopAdaptation(Model model) {
+		dashboardWebService.changeAdaptationStatus(false);
 		return configuration(model);
 	}
 
