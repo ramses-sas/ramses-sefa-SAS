@@ -22,6 +22,7 @@ public class KnowledgeRestController {
     @Autowired
     private KnowledgeService knowledgeService;
 
+
     @GetMapping("/activeModule")
     public Modules getActiveModule() {
         return knowledgeService.getActiveModule();
@@ -81,6 +82,8 @@ public class KnowledgeRestController {
         knowledgeService.updateBenchmark(serviceId, request.getServiceImplementationId(), request.getQos(), request.getNewValue());
     }
 
+
+
     // Monitor-related functions
     @PostMapping("/metrics/addMetricsBuffer")
     public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer) {
@@ -132,6 +135,8 @@ public class KnowledgeRestController {
         });
         return ResponseEntity.ok().body("Instance QoS correctly updated");
     }
+
+
 
     // Plan-related functions
     @GetMapping("/chosenAdaptationOptions")

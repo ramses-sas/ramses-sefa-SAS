@@ -248,25 +248,14 @@ public class KnowledgeService {
         });
     }
 
+
+    // Update QoS-related properties
     public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value) {
         servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().addNewQoSValue(qosClass, value);
     }
 
     public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value) {
         servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, value);
-    }
-
-    public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
-        Service service = servicesMap.get(serviceId);
-        ServiceConfiguration oldConfiguration = service.getConfiguration();
-        ServiceConfiguration newConfiguration = new ServiceConfiguration();
-        newConfiguration.setLoadBalancerType(oldConfiguration.getLoadBalancerType());
-        newConfiguration.setLoadBalancerWeights(weights);
-        newConfiguration.setServiceId(serviceId);
-        newConfiguration.setCircuitBreakersConfiguration(oldConfiguration.getCircuitBreakersConfiguration());
-        newConfiguration.setTimestamp(new Date());
-        service.setConfiguration(newConfiguration);
-        configurationRepository.save(service.getConfiguration());
     }
 
     public void updateServiceQoSCollection(String serviceId, QoSCollection qoSCollection) {
@@ -281,8 +270,24 @@ public class KnowledgeService {
         servicesMap.put(service.getServiceId(), service);
     }
 
+
+
+
     public void updateBenchmark(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> qosClass, Double value) { //TODO è thread safe?
         servicesMap.get(serviceId).getPossibleImplementations().get(serviceImplementationId).getQoSBenchmarks().put(qosClass, value);
+    }
+
+    public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
+        Service service = servicesMap.get(serviceId);
+        ServiceConfiguration oldConfiguration = service.getConfiguration();
+        ServiceConfiguration newConfiguration = new ServiceConfiguration();
+        newConfiguration.setLoadBalancerType(oldConfiguration.getLoadBalancerType());
+        newConfiguration.setLoadBalancerWeights(weights);
+        newConfiguration.setServiceId(serviceId);
+        newConfiguration.setCircuitBreakersConfiguration(oldConfiguration.getCircuitBreakersConfiguration());
+        newConfiguration.setTimestamp(new Date());
+        service.setConfiguration(newConfiguration);
+        configurationRepository.save(service.getConfiguration());
     }
 
 
