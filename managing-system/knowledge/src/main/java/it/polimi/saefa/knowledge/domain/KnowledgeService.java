@@ -296,35 +296,32 @@ public class KnowledgeService {
                                            Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues,
                                            Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues) {
         Service service = servicesMap.get(serviceId);
-        for(String instanceId : newInstancesValues.keySet()){
-            for(Class<? extends QoSSpecification> qosSpecificationClass : newInstancesCurrentValues.get(instanceId).keySet()){
-                service.getInstance(instanceId).getQoSCollection().setCurrentValueForQoS(qosSpecificationClass, newInstancesCurrentValues.get(instanceId).get(qosSpecificationClass));
-
-            }
-            for(Class<? extends QoSSpecification> qosSpecificationClass : newInstancesValues.get(instanceId).keySet()){
-                QoSHistory.Value value = newInstancesValues.get(instanceId).get(qosSpecificationClass);
-                Instance instance = service.getInstance(instanceId);
-                instance.getQoSCollection().addNewQoSValue(qosSpecificationClass, value);
-
+        // Update the current value of all the instances of the service
+        newInstancesCurrentValues.forEach((instanceId, newInstanceQoSCurrentValues) -> {
+            Instance instance = service.getInstance(instanceId);
+            newInstanceQoSCurrentValues.forEach((qosClass, qosValue) -> {
+                instance.getQoSCollection().setCurrentValueForQoS(qosClass, qosValue);
+            });
+        });
+        // Add the latest value of each QoS of all the instances of the service. Then persist it.
+        newInstancesValues.forEach((instanceId, newInstanceQoSValues) -> {
+            Instance instance = service.getInstance(instanceId);
+            newInstanceQoSValues.forEach((qosClass, qosValue) -> {
+                instance.getQoSCollection().addNewQoSValue(qosClass, qosValue);
                 qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), instanceId,
-                        qosSpecificationClass.getSimpleName(), value.getDoubleValue(), value.isInvalidatesThisAndPreviousValues(),
-                        instance.getCurrentValueForQoS(qosSpecificationClass).getDoubleValue(),value.getTimestamp()));
-            }
-        }
-
-        for(Class<? extends QoSSpecification> qosSpecificationClass : newServiceCurrentValues.keySet()){
-            service.getCurrentImplementation().getQoSCollection().setCurrentValueForQoS(qosSpecificationClass, newServiceCurrentValues.get(qosSpecificationClass));
-        }
-
-        for(Class<? extends QoSSpecification> qosSpecificationClass : newServiceValues.keySet()){
-            QoSHistory.Value value = newServiceValues.get(qosSpecificationClass);
-            service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosSpecificationClass, value);
+                        qosClass.getSimpleName(), instance.getCurrentValueForQoS(qosClass), qosValue));
+            });
+        });
+        // Update the current value of each QoS for the service
+        newServiceCurrentValues.forEach((qosClass, qosValue) -> {
+            service.getCurrentImplementation().getQoSCollection().setCurrentValueForQoS(qosClass, qosValue);
+        });
+        // Add the latest value of each QoS for the service. Then persist it.
+        newServiceValues.forEach((qosClass, qosValue) -> {
+            service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, qosValue);
             qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), null,
-                    qosSpecificationClass.getSimpleName(), value.getDoubleValue(),
-                    value.isInvalidatesThisAndPreviousValues(),
-                    service.getCurrentValueForQoS(qosSpecificationClass).getDoubleValue(),
-                    value.getTimestamp()));
-        }
+                    qosClass.getSimpleName(), service.getCurrentValueForQoS(qosClass), qosValue));
+        });
     }
 
 

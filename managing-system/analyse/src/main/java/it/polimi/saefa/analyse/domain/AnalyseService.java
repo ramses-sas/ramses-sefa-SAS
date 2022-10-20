@@ -110,7 +110,9 @@ public class AnalyseService {
                     log.debug("|--- {}", adaptationOption.getDescription());
                 }
             }
-            //TODO volendo cambiare con la map
+            //TODO volendo cambiare con la map <ServiceId, List<AdaptOpt>>
+            // Se la chiave non c'è significa che non c'era una analysis window di quel servizio (e quindi la history non va invalidata)
+            // Se la chiave c'è ma la lista è vuota possiamo invalidare ma non c'è bisogno di adattamento
             for(Service service : currentArchitectureMap.values()) {
                 if (forcedAdaptationOptions.stream().anyMatch(adaptationOption -> adaptationOption.getServiceId().equals(service.getServiceId()))) {
                     invalidateAllQoSHistories(service);
