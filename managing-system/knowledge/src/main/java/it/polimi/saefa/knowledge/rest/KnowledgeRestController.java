@@ -200,7 +200,11 @@ public class KnowledgeRestController {
         return ResponseEntity.ok("Change of implementation to " + request.getNewImplementationId() + " notified");
     }
 
-
+    @PostMapping("/service/{serviceId}/invalidateQosHistory")
+    public ResponseEntity<String> invalidateQosHistory(@PathVariable String serviceId){
+        knowledgeService.invalidateQosHistory(serviceId);
+        return ResponseEntity.ok("QoS history invalidated");
+    }
 
 
 

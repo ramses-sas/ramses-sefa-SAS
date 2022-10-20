@@ -269,6 +269,7 @@ public class AnalyseService {
         });
         service.invalidateQoSHistory(Availability.class);
         service.invalidateQoSHistory(AverageResponseTime.class);
+        knowledgeClient.invalidateQosHistory(service.getServiceId());
     }
 
     /**
