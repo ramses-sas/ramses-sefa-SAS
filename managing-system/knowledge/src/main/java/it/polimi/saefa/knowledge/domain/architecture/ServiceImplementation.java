@@ -70,7 +70,7 @@ public class ServiceImplementation {
 
     public Instance createInstance(String instanceAddress, List<QoSSpecification> qoSSpecifications) {
         String instanceId = implementationId + "@" + instanceAddress;
-        if(instances.containsKey(instanceId))
+        if (instances.containsKey(instanceId))
             throw new RuntimeException("Instance already exists");
         Instance instance = new Instance(instanceId, serviceId);
         for (QoSSpecification specification : qoSSpecifications) {

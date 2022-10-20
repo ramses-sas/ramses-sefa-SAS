@@ -110,7 +110,7 @@ public class AnalyseService {
             }
             //TODO volendo cambiare con la map
             for(Service service : currentArchitectureMap.values()) {
-                if(forcedAdaptationOptions.stream().anyMatch(adaptationOption -> adaptationOption.getServiceId().equals(service.getServiceId()))) {
+                if (forcedAdaptationOptions.stream().anyMatch(adaptationOption -> adaptationOption.getServiceId().equals(service.getServiceId()))) {
                     invalidateAllQoSHistories(service);
                 }
             }
@@ -133,7 +133,7 @@ public class AnalyseService {
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
     private List<AdaptationOption> analyse() {
         log.debug("\nStarting analysis logic");
-        Map<String, AdaptationOption> forcedAdaptationOptions = new HashMap<>();
+        List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
             log.debug("Analysing service {}", service.getServiceId());
             boolean existsInstanceWithNewQoSValues = false;
@@ -146,21 +146,19 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN) {
                     log.debug("Instance {} is shutdown, ignoring it", instance.getInstanceId());
                     continue;
-                    //throw new RuntimeException("Instance " + instance.getInstanceId() + " is in SHUTDOWN status. This should not happen.");
                 }
                 if (instance.getCurrentStatus() == InstanceStatus.BOOTING) {
                     if ((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
                         log.debug("Instance " + instance.getInstanceId() + " is still booting after " + maxBootTimeSeconds + " seconds. Forcing it to shutdown.");
-                        forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
+                        forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
                     } else {
                         atLeastOneBootingInstance = true;
                     }
                     continue;
                 }
-
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
                     log.debug("Instance " + instance.getInstanceId() + " is in FAILED status. Forcing it to shutdown.");
-                    forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
+                    forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
                     continue;
                 }
 
@@ -178,7 +176,7 @@ public class AnalyseService {
                 double inactiveRate = failureRate + unreachableRate;
 
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
-                    forcedAdaptationOptions.put(service.getServiceId(), new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
+                    forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     continue;
                     /*
                     Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
@@ -212,7 +210,7 @@ public class AnalyseService {
             }
 
             if (instancesStats.isEmpty() && !atLeastOneBootingInstance) {
-                forcedAdaptationOptions.put(service.getServiceId(), new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
+                forcedAdaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
                 log.warn("{} has no active or booting instances. Forcing AddInstance option.", service.getServiceId());
                 continue;
             }
@@ -228,7 +226,7 @@ public class AnalyseService {
             updateQoSHistory(service, instancesStats);
             computeServiceAndInstancesCurrentValues(service);
         }
-        return forcedAdaptationOptions.values().stream().toList();
+        return forcedAdaptationOptions;
     }
 
     // Creates and proposes to the knowledge a list of adaptation options for all the services that have filled their

@@ -38,6 +38,6 @@ public class ChangeImplementationOption extends AdaptationOption {
 
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Change implementation. Service " + super.getServiceId() + ". " + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Change "+super.getServiceId()+" implementation from "+super.getServiceImplementationId()+" to "+newImplementationId+". " + getComment();
     }
 }

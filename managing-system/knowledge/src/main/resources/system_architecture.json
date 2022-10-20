@@ -40,19 +40,19 @@
 			"implementations" : [
 				{
 					"implementation_id" : "payment-proxy-1-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 5,
 					"score" : 0.4,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "payment-proxy-2-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 5,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "payment-proxy-3-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 10,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				}
@@ -64,61 +64,24 @@
 			"implementations" : [
 				{
 					"implementation_id" : "delivery-proxy-1-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 4,
 					"score" : 0.4,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "delivery-proxy-2-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 6,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				},
 				{
 					"implementation_id" : "delivery-proxy-3-service",
-					"implementation_trust" : 1,
+					"implementation_trust" : 7,
 					"score" : 0.3,
 					"instance_load_shutdown_threshold" : 0.1
 				}
 			],
 			"dependencies" : []
-		}
-	],
-	"trash" : [
-		{
-			"service_id":"API-GATEWAY-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "api-gateway-service",
-					"implementation_trust" : 1,
-					"score" : 1,
-					"instance_load_shutdown_threshold" : 0.1
-				}
-			],
-			"dependencies" : [
-				{
-					"name" : "RESTAURANT-SERVICE"
-				},
-				{
-					"name" : "ORDERING-SERVICE"
-				}
-			]
-		},
-		{
-			"service_id":"WEB-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "web-service",
-					"implementation_trust" : 1,
-					"score" : 1,
-					"instance_load_shutdown_threshold" : 0.1
-				}
-			],
-			"dependencies" : [
-				{
-					"name" : "API-GATEWAY-SERVICE"
-				}
-			]
 		}
 	]
 }

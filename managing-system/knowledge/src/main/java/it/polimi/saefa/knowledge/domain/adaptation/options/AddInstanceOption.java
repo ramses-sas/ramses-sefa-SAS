@@ -46,7 +46,7 @@ public class AddInstanceOption extends AdaptationOption {
     @JsonIgnore
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Add a new instance. Service:" + super.getServiceId() + (!instancesToShutdownIds.isEmpty() ? (".\n\t\t\t\t\tInstances to remove: " + instancesToShutdownIds + "\n\t\t\t\t\t") : " ")  + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Add a new instance. Service: " + super.getServiceId() + (!instancesToShutdownIds.isEmpty() ? (".\n\t\t\t\t\tInstances to remove: " + instancesToShutdownIds + "\n\t\t\t\t\t") : " ")  + getComment();
     }
 
 }
