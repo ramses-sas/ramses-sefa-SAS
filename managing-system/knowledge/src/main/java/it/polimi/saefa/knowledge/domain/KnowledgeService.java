@@ -1,8 +1,6 @@
 package it.polimi.saefa.knowledge.domain;
 
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
@@ -145,7 +143,7 @@ public class KnowledgeService {
         }
     }
 
-    public void shutdownInstance(String serviceId, String instanceId) {
+    public void markInstanceAsShutdown(String serviceId, String instanceId) {
         Service service = servicesMap.get(serviceId);
         Instance instance = service.getInstance(instanceId);
         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
@@ -160,17 +158,17 @@ public class KnowledgeService {
         Service service = servicesMap.get(serviceId);
         service.getCurrentImplementation().setPenalty(0);
 
-        for(Instance instance : service.getInstances()){
-            shutdownInstance(serviceId, instance.getInstanceId());
+        for (Instance instance : service.getInstances()) {
+            markInstanceAsShutdown(serviceId, instance.getInstanceId());
             service.removeInstance(instance);
         }
         service.setCurrentImplementationId(newImplementationId);
 
-        for(String instanceAddress : newInstancesAddresses) {
+        for (String instanceAddress : newInstancesAddresses) {
             service.createInstance(instanceAddress);
         }
 
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM){
+        if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             Map<String, Double> newWeights = new HashMap<>();
             for(Instance instance : service.getInstances()){
                 newWeights.put(instance.getInstanceId(), 1.0/service.getInstances().size());

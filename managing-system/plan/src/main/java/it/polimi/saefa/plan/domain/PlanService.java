@@ -481,14 +481,12 @@ public class PlanService {
             if(bestBenefitClass == null || benefits.get(qosSpecification) > benefits.get(bestBenefitClass))
                 bestBenefitClass = qosSpecification;
         }
-        if(bestBenefitClass == null){
-            log.error("{}: No beneficial adaptation option", service.getServiceId());
+        if (bestBenefitClass == null) {
+            log.warn("{}: No beneficial adaptation option", service.getServiceId());
             return null;
         }
 
-        log.debug("{}: Selected option {} for {} with benefit {}", service.getServiceId(), bestOptionForGoal.get(bestBenefitClass).getClass().getSimpleName(), bestBenefitClass.getSimpleName(), benefits.get(bestBenefitClass));
-        log.debug("Details: {}", bestOptionForGoal.get(bestBenefitClass));
-
+        log.debug("\n\t\t\t\t{}: Selected option {} for {} with benefit {}. \n\t\t\t\tDetails: {}", service.getServiceId(), bestOptionForGoal.get(bestBenefitClass).getClass().getSimpleName(), bestBenefitClass.getSimpleName(), benefits.get(bestBenefitClass), bestOptionForGoal.get(bestBenefitClass));
         return bestOptionForGoal.get(bestBenefitClass);
     }
 

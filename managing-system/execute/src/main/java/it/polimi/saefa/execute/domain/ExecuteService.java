@@ -151,7 +151,7 @@ public class ExecuteService {
         actuatorRemoveLoadBalancerWeights(serviceId, oldInstancesIds);
 
         // Update knowledge with the new instances
-        List<String> newInstancesAddresses = instancesResponse.getDockerizedInstances().stream().collect(LinkedList::new, (list, instance) -> list.add(instance.getAddress()), List::addAll);
+        List<String> newInstancesAddresses = instancesResponse.getDockerizedInstances().stream().collect(LinkedList::new, (list, instance) -> list.add(instance.getAddress()+":"+instance.getPort()), List::addAll);
         knowledgeClient.notifyChangeOfImplementation(new ChangeOfImplementationRequest(serviceId, changeImplementationOption.getNewImplementationId(), newInstancesAddresses));
     }
 
