@@ -56,7 +56,6 @@ public class PlanService {
                     List<AdaptationOption> chosenAdaptationOptionList = new LinkedList<>();
                     // Initialized with all the forced options
                     List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>(options.stream().filter(AdaptationOption::isForced).toList());
-                    List<AdaptationOption> optionsToCompare = new LinkedList<>();
 
                     if (forcedAdaptationOptions.isEmpty()) {
                         log.debug("{} has no forced options. Analysing proposed adaptation options.", serviceId);
@@ -75,18 +74,16 @@ public class PlanService {
                                     instancesToShutdownIds.forEach(newWeights::remove);
                                     changeLoadBalancerWeightsOption.setNewWeights(newWeights);
                                     changeLoadBalancerWeightsOption.setInstancesToShutdownIds(instancesToShutdownIds);
-
-                                    optionsToCompare.add(changeLoadBalancerWeightsOption);
                                 }
                             }
                             if (option.getClass().equals(AddInstanceOption.class))
-                                optionsToCompare.add(handleAddInstance((AddInstanceOption) option, servicesMap.get(option.getServiceId())));
+                                handleAddInstance((AddInstanceOption) option, servicesMap.get(option.getServiceId()));
                             if (option.getClass().equals(ShutdownInstanceOption.class))
-                                optionsToCompare.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false));
+                                handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false);
                             if (option.getClass().equals(ChangeImplementationOption.class))
-                                optionsToCompare.add(handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId())));
+                                handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId()));
                         }
-                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), optionsToCompare);
+                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId));
                         if (chosenOption != null)
                             chosenAdaptationOptionList.add(chosenOption);
                     } else {
