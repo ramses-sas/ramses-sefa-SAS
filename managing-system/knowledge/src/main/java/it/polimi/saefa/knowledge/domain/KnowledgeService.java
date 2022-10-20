@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -356,6 +357,7 @@ public class KnowledgeService {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
 
+
     public void invalidateQosHistory(String serviceId) {
         Service service = servicesMap.get(serviceId);
         service.getInstances().forEach(instance -> {
@@ -364,6 +366,7 @@ public class KnowledgeService {
         });
         service.invalidateQoSHistory(Availability.class);
         service.invalidateQoSHistory(AverageResponseTime.class);
+        qosRepository.invalidateServiceQoSHistory(serviceId, service.getCurrentImplementationId());
     }
 }
 

@@ -48,9 +48,6 @@ public class AnalyseService {
     private Map<String, Service> currentArchitectureMap;
 
 
-    //TODO TEST
-    private boolean windowRestaurantPiena = false;
-
     @Autowired
     private KnowledgeClient knowledgeClient;
 
@@ -89,6 +86,7 @@ public class AnalyseService {
         this.maxBootTimeSeconds = maxBootTimeSeconds;
     }
 
+    // Start the Analyse Module routine
     public void startAnalysis() {
         try {
             log.debug("Starting Analyse routine");
@@ -249,30 +247,7 @@ public class AnalyseService {
         return proposedAdaptationOptions;
     }
 
-    private void computeServiceAndInstancesCurrentValues(Service service) {
-        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
-        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
-        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
-            // Update the current values for the QoS of the service and of its instances. Then invalidates the values in the values history
-            service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            service.getInstances().forEach(instance -> {
-                instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-            });
-            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
-        }
-    }
 
-    private void invalidateAllQoSHistories(Service service) {
-        service.getInstances().forEach(instance -> {
-            instance.invalidateQoSHistory(Availability.class);
-            instance.invalidateQoSHistory(AverageResponseTime.class);
-        });
-        service.invalidateQoSHistory(Availability.class);
-        service.invalidateQoSHistory(AverageResponseTime.class);
-        knowledgeClient.invalidateQosHistory(service.getServiceId());
-    }
 
     /**
      * Computes the adaptation options for a service and the current value of the QoS of the service and its instances.
@@ -306,12 +281,6 @@ public class AnalyseService {
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) {
-
-            //TODO TEST
-            if(service.getServiceId().equalsIgnoreCase("restaurant-service")){
-                windowRestaurantPiena = true;
-            }
-
             // Null if there are not AnalysisWindowSize VALID values in the history
             // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
             log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
@@ -321,11 +290,6 @@ public class AnalyseService {
             invalidateAllQoSHistories(service);
         } else {
             log.debug("{} has not a full analysis window. Skipping adaptation for that service.", service.getServiceId());
-
-            //TODO TEST
-            if(service.getServiceId().equalsIgnoreCase("restaurant-service")){
-                windowRestaurantPiena = false;
-            }
         }
         log.debug("{} ending adaptation options computation", service.getServiceId());
         return adaptationOptions;
@@ -385,6 +349,10 @@ public class AnalyseService {
         return adaptationOptions;
     }
 
+
+
+    // Methods to compute the QoS values of an instance from its metrics
+
     private double computeInstanceAvgResponseTime(Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics) {
         double successfulRequestsDuration = 0;
         double successfulRequestsCount = 0;
@@ -435,16 +403,21 @@ public class AnalyseService {
         return maxRespTime;
     }
 
-    /** Writes in the instances and service ValueStackHistory the new values computed from the Instances stats built on the metrics window.
-     * The update is NOT pushed in the Knowledge.
+
+
+    // Methods to update the QoS histories
+
+    /** For a given service, it computes the new latest value for its instances and for itself from the Instances stats built on the metrics window.
+     * Then, if there are AnalysisWindowSize VALID values in the history of the service, it computes the new current value for the service and for each instance.
+     * The update is then pushed in the Knowledge.
      *
      * @param service: the service analysed
      * @param instancesStats: InstanceStats list, one for each instance
      */
     private void updateQoSHistory(Service service, List<InstanceStats> instancesStats) {
+        // Logic to compute the new latest value for the service and its instances
         Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesValues = new HashMap<>();
         Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceValues = new HashMap<>();
-
         double serviceAvailability = 0;
         double serviceAverageResponseTime = 0;
         for (InstanceStats instanceStats : instancesStats) {
@@ -470,9 +443,10 @@ public class AnalyseService {
         newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
         newServiceValues.put(Availability.class, newServiceValue);
 
+
+        // Logic for creating the current value
         Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
         Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
-
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
         if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
@@ -493,24 +467,25 @@ public class AnalyseService {
             log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
         }
 
+        // Logic for pushing the new values in the Knowledge
         knowledgeClient.updateServiceQosCollection(new UpdateServiceQosCollectionRequest(service.getServiceId(), newInstancesValues, newServiceValues, newInstancesCurrentValues, newServiceCurrentValues));
 
     }
 
-    private void updateQoSCollectionsInKnowledge() {
-        Map<String, Map<String, QoSCollection>> serviceInstancesNewQoSCollections = new HashMap<>();
-        Map<String, QoSCollection> serviceNewQoSCollections = new HashMap<>();
-        for(Service service : currentArchitectureMap.values()){
-            serviceNewQoSCollections.put(service.getServiceId(), service.getCurrentImplementation().getQoSCollection());
-            Map<String, QoSCollection> instanceNewQoSCollections = new HashMap<>();
-            for(Instance instance : service.getInstances()){
-                instanceNewQoSCollections.put(instance.getInstanceId(), instance.getQoSCollection());
-            }
-            serviceInstancesNewQoSCollections.put(service.getServiceId(), instanceNewQoSCollections);
-        }
-        knowledgeClient.updateInstancesQoSCollection(serviceInstancesNewQoSCollections);
-        knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
+    /** For a given service, it invalidates its history of QoSes and its instances' history of QoSes.
+     * The update is performed first locally, then the Knowledge is updated.
+     * @param service the service considered
+     */
+    private void invalidateAllQoSHistories(Service service) {
+        service.getInstances().forEach(instance -> {
+            instance.invalidateQoSHistory(Availability.class);
+            instance.invalidateQoSHistory(AverageResponseTime.class);
+        });
+        service.invalidateQoSHistory(Availability.class);
+        service.invalidateQoSHistory(AverageResponseTime.class);
+        knowledgeClient.invalidateQosHistory(service.getServiceId());
     }
+
 
     // Methods to update the Analyse configuration
 
@@ -568,4 +543,22 @@ public class AnalyseService {
         log.info("breakpoint");
     }
 
+
+
+    /* Quando passavamo l'intera QoS collection alla knowledge. Prima della QoSrepo
+    private void updateQoSCollectionsInKnowledge() {
+        Map<String, Map<String, QoSCollection>> serviceInstancesNewQoSCollections = new HashMap<>();
+        Map<String, QoSCollection> serviceNewQoSCollections = new HashMap<>();
+        for(Service service : currentArchitectureMap.values()){
+            serviceNewQoSCollections.put(service.getServiceId(), service.getCurrentImplementation().getQoSCollection());
+            Map<String, QoSCollection> instanceNewQoSCollections = new HashMap<>();
+            for(Instance instance : service.getInstances()){
+                instanceNewQoSCollections.put(instance.getInstanceId(), instance.getQoSCollection());
+            }
+            serviceInstancesNewQoSCollections.put(service.getServiceId(), instanceNewQoSCollections);
+        }
+        knowledgeClient.updateInstancesQoSCollection(serviceInstancesNewQoSCollections);
+        knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
+    }
+     */
 }

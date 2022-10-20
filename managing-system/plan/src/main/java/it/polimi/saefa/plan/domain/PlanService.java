@@ -104,7 +104,8 @@ public class PlanService {
                             log.debug(addInstanceOptions.get(0).toString());
                         }
                     }
-                    chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
+                    if (!chosenAdaptationOptionList.isEmpty())
+                        chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
                 });
                 knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
             }
