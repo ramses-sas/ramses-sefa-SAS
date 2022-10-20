@@ -3,9 +3,7 @@ package it.polimi.saefa.knowledge.domain.adaptation.values;
 import com.fasterxml.jackson.annotation.*;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -23,15 +21,16 @@ public class QoSHistory<T extends QoSSpecification> {
         this.specification = specification;
     }
 
-    public void addValue(double value) {
+    public Value addValue(double value) {
         valuesStack.add(0, new Value(value, new Date()));
+        return valuesStack.get(0);
     }
 
 
     @JsonIgnore
-    public Double getLastValue() {
+    public Value getLatestValue() {
         if (valuesStack.size() > 0)
-            return valuesStack.get(0).getValue();
+            return valuesStack.get(0);
         return null;
     }
 
@@ -42,7 +41,7 @@ public class QoSHistory<T extends QoSSpecification> {
             return null;
         for (int i = 0; i < size; i++) {
             if (!valuesStack.get(i).invalidatesThisAndPreviousValues())
-                values.add(valuesStack.get(i).getValue());
+                values.add(valuesStack.get(i).getDoubleValue());
             else
                 break;
         }
@@ -57,12 +56,12 @@ public class QoSHistory<T extends QoSSpecification> {
         int finalSize = Math.min(size, valuesStack.size());
         for (int i = 0; i < finalSize; i++) {
             if (!valuesStack.get(i).invalidatesThisAndPreviousValues())
-                values.add(valuesStack.get(i).getValue());
+                values.add(valuesStack.get(i).getDoubleValue());
             else
                 break;
         }
         while (values.size() < size)
-            values.add(currentValue.getValue());
+            values.add(currentValue.getDoubleValue());
         return values;
     }
 
@@ -74,11 +73,11 @@ public class QoSHistory<T extends QoSSpecification> {
     @Data
     public static class Value {
         private boolean invalidatesThisAndPreviousValues = false;
-        private final double value;
+        private final double doubleValue;
         private final Date timestamp;
 
-        public Value(double value, Date timestamp) {
-            this.value = value;
+        public Value(double doubleValue, Date timestamp) {
+            this.doubleValue = doubleValue;
             this.timestamp = timestamp;
         }
 
@@ -92,7 +91,7 @@ public class QoSHistory<T extends QoSSpecification> {
 
         @Override
         public String toString() {
-            return String.format("%.3f", value);
+            return String.format("%.3f", doubleValue);
         }
     }
 }

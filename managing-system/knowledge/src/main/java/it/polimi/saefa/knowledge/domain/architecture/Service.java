@@ -108,8 +108,8 @@ public class Service {
         return getCurrentImplementation().getQoSCollection().getCurrentValueForQoS(qosClass);
     }
 
-    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> qosClass, double newValue) {
-        getCurrentImplementation().getQoSCollection().changeCurrentValueForQoS(qosClass, newValue);
+    public <T extends QoSSpecification> QoSHistory.Value changeCurrentValueForQoS(Class<T> qosClass, double newValue) {
+        return getCurrentImplementation().getQoSCollection().changeCurrentValueForQoS(qosClass, newValue);
     }
 
     public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> qosClass) {

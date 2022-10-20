@@ -3,14 +3,13 @@ package it.polimi.saefa.knowledge.domain;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
-import it.polimi.saefa.knowledge.domain.persistence.AdaptationChoicesRepository;
-import it.polimi.saefa.knowledge.domain.persistence.ConfigurationRepository;
-import it.polimi.saefa.knowledge.domain.persistence.MetricsRepository;
+import it.polimi.saefa.knowledge.domain.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +33,9 @@ public class KnowledgeService {
 
     @Autowired
     private AdaptationChoicesRepository adaptationChoicesRepository;
+
+    @Autowired
+    private QoSRepository qosRepository;
 
     @Getter
     private final Map<String, Service> servicesMap = new ConcurrentHashMap<>();
@@ -249,11 +251,11 @@ public class KnowledgeService {
 
     // Update QoS-related properties
     public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value) {
-        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().addNewQoSValue(qosClass, value);
+        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().createNewQoSValue(qosClass, value);
     }
 
     public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value) {
-        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, value);
+        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().createNewQoSValue(qosClass, value);
     }
 
     public void updateServiceQoSCollection(String serviceId, QoSCollection qoSCollection) {
@@ -288,7 +290,42 @@ public class KnowledgeService {
         configurationRepository.save(service.getConfiguration());
     }
 
+    public void updateServiceQosCollection(String serviceId,
+                                           Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesValues,
+                                           Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceValues,
+                                           Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues,
+                                           Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues) {
+        Service service = servicesMap.get(serviceId);
+        for(String instanceId : newInstancesValues.keySet()){
+            for(Class<? extends QoSSpecification> qosSpecificationClass : newInstancesCurrentValues.get(instanceId).keySet()){
+                service.getInstance(instanceId).getQoSCollection().setCurrentValueForQoS(qosSpecificationClass, newInstancesCurrentValues.get(instanceId).get(qosSpecificationClass));
 
+            }
+            for(Class<? extends QoSSpecification> qosSpecificationClass : newInstancesValues.get(instanceId).keySet()){
+                QoSHistory.Value value = newInstancesValues.get(instanceId).get(qosSpecificationClass);
+                Instance instance = service.getInstance(instanceId);
+                instance.getQoSCollection().addNewQoSValue(qosSpecificationClass, value);
+
+                qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), instanceId,
+                        qosSpecificationClass.getSimpleName(), value.getDoubleValue(), value.isInvalidatesThisAndPreviousValues(),
+                        instance.getCurrentValueForQoS(qosSpecificationClass).getDoubleValue(),value.getTimestamp()));
+            }
+        }
+
+        for(Class<? extends QoSSpecification> qosSpecificationClass : newServiceCurrentValues.keySet()){
+            service.getCurrentImplementation().getQoSCollection().setCurrentValueForQoS(qosSpecificationClass, newServiceCurrentValues.get(qosSpecificationClass));
+        }
+
+        for(Class<? extends QoSSpecification> qosSpecificationClass : newServiceValues.keySet()){
+            QoSHistory.Value value = newServiceValues.get(qosSpecificationClass);
+            service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosSpecificationClass, value);
+            qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), null,
+                    qosSpecificationClass.getSimpleName(), value.getDoubleValue(),
+                    value.isInvalidatesThisAndPreviousValues(),
+                    service.getCurrentValueForQoS(qosSpecificationClass).getDoubleValue(),
+                    value.getTimestamp()));
+        }
+    }
 
 
 

@@ -41,8 +41,8 @@ public class Instance {
         return getQoSCollection().getCurrentValueForQoS(qoSClass);
     }
 
-    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> qoSClass, double newValue) {
-        getQoSCollection().changeCurrentValueForQoS(qoSClass, newValue);
+    public <T extends QoSSpecification> QoSHistory.Value changeCurrentValueForQoS(Class<T> qoSClass, double newValue) {
+        return getQoSCollection().changeCurrentValueForQoS(qoSClass, newValue);
     }
 
     public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> qoSClass) {

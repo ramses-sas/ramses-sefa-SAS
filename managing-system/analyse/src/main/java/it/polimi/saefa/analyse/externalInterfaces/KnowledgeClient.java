@@ -6,6 +6,7 @@ import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.knowledge.rest.AddQoSValueRequest;
+import it.polimi.saefa.knowledge.rest.UpdateServiceQosCollectionRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -87,4 +88,7 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/service/{serviceId}/invalidateQosHistory")
     ResponseEntity<String> invalidateQosHistory(@RequestParam String serviceId);
+
+    @PostMapping("/rest/updateServiceQosCollection")
+    void updateServiceQosCollection(@RequestBody UpdateServiceQosCollectionRequest request);
 }

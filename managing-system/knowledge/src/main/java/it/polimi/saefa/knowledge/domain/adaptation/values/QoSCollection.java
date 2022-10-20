@@ -15,8 +15,13 @@ public class QoSCollection {
 
 
     // Functions on current value
-    public void changeCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, double value) {
+    public QoSHistory.Value changeCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, double value) {
         qoSHistoryMap.get(qosSpecificationClass).setCurrentValue(new QoSHistory.Value(value, new Date()));
+        return qoSHistoryMap.get(qosSpecificationClass).getCurrentValue();
+    }
+
+    public void setCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, QoSHistory.Value value) {
+        qoSHistoryMap.get(qosSpecificationClass).setCurrentValue(value);
     }
 
     public QoSHistory.Value getCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass) {
@@ -29,9 +34,14 @@ public class QoSCollection {
 
 
     // Functions on values history
-    public <T extends QoSSpecification> void addNewQoSValue(Class<T> qosClass, Double value) {
+    public <T extends QoSSpecification> QoSHistory.Value createNewQoSValue(Class<T> qosClass, Double value) {
         QoSHistory<T> qoSHistory = (QoSHistory<T>) qoSHistoryMap.get(qosClass);
-        qoSHistory.addValue(value);
+        return qoSHistory.addValue(value);
+    }
+
+    public <T extends QoSSpecification> void addNewQoSValue(Class<T> qosClass, QoSHistory.Value value) {
+        QoSHistory<T> qoSHistory = (QoSHistory<T>) qoSHistoryMap.get(qosClass);
+        qoSHistory.getValuesStack().add(0, value);
     }
 
     public <T extends QoSSpecification> List<Double> getLatestAnalysisWindowForQoS(Class<T> qosClass, int windowSize, boolean fillWithCurrentValue) {

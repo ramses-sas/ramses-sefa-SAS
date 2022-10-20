@@ -8,12 +8,14 @@ import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecificati
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
+import it.polimi.saefa.knowledge.rest.UpdateServiceQosCollectionRequest;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -117,7 +119,7 @@ public class AnalyseService {
             proposedAdaptationOptions.addAll(forcedAdaptationOptions);
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
-            updateQoSCollectionsInKnowledge();
+            //updateQoSCollectionsInKnowledge();
             log.debug("Ending Analyse routine. Notifying the Plan to start the next iteration.\n");
             planClient.start();
         }  catch (Exception e) {
@@ -224,7 +226,8 @@ public class AnalyseService {
             // In this case none of the instances have enough metrics to perform the analysis.
             // Update the QoS of the service and of its instances ONLY LOCALLY.
             updateQoSHistory(service, instancesStats);
-            computeServiceAndInstancesCurrentValues(service);
+            //computeServiceAndInstancesCurrentValues(service);
+
         }
         return forcedAdaptationOptions;
     }
@@ -340,7 +343,7 @@ public class AnalyseService {
             log.debug("{}: Availability is not satisfied at rate {}. Current value: {}. Threshold: {}", service.getServiceId(), qosSatisfactionRate, service.getCurrentValueForQoS(Availability.class), ((Availability) service.getQoSSpecifications().get(Availability.class)).getMinThreshold());
             List<Instance> instances = service.getInstances();
             List<Instance> lessAvailableInstances = instances.stream().filter(
-                    i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getValue())
+                    i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getDoubleValue())
             ).toList();
 
             if(service.shouldConsiderChangingImplementation())
@@ -363,7 +366,7 @@ public class AnalyseService {
 
             List<Instance> instances = service.getInstances();
             List<Instance> slowInstances = instances.stream().filter(
-                    i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForQoS(AverageResponseTime.class).getValue())
+                    i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
             ).toList();
 
             if(service.shouldConsiderChangingImplementation())
@@ -394,7 +397,7 @@ public class AnalyseService {
         }
         if (successfulRequestsCount == 0) {
             log.warn("{}: No successful requests for instance {}", instance.getServiceId(), instance.getInstanceId());
-            return instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+            return instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
         }
         return successfulRequestsDuration/successfulRequestsCount;
     }
@@ -436,22 +439,59 @@ public class AnalyseService {
      * @param instancesStats: InstanceStats list, one for each instance
      */
     private void updateQoSHistory(Service service, List<InstanceStats> instancesStats) {
-        double availability = 0;
-        double averageResponseTime = 0;
+        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesValues = new HashMap<>();
+        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceValues = new HashMap<>();
+
+        double serviceAvailability = 0;
+        double serviceAverageResponseTime = 0;
         for (InstanceStats instanceStats : instancesStats) {
+            String instanceId = instanceStats.getInstance().getInstanceId();
             if (instanceStats.isFromNewData()) {
+                newInstancesValues.put(instanceId, new HashMap<>());
                 QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
-                currentInstanceQoSCollection.addNewQoSValue(Availability.class, instanceStats.getAvailability());
-                currentInstanceQoSCollection.addNewQoSValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
+                QoSHistory.Value newInstanceValue;
+                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(Availability.class, instanceStats.getAvailability());
+                newInstancesValues.get(instanceId).put(Availability.class, newInstanceValue);
+                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
+                newInstancesValues.get(instanceId).put(AverageResponseTime.class, newInstanceValue);
             }
             double weight = service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM ?
                     service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
-            availability += instanceStats.getAvailability() * weight;
-            averageResponseTime += instanceStats.getAverageResponseTime() * weight;
+            serviceAvailability += instanceStats.getAvailability() * weight;
+            serviceAverageResponseTime += instanceStats.getAverageResponseTime() * weight;
         }
         QoSCollection currentImplementationQoSCollection = service.getCurrentImplementation().getQoSCollection();
-        currentImplementationQoSCollection.addNewQoSValue(AverageResponseTime.class, averageResponseTime);
-        currentImplementationQoSCollection.addNewQoSValue(Availability.class, availability);
+        QoSHistory.Value newServiceValue;
+        newServiceValue = currentImplementationQoSCollection.createNewQoSValue(AverageResponseTime.class, serviceAverageResponseTime);
+        newServiceValues.put(AverageResponseTime.class, newServiceValue);
+        newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
+        newServiceValues.put(Availability.class, newServiceValue);
+
+        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
+        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
+
+        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
+        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
+        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
+            // Update the current values for the QoS of the service and of its instances. Then invalidates the values in the values history
+            QoSHistory.Value newServiceCurrentValue;
+            newServiceCurrentValue = service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+            newServiceCurrentValues.put(Availability.class, newServiceCurrentValue);
+            newServiceCurrentValue = service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+            newServiceCurrentValues.put(AverageResponseTime.class, newServiceCurrentValue);
+            service.getInstances().forEach(instance -> {
+                QoSHistory.Value newInstanceCurrentValue;
+                newInstancesCurrentValues.put(instance.getInstanceId(), new HashMap<>());
+                newInstanceCurrentValue = instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newInstancesCurrentValues.get(instance.getInstanceId()).put(Availability.class, newInstanceCurrentValue);
+                newInstanceCurrentValue = instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
+            });
+            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
+        }
+
+        knowledgeClient.updateServiceQosCollection(new UpdateServiceQosCollectionRequest(service.getServiceId(), newInstancesValues, newServiceValues, newInstancesCurrentValues, newServiceCurrentValues));
+
     }
 
     private void updateQoSCollectionsInKnowledge() {

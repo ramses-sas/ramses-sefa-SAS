@@ -2,7 +2,9 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
@@ -134,6 +136,11 @@ public class KnowledgeRestController {
             });
         });
         return ResponseEntity.ok().body("Instance QoS correctly updated");
+    }
+
+    @PostMapping("/updateServiceQosCollection")
+    public void updateServiceQosCollection(@RequestBody UpdateServiceQosCollectionRequest request) {
+        knowledgeService.updateServiceQosCollection(request.getServiceId(), request.getNewInstancesValues(), request.getNewServiceValues(), request.getNewInstancesCurrentValues(), request.getNewServiceCurrentValues());
     }
 
 
