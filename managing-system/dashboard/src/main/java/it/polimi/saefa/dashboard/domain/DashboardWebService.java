@@ -3,6 +3,7 @@ package it.polimi.saefa.dashboard.domain;
 import it.polimi.saefa.dashboard.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.dashboard.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.dashboard.externalinterfaces.MonitorClient;
+import it.polimi.saefa.dashboard.externalinterfaces.PlanClient;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
@@ -23,6 +24,8 @@ public class DashboardWebService {
 	private MonitorClient monitorClient;
 	@Autowired
 	private AnalyseClient analyseClient;
+	@Autowired
+	private PlanClient planClient;
 
 	public Service getService(String serviceId) {
 		return knowledgeClient.getService(serviceId);
@@ -84,8 +87,15 @@ public class DashboardWebService {
 	public void changeUnreachableRateThreshold(double value) {
 		analyseClient.changeUnreachableRateThreshold(value);
 	}
-	public void changeParametersSatisfactionRate(double value) {
-		analyseClient.changeParametersSatisfactionRate(value);
+	public void changeQoSSatisfactionRate(double value) {
+		analyseClient.changeQoSSatisfactionRate(value);
+	}
+
+	public boolean isAdaptationEnabled() {
+		return Boolean.parseBoolean(planClient.getAdaptationStatus());
+	}
+	public void changeAdaptationStatus(boolean isAdaptationEnabled) {
+		planClient.setAdaptationStatus(isAdaptationEnabled);
 	}
 
 	public void breakpoint(){

@@ -1,0 +1,64 @@
+{
+	"services"	: [
+		{
+			"service_id":"RESTAURANT-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.91
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 800
+				}
+			]
+		},
+		{
+			"service_id":"ORDERING-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.90
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 2000
+				}
+			]
+		},
+		{
+			"service_id" : "PAYMENT-PROXY-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.91
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 850
+				}
+			]
+		},
+		{
+			"service_id" : "DELIVERY-PROXY-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.90
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 1200
+				}
+			]
+		}
+	]
+}

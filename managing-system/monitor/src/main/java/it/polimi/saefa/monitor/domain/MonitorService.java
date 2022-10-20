@@ -77,6 +77,7 @@ public class MonitorService {
         @Override
         public void run() {
             try {
+                log.debug("\nA new Monitor routine iteration started");
                 Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
                 log.debug("SERVICES: " + services);
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
@@ -132,10 +133,10 @@ public class MonitorService {
 
                 instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
                 if (getLoopIterationFinished()) {
+                    log.debug("Monitor routine completed. Updating Knowledge and notifying the Plan to start the next iteration.\n");
                     knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
                     instanceMetricsListBuffer.clear();
                     loopIterationFinished.set(false);
-                    log.debug("Starting analysis");
                     analyseClient.start();
                 }
             } catch (Exception e) {

@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class Availability extends AdaptationParamSpecification {
+public class Availability extends QoSSpecification {
     @JsonProperty("min_threshold")
     private double minThreshold;
     //@JsonIgnore
@@ -22,7 +22,7 @@ public class Availability extends AdaptationParamSpecification {
     @JsonCreator
     public Availability() { super(); }
 
-    // used in AdaptationParamParser: clazz.getDeclaredConstructor(String.class)
+    // used in QoSParser: clazz.getDeclaredConstructor(String.class)
     public Availability(String json) {
         super();
         fromJson(json);

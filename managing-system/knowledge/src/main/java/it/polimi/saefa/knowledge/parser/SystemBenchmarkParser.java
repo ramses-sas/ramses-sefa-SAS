@@ -3,7 +3,7 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 
 import java.io.Reader;
@@ -29,14 +29,14 @@ public class SystemBenchmarkParser {
                 ServiceImplementationBenchmarks serviceImplementationBenchmarks = new ServiceImplementationBenchmarks(serviceId, serviceImplementationId);
                 adaptationBenchmarks.forEach(adaptationBenchmark -> {
                     JsonObject adaptationBenchmarkJson = adaptationBenchmark.getAsJsonObject();
-                    String adaptationParamSpecificationClassName = AdaptationParamSpecification.class.getPackage().getName() + "." + snakeToCamel(adaptationBenchmarkJson.get("name").getAsString());
+                    String qosSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + snakeToCamel(adaptationBenchmarkJson.get("name").getAsString());
                     Class<?> clazz;
                     Double benchmark = adaptationBenchmarkJson.get("benchmark").getAsDouble();
                     try {
-                        clazz = Class.forName(adaptationParamSpecificationClassName);
-                        if (!AdaptationParamSpecification.class.isAssignableFrom(clazz))
-                            throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the AdaptationParameter class.");
-                        serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().put((Class<? extends AdaptationParamSpecification>) clazz, benchmark);
+                        clazz = Class.forName(qosSpecificationClassName);
+                        if (!QoSSpecification.class.isAssignableFrom(clazz))
+                            throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the QoS class.");
+                        serviceImplementationBenchmarks.getQoSBenchmarks().put((Class<? extends QoSSpecification>) clazz, benchmark);
 
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
@@ -53,7 +53,7 @@ public class SystemBenchmarkParser {
     public static class ServiceImplementationBenchmarks{
         private final String serviceId;
         private final String serviceImplementationId;
-        private final Map<Class<? extends AdaptationParamSpecification>, Double> adaptationParametersBenchmarks = new HashMap<>();
+        private final Map<Class<? extends QoSSpecification>, Double> qoSBenchmarks = new HashMap<>();
 
         public ServiceImplementationBenchmarks(String serviceId, String serviceImplementationId) {
             this.serviceId = serviceId;

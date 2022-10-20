@@ -1,9 +1,9 @@
 package it.polimi.saefa.knowledge.domain.architecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParameter;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class Instance {
     private String serviceId; //serviceId
     private String serviceImplementationId; //service implementation id
     private InstanceStatus currentStatus;
-    private AdaptationParamCollection adaptationParamCollection;
+    private QoSCollection qoSCollection;
     private InstanceMetricsSnapshot latestInstanceMetricsSnapshot;
 
     public Instance(String instanceId, String serviceId) {
@@ -30,23 +30,23 @@ public class Instance {
         latestInstanceMetricsSnapshot = new InstanceMetricsSnapshot(serviceId, instanceId);
         latestInstanceMetricsSnapshot.setStatus(currentStatus);
         latestInstanceMetricsSnapshot.applyTimestamp();
-        adaptationParamCollection = new AdaptationParamCollection();
+        qoSCollection = new QoSCollection();
     }
 
-    public <T extends AdaptationParamSpecification> List<Double> getLatestFilledAnalysisWindowForParam(Class<T> adaptationParamClass, int n) {
-        return getAdaptationParamCollection().getLatestAnalysisWindowForParam(adaptationParamClass, n, true);
+    public <T extends QoSSpecification> List<Double> getLatestFilledAnalysisWindowForQoS(Class<T> qoSClass, int n) {
+        return getQoSCollection().getLatestAnalysisWindowForQoS(qoSClass, n, true);
     }
 
-    public <T extends AdaptationParamSpecification> AdaptationParameter.Value getCurrentValueForParam(Class<T> adaptationParamClass) {
-        return getAdaptationParamCollection().getCurrentValueForParam(adaptationParamClass);
+    public <T extends QoSSpecification> QoSHistory.Value getCurrentValueForQoS(Class<T> qoSClass) {
+        return getQoSCollection().getCurrentValueForQoS(qoSClass);
     }
 
-    public <T extends AdaptationParamSpecification> void changeCurrentValueForParam(Class<T> adaptationParamClass, double newValue) {
-        getAdaptationParamCollection().changeCurrentValueForParam(adaptationParamClass, newValue);
+    public <T extends QoSSpecification> void changeCurrentValueForQoS(Class<T> qoSClass, double newValue) {
+        getQoSCollection().changeCurrentValueForQoS(qoSClass, newValue);
     }
 
-    public <T extends AdaptationParamSpecification> void invalidateAdaptationParametersHistory(Class<T> adaptationParamClass) {
-        getAdaptationParamCollection().invalidateLatestAndPreviousValuesForParam(adaptationParamClass);
+    public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> qoSClass) {
+        getQoSCollection().invalidateLatestAndPreviousValuesForQoS(qoSClass);
     }
 
     @JsonIgnore

@@ -1,5 +1,5 @@
 package it.polimi.saefa.knowledge.domain.adaptation.specifications;
-
+/*
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class TotalCost extends AdaptationParamSpecification {
+public class TotalCost extends qosSpecification {
     @JsonProperty("max_threshold")
     private double maxThreshold;
 
@@ -42,5 +42,5 @@ public class TotalCost extends AdaptationParamSpecification {
     public String getConstraintDescription() {
         return "value < " + maxThreshold;
     }
-
 }
+ */

@@ -1,18 +1,19 @@
 package it.polimi.saefa.knowledge;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.persistence.ConfigurationRepository;
-import it.polimi.saefa.knowledge.parser.AdaptationParamParser;
+import it.polimi.saefa.knowledge.parser.QoSParser;
 import it.polimi.saefa.knowledge.parser.ConfigurationParser;
 import it.polimi.saefa.knowledge.parser.SystemArchitectureParser;
 import it.polimi.saefa.knowledge.parser.SystemBenchmarkParser;
 import it.polimi.saefa.knowledge.domain.KnowledgeService;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,26 +40,26 @@ public class KnowledgeInit implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
-        FileReader adaptationParametersReader = new FileReader(ResourceUtils.getFile("classpath:adaptation_parameters_specification.json"));
-        Map<String, List<AdaptationParamSpecification>> servicesAdaptationParameters = AdaptationParamParser.parse(adaptationParametersReader);
+        FileReader qoSReader = new FileReader(ResourceUtils.getFile("classpath:qos_specification.json"));
+        Map<String, List<QoSSpecification>> servicesQoS = QoSParser.parse(qoSReader);
         FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
         Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
-
 
         serviceList.forEach(service -> {
             Application serviceApplication = discoveryClient.getApplication(service.getServiceId());
             if (serviceApplication == null)
                 throw new RuntimeException("Service " + service.getServiceId() + " not found in Eureka");
             List<InstanceInfo> instances = serviceApplication.getInstances();
-            if (instances == null || instances.isEmpty())
+            if (instances == null || instances.isEmpty()){
                 throw new RuntimeException("No instances found for service " + service.getServiceId());
+            }
             service.setCurrentImplementationId(instances.get(0).getInstanceId().split("@")[0]);
-            service.setAdaptationParameters(servicesAdaptationParameters.get(service.getServiceId()));
+            service.setAllQoS(servicesQoS.get(service.getServiceId()));
             servicesBenchmarks.get(service.getServiceId()).forEach(serviceImplementationBenchmarks -> {
-                serviceImplementationBenchmarks.getAdaptationParametersBenchmarks().forEach((adaptationClass, value) ->
+                serviceImplementationBenchmarks.getQoSBenchmarks().forEach((adaptationClass, value) ->
                         service.getPossibleImplementations()
                                 .get(serviceImplementationBenchmarks.getServiceImplementationId())
-                                .setBootBenchmark(adaptationClass, value));
+                                .setBenchmark(adaptationClass, value));
             });
             instances.forEach(instanceInfo -> {
                 if (!instanceInfo.getInstanceId().split("@")[0].equals(service.getCurrentImplementationId()))

@@ -2,10 +2,10 @@ package it.polimi.saefa.analyse.externalInterfaces;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
-import it.polimi.saefa.knowledge.rest.AddAdaptationParameterValueRequest;
+import it.polimi.saefa.knowledge.rest.AddQoSValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,18 +70,21 @@ public interface KnowledgeClient {
             @RequestParam int n
     );
 
-    @PostMapping("/rest/addNewAdaptationParameterValue")
-    ResponseEntity<String> addNewAdaptationParameterValue(@RequestBody AddAdaptationParameterValueRequest request);
+    @PostMapping("/rest/addNewQoSValue")
+    ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request);
 
     @PostMapping("/rest/proposeAdaptationOptions")
     ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions);
 
-    @PostMapping("/rest/updateServicesAdaptationParamCollection")
-    ResponseEntity<String> updateServicesAdaptationParamCollection(@RequestBody Map<String, AdaptationParamCollection> serviceAdaptationParameters);
+    @PostMapping("/rest/updateServicesQoSCollection")
+    ResponseEntity<String> updateServicesQoSCollection(@RequestBody Map<String, QoSCollection> serviceQoSMap);
 
-    @PostMapping("/rest/updateInstancesAdaptationParamCollection")
-    ResponseEntity<String> updateInstancesAdaptationParamCollection(@RequestBody Map<String, Map<String, AdaptationParamCollection>> instanceAdaptationParameters);
+    @PostMapping("/rest/updateInstancesQoSCollection")
+    ResponseEntity<String> updateInstancesQoSCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceQoSMap);
 
     @PutMapping("/rest/activeModule")
     String setFailedModule(@RequestParam Modules module);
+
+    @PostMapping("/rest/service/{serviceId}/invalidateQosHistory")
+    ResponseEntity<String> invalidateQosHistory(@RequestParam String serviceId);
 }

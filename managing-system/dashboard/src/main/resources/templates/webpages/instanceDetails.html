@@ -57,12 +57,17 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" th:each="graph : ${graphs}">
+        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+        <br>
+    </div>
+    <!--div class="row">
         <div class="column" th:each="graph : ${graphs}">
             <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
             <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
         </div>
-    </div>
+    </div-->
 </div>
 
 <th:block th:include="fragments/footer :: footer"></th:block>
@@ -86,7 +91,9 @@
         /*]]>*/
         var data = new google.visualization.DataTable();
         data.addColumn('string', xAxisName);
-        data.addColumn('number', yAxisName);
+        data.addColumn('number', "Before Adaptation");
+        data.addColumn('number', "After Adaptation");
+        data.addColumn('number', "Threshold");
         data.addRows(pointsList);
 
         var options = {
@@ -96,14 +103,15 @@
             },
             backgroundColor: '#f1f1f1',
             chartArea: {
-                backgroundColor: '#f1f1f1'
+                backgroundColor: '#f1f1f1',
+                width: '100%'
             },
-            width: Math.max(screen.availWidth/3.1, 450),
+            //width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
-            axes: {
-                x: {
-                    0: {side: 'bottom'}
-                }
+            series: {
+                0: {color: 'blue'},
+                1: {color: 'yellowgreen'},
+                2: {color: 'red'}
             }
         };
         var chart = new google.charts.Line(document.getElementById(yAxisName));

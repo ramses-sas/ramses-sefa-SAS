@@ -3,9 +3,7 @@ package it.polimi.saefa.plan.rest;
 import it.polimi.saefa.plan.domain.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -18,6 +16,18 @@ public class PlanRestController {
     @GetMapping(path="/start")
     public String start() {
         new Thread(() -> planService.startPlan()).start();
+        return "OK";
+    }
+
+    @GetMapping("/adaptationStatus")
+    public String getAdaptationStatus() {
+        return String.valueOf(planService.isAdaptationAuthorized());
+    }
+
+    @PutMapping("/adaptationStatus")
+    public String setAdaptationStatus(@RequestParam boolean adapt) {
+        log.info("Setting adaptation status to {}", adapt ? "ENABLED" : "DISABLED");
+        planService.setAdaptationAuthorized(adapt);
         return "OK";
     }
 

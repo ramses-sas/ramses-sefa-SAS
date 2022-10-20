@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,17 +26,17 @@ public class ChangeLoadBalancerWeightsOption extends AdaptationOption {
     private List<String> instancesToShutdownIds = new LinkedList<>();
 
 
-    public ChangeLoadBalancerWeightsOption(String serviceId, String serviceImplementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeLoadBalancerWeightsOption(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
-        super.setAdaptationParametersGoal(goal);
+        super.setQosGoal(goal);
     }
 
     @JsonIgnore
     @Override
     public String getDescription() {
-        String base = "Goal: " + getAdaptationParametersGoal().getSimpleName() + " - Change load balancer weights of service " + super.getServiceId();
+        String base = "Goal: " + getQosGoal().getSimpleName() + " - Change LBW. Service: " + super.getServiceId();
         if (newWeights != null)
-            base += "\nNew weights are: \n" + newWeights;
-        return base + ".\n" + getComment();
+            base += "\n\t\t\t\t\tNew weights are: \n\t\t\t\t\t" + newWeights;
+        return base + ".\n\t\t\t\t\t" + getComment();
     }
 }

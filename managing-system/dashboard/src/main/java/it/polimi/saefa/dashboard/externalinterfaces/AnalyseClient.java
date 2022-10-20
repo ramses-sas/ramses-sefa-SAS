@@ -21,8 +21,8 @@ public interface AnalyseClient {
     String changeFailureRateThreshold(@RequestParam double value);
     @PutMapping("/rest/changeUnreachableRateThreshold")
     String changeUnreachableRateThreshold(@RequestParam double value);
-    @PutMapping("/rest/changeParametersSatisfactionRate")
-    String changeParametersSatisfactionRate(@RequestParam double value);
+    @PutMapping("/rest/changeQoSSatisfactionRate")
+    String changeQoSSatisfactionRate(@RequestParam double value);
 
     @Getter
     class GetInfoResponse {
@@ -30,7 +30,7 @@ public interface AnalyseClient {
         private int analysisWindowSize;
         private double failureRateThreshold;
         private double unreachableRateThreshold;
-        private double parametersSatisfactionRate;
+        private double qosSatisfactionRate;
     }
 }
 

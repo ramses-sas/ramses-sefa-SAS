@@ -1,5 +1,5 @@
 {
-	"services"	: [
+	"services" : [
 		{
 			"service_id":"RESTAURANT-SERVICE",
 			"implementations" : [
@@ -8,15 +8,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 450
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.951
+							"benchmark": 0.93
 						}
 					]
 				}
@@ -30,15 +26,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 1300
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.92
 						}
 
 					]
@@ -53,15 +45,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 400
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.93
 						}
 					]
 				},
@@ -70,15 +58,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 300
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.93
 						}
 					]
 				},
@@ -87,15 +71,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 550
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.94
 						}
 					]
 				}
@@ -109,15 +89,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 800
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.93
 						}
 					]
 				},
@@ -126,15 +102,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 700
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.92
 						}
 					]
 				},
@@ -143,61 +115,11 @@
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
+							"benchmark": 500
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.8
-						}
-					]
-				}
-			]
-		}
-	],
-	"trash" : [
-		{
-			"service_id":"API-GATEWAY-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "api-gateway-service",
-					"adaptation_benchmarks" : [
-						{
-							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "availability",
-							"benchmark": 0.8
-						}
-					]
-				}
-			]
-		},
-		{
-			"service_id":"WEB-SERVICE",
-			"implementations" : [
-				{
-					"implementation_id" : "web-service",
-					"adaptation_benchmarks" : [
-						{
-							"name": "average_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "max_response_time",
-							"benchmark": 5
-						},
-						{
-							"name": "availability",
-							"benchmark": 0.8
+							"benchmark": 0.90
 						}
 					]
 				}

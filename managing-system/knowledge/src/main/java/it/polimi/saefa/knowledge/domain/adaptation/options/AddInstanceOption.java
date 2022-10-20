@@ -1,7 +1,7 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,13 +21,13 @@ public class AddInstanceOption extends AdaptationOption {
     // <instanceId, newWeight>
     private Map<String, Double> oldInstancesNewWeights;
     private Double newInstanceWeight;
-    @ElementCollection // TODO TODO TODO VA POPOLATO!!!!!!!
+    @ElementCollection
     private List<String> instancesToShutdownIds = new LinkedList<>(); //There could be instances whose weight have gone below the shutdown threshold after redistributing the weights
 
 
-    public AddInstanceOption(String serviceId, String implementationId, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public AddInstanceOption(String serviceId, String implementationId, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, implementationId, comment);
-        super.setAdaptationParametersGoal(goal);
+        super.setQosGoal(goal);
     }
 
     public AddInstanceOption(String serviceId, String implementationId, String comment, boolean isForced) {
@@ -46,7 +46,7 @@ public class AddInstanceOption extends AdaptationOption {
     @JsonIgnore
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getAdaptationParametersGoal().getSimpleName())) + " - Add a new instances of service " + super.getServiceId() + ".\n" + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Add a new instance. Service: " + super.getServiceId() + (!instancesToShutdownIds.isEmpty() ? (".\n\t\t\t\t\tInstances to remove: " + instancesToShutdownIds + "\n\t\t\t\t\t") : " ")  + getComment();
     }
 
 }

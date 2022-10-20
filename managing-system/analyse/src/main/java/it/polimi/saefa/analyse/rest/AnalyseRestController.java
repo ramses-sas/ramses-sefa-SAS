@@ -41,16 +41,16 @@ public class AnalyseRestController {
         return "OK";
     }
 
-    @PutMapping("/changeParametersSatisfactionRate")
-    public String changeParametersSatisfactionRate(@RequestParam double value) {
-        analyseService.setParametersSatisfactionRate(value);
+    @PutMapping("/changeQoSSatisfactionRate")
+    public String changeQoSSatisfactionRate(@RequestParam double value) {
+        analyseService.setQosSatisfactionRate(value);
         return "OK";
     }
     
     @GetMapping("/")
     public GetInfoResponse getInfo() {
         return new GetInfoResponse(analyseService.getMetricsWindowSize(), analyseService.getAnalysisWindowSize(), 
-                analyseService.getFailureRateThreshold(), analyseService.getUnreachableRateThreshold(), analyseService.getParametersSatisfactionRate());
+                analyseService.getFailureRateThreshold(), analyseService.getUnreachableRateThreshold(), analyseService.getQosSatisfactionRate());
     }
 
     // TODO remove after test

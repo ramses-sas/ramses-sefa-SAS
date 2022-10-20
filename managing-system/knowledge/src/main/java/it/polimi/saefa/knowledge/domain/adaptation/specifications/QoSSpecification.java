@@ -13,21 +13,14 @@ import java.util.List;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Availability.class),
-        @JsonSubTypes.Type(value = AverageResponseTime.class),
-        @JsonSubTypes.Type(value = MaxResponseTime.class),
-        @JsonSubTypes.Type(value = TotalCost.class)
+        @JsonSubTypes.Type(value = AverageResponseTime.class)
+        //@JsonSubTypes.Type(value = MaxResponseTime.class),
+        //@JsonSubTypes.Type(value = TotalCost.class)
 })
 @NoArgsConstructor
-public abstract class AdaptationParamSpecification {
+public abstract class QoSSpecification {
 
     private Double weight;
-    //private int priority;
-
-    /*
-    public AdaptationParamSpecification(String json) {
-        fromJson(json);
-    }
-     */
 
     public abstract boolean isSatisfied(double value);
 

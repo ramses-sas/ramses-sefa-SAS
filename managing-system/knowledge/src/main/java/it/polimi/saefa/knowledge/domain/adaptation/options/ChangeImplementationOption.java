@@ -1,6 +1,6 @@
 package it.polimi.saefa.knowledge.domain.adaptation.options;
 
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,9 +28,9 @@ public class ChangeImplementationOption extends AdaptationOption {
         this.possibleImplementations = possibleImplementations;
     }
 
-    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends AdaptationParamSpecification> goal, String comment) {
+    public ChangeImplementationOption(String serviceId, String serviceImplementationId, int numberOfInstances, List<String> possibleImplementations, Class<? extends QoSSpecification> goal, String comment) {
         super(serviceId, serviceImplementationId, comment);
-        super.setAdaptationParametersGoal(goal);
+        super.setQosGoal(goal);
         this.numberOfInstances = numberOfInstances;
         this.possibleImplementations = possibleImplementations;
     }
@@ -38,6 +38,6 @@ public class ChangeImplementationOption extends AdaptationOption {
 
     @Override
     public String getDescription() {
-        return (isForced() ? "FORCED" : ("Goal: " + getAdaptationParametersGoal().getSimpleName())) + " - Change implementation of service " + super.getServiceId() + ".\n" + getComment();
+        return (isForced() ? "FORCED" : ("Goal: " + getQosGoal().getSimpleName())) + " - Change "+super.getServiceId()+" implementation from "+super.getServiceImplementationId()+" to "+newImplementationId+". " + getComment();
     }
 }

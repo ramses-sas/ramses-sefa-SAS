@@ -150,6 +150,10 @@ public class InstanceMetricsSnapshot {
         return status.equals(InstanceStatus.UNREACHABLE);
     }
 
+    public boolean isBooting() {
+        return status.equals(InstanceStatus.BOOTING);
+    }
+
     @Override
     public String toString() {
         return "Metric id: " + timestamp + " - " + instanceId + " - " + status;

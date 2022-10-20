@@ -1,10 +1,11 @@
 package it.polimi.saefa.knowledge.domain.adaptation.values;
 
 import com.fasterxml.jackson.annotation.*;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -12,13 +13,13 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class AdaptationParameter<T extends AdaptationParamSpecification> {
+public class QoSHistory<T extends QoSSpecification> {
 
     private T specification;
     private List<Value> valuesStack = new LinkedList<>();
-    private AdaptationParameter.Value currentValue;
+    private QoSHistory.Value currentValue;
 
-    public AdaptationParameter( T specification) {
+    public QoSHistory(T specification) {
         this.specification = specification;
     }
 
@@ -70,12 +71,10 @@ public class AdaptationParameter<T extends AdaptationParamSpecification> {
             valuesStack.get(0).invalidateThisAndPreviousValues();
     }
 
-
+    @Data
     public static class Value {
         private boolean invalidatesThisAndPreviousValues = false;
-        @Getter
         private final double value;
-        @Getter
         private final Date timestamp;
 
         public Value(double value, Date timestamp) {

@@ -1,8 +1,8 @@
 package it.polimi.saefa.knowledge.domain;
 
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.AdaptationParamSpecification;
-import it.polimi.saefa.knowledge.domain.adaptation.values.AdaptationParamCollection;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
@@ -93,7 +93,7 @@ public class KnowledgeService {
                 Set<Instance> currentlyActiveInstances = new HashSet<>();
                 for (InstanceMetricsSnapshot metricsSnapshot : metricsList) {
                     Service service = servicesMap.get(metricsSnapshot.getServiceId());
-                    if(!Objects.equals(metricsSnapshot.getServiceImplementationId(), service.getCurrentImplementationId())) //Skip the metricsSnapshot if it is not related to the current implementation
+                    if (!Objects.equals(metricsSnapshot.getServiceImplementationId(), service.getCurrentImplementationId())) //Skip the metricsSnapshot if it is not related to the current implementation
                         continue;
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
@@ -106,8 +106,7 @@ public class KnowledgeService {
                             log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
                         if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
                             currentlyActiveInstances.add(instance);
-                    }
-                    else {
+                    } else {
                         shutdownInstancesStillMonitored.add(instance);
                     }
                 }
@@ -115,13 +114,16 @@ public class KnowledgeService {
                 if (!previouslyActiveInstances.isEmpty()) {
                     Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
                     failedInstances.removeAll(currentlyActiveInstances);
-                    failedInstances.removeAll(shutdownInstancesStillMonitored);
+                    failedInstances.removeIf(instance -> instance.getCurrentStatus() == InstanceStatus.SHUTDOWN);
+
+                    // There should be only the instances that have been shutdown and are still monitored
                     failedInstances.forEach(instance -> {
                         instance.setCurrentStatus(InstanceStatus.FAILED);
                         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
                         metrics.setStatus(InstanceStatus.FAILED);
                         metrics.applyTimestamp();
                         metricsRepository.save(metrics);
+                        instance.setLatestInstanceMetricsSnapshot(metrics);
                     });
                 }
                 previouslyActiveInstances = new HashSet<>(currentlyActiveInstances);
@@ -141,7 +143,7 @@ public class KnowledgeService {
         }
     }
 
-    public void shutdownInstance(String serviceId, String instanceId) {
+    public void markInstanceAsShutdown(String serviceId, String instanceId) {
         Service service = servicesMap.get(serviceId);
         Instance instance = service.getInstance(instanceId);
         InstanceMetricsSnapshot metrics = new InstanceMetricsSnapshot(instance.getServiceId(), instance.getInstanceId());
@@ -156,17 +158,17 @@ public class KnowledgeService {
         Service service = servicesMap.get(serviceId);
         service.getCurrentImplementation().setPenalty(0);
 
-        for(Instance instance : service.getInstances()){
-            shutdownInstance(serviceId, instance.getInstanceId());
+        for (Instance instance : service.getInstances()) {
+            markInstanceAsShutdown(serviceId, instance.getInstanceId());
             service.removeInstance(instance);
         }
         service.setCurrentImplementationId(newImplementationId);
 
-        for(String instanceAddress : newInstancesAddresses) {
+        for (String instanceAddress : newInstancesAddresses) {
             service.createInstance(instanceAddress);
         }
 
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM){
+        if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             Map<String, Double> newWeights = new HashMap<>();
             for(Instance instance : service.getInstances()){
                 newWeights.put(instance.getInstanceId(), 1.0/service.getInstances().size());
@@ -226,6 +228,10 @@ public class KnowledgeService {
 
     public void proposeAdaptationOptions(Map<String, List<AdaptationOption>> proposedAdaptationOptions) {
         this.proposedAdaptationOptions = proposedAdaptationOptions;
+        for (String serviceId : proposedAdaptationOptions.keySet()) {
+            Service service = servicesMap.get(serviceId);
+            service.getCurrentImplementation().incrementPenalty();
+        }
     }
 
     // Called by the Plan module to choose the adaptation options
@@ -240,12 +246,33 @@ public class KnowledgeService {
         });
     }
 
-    public void addNewInstanceAdaptationParameterValue(String serviceId, String instanceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        servicesMap.get(serviceId).getInstance(instanceId).getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+
+    // Update QoS-related properties
+    public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value) {
+        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().addNewQoSValue(qosClass, value);
     }
 
-    public void addNewServiceAdaptationParameterValue(String serviceId, Class<? extends AdaptationParamSpecification> adaptationParameterClass, Double value) {
-        servicesMap.get(serviceId).getCurrentImplementation().getAdaptationParamCollection().addNewAdaptationParamValue(adaptationParameterClass, value);
+    public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value) {
+        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, value);
+    }
+
+    public void updateServiceQoSCollection(String serviceId, QoSCollection qoSCollection) {
+        servicesMap.get(serviceId).getCurrentImplementation().setQoSCollection(qoSCollection);
+    }
+
+    public void updateInstanceQoSCollection(String serviceId, String instanceId, QoSCollection qoSCollection) {
+        servicesMap.get(serviceId).getInstance(instanceId).setQoSCollection(qoSCollection);
+    }
+
+    public void updateService(Service service) {
+        servicesMap.put(service.getServiceId(), service);
+    }
+
+
+
+
+    public void updateBenchmark(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> qosClass, Double value) { //TODO è thread safe?
+        servicesMap.get(serviceId).getPossibleImplementations().get(serviceImplementationId).getQoSBenchmarks().put(qosClass, value);
     }
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>
@@ -259,18 +286,6 @@ public class KnowledgeService {
         newConfiguration.setTimestamp(new Date());
         service.setConfiguration(newConfiguration);
         configurationRepository.save(service.getConfiguration());
-    }
-
-    public void updateServiceAdaptationParamCollection(String serviceId, AdaptationParamCollection adaptationParamCollection) {
-        servicesMap.get(serviceId).getCurrentImplementation().setAdaptationParamCollection(adaptationParamCollection);
-    }
-
-    public void updateInstanceParamAdaptationCollection(String serviceId, String instanceId, AdaptationParamCollection adaptationParamCollection) {
-        servicesMap.get(serviceId).getInstance(instanceId).setAdaptationParamCollection(adaptationParamCollection);
-    }
-
-    public void updateService(Service service) {
-        servicesMap.put(service.getServiceId(), service);
     }
 
 
@@ -303,7 +318,6 @@ public class KnowledgeService {
     public InstanceMetricsSnapshot getLatestActiveByInstanceId(String instanceId) {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
     }
-
 }
 
 

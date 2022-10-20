@@ -28,26 +28,53 @@
                                     <tr>
                                         <th>InstanceId</th>
                                         <th>Status</th>
+                                        <th th:if="${isLoadBalanced}">LB Weight</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td th:if="${!#strings.equals(entry[1],'SHUTDOWN')}"><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td th:if="${#strings.equals(entry[1],'SHUTDOWN')}"><p th:text="${entry[0]}">instanceId here</p></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
+                                        <td th:if="${isLoadBalanced}" th:text="${entry[2]}">Weight goes here</td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="column">
+                            <div class="card">
+                                <h5 class="cardElementTitle">Graph legend</h5>
+                                <div>
+                                    <span class="blue-color-box"></span>
+                                    <span><h6 class="cardElementContent">Before Adaptation</h6></span>
+                                </div>
+                                <div>
+                                    <span class="green-color-box"></span>
+                                    <span><h6 class="cardElementContent">After Adaptation</h6></span>
+                                </div>
+                                <div>
+                                    <span class="red-color-box"></span>
+                                    <span><h6 class="cardElementContent">Threshold</h6></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
                 <td class="col2">
-                    <div class="row">
+                    <div class="row" th:each="graph : ${graphs}">
+                        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+                        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+                        <br>
+                    </div>
+                    <!--div class="row">
                         <div class="column" th:each="graph : ${graphs}">
                             <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
                             <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
                         </div>
-                    </div>
+                    </div-->
                 </td>
             </tr>
         </tbody>
@@ -77,6 +104,7 @@
         data.addColumn('string', xAxisName);
         data.addColumn('number', "Before Adaptation");
         data.addColumn('number', "After Adaptation");
+        data.addColumn('number', "Threshold");
         data.addRows(pointsList);
 
         var options = {
@@ -86,23 +114,21 @@
             },
             backgroundColor: '#f1f1f1',
             chartArea: {
-                backgroundColor: '#f1f1f1'
+                backgroundColor: '#f1f1f1',
+                width:'100%'
             },
-            width: Math.max(screen.availWidth/3.1, 450),
+            //width: Math.max(screen.availWidth/3.1, 450),
             height: Math.max(screen.availHeight/2.6, 350),
-            axes: {
-                x: {
-                    0: {side: 'bottom'}
-                }
-            },
             series: {
-                0: {color: '#3072f6'},
-                1: {color: 'rgb(70,252,10)'}
+                0: {color: 'blue'},
+                1: {color: 'yellowgreen'},
+                2: {color: 'red'}
             }
         };
 
         var chart = new google.charts.Line(document.getElementById(yAxisName));
         chart.draw(data, google.charts.Line.convertOptions(options));
+
     }
 </script>
 
