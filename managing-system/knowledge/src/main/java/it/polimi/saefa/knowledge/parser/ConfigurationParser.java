@@ -3,28 +3,27 @@ package it.polimi.saefa.knowledge.parser;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.CustomProperty;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 @Slf4j
 @Component
-@RestController
 public class ConfigurationParser {
     @Autowired
     private EurekaClient discoveryClient;
 
 
-    public ServiceConfiguration parseProperties(@PathVariable String serviceId) {
+    public ServiceConfiguration parsePropertiesAndCreateConfiguration(String serviceId) {
         InstanceInfo configInstance = getConfigServerInstance();
-        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId + ".properties";
+        String url = configInstance.getHomePageUrl() + "config-server/default/main/" + serviceId.toLowerCase() + ".properties";
+        log.debug("Fetching configuration from " + url);
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration(serviceId);
         ResponseEntity<String> response = new RestTemplate().getForEntity(url, String.class);
         String[] lines = Arrays.stream(response.getBody().split("\n")).filter(line -> line.matches("([\\w\\.-])+=.+")).toArray(String[]::new);
@@ -67,14 +66,14 @@ public class ConfigurationParser {
                         String propertyName = customProperty.getPropertyElements()[0];
                         if (customProperty.isServiceGlobal() && propertyName.equals("type")) {
                             for (Service service : services.values())
-                                service.getConfiguration().setLoadBalancerType(customProperty.getValue());
+                                service.getConfiguration().setLoadBalancerType(customProperty.getValue().equalsIgnoreCase("weighted_random") ? ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM : ServiceConfiguration.LoadBalancerType.UNKNOWN);
                         } else if (services.containsKey(customProperty.getServiceId())) {
                             ServiceConfiguration serviceToBalanceConfiguration = services.get(customProperty.getServiceId()).getConfiguration();
                             switch (propertyName) {
                                 case "type" ->
-                                    serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue());
+                                    serviceToBalanceConfiguration.setLoadBalancerType(customProperty.getValue().equalsIgnoreCase("weighted_random") ? ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM : ServiceConfiguration.LoadBalancerType.UNKNOWN);
                                 case "weight" ->
-                                    serviceToBalanceConfiguration.addLoadBalancerWeightForInstanceAtAddress(customProperty.getAddress(), Integer.valueOf(customProperty.getValue()));
+                                    serviceToBalanceConfiguration.addLoadBalancerWeight(services.get(serviceToBalanceConfiguration.getServiceId()).getCurrentImplementationId() + "@" + customProperty.getAddress(), Double.valueOf(customProperty.getValue()));
                             }
                         }
                     }
@@ -97,7 +96,7 @@ public class ConfigurationParser {
         new Thread( () -> {
             parseGlobalProperties();
             for (String serviceId : instancesSupplier.getServicesInstances().keySet()) {
-                parseProperties(serviceId);
+                parsePropertiesAndCreateConfiguration(serviceId);
             }
         }).start();
         return "OK";
@@ -113,7 +112,7 @@ public class ConfigurationParser {
                 if (modifiedFile.equals("application.properties"))
                     parseGlobalProperties();
                 else
-                    parseProperties(modifiedFile.replace(".properties", ""));
+                    parsePropertiesAndCreateConfiguration(modifiedFile.replace(".properties", ""));
             }
         }).start();
         return "OK";

@@ -2,8 +2,11 @@ package it.polimi.saefa.restclient.aoplog;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.util.Arrays;
 
@@ -40,7 +43,7 @@ public class RestClientLoggingAspect {
     private void logException(JoinPoint joinPoint, Object exception) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
-        log.info("     ERROR IN RestClient.{} {} -> {}", methodName, args, exception.toString());
+        log.error("     ERROR IN RestClient.{} {} -> {}", methodName, args, ((Exception)exception).getMessage());
     }
 
     /* Eseguito prima dell'esecuzione del metodo */
@@ -48,22 +51,31 @@ public class RestClientLoggingAspect {
     //public void logBeforeExecuteMethod(JoinPoint joinPoint) { logInvocation(joinPoint); }
 
     /* Eseguito quando il metodo è terminato (con successo) */
-    @AfterReturning(value="restClientMethods() &&! restClientVoidMethods()", returning="retValue")
+    //@AfterReturning(value="restClientMethods() &&! restClientVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         logTermination(joinPoint, retValue);
     }
 
     /* Eseguito quando il metodo (void) è terminato (con successo) */
-    @AfterReturning("restClientVoidMethods()")
+    //@AfterReturning("restClientVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         logVoidTermination(joinPoint);
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="restClientMethods()", throwing="exception")
-    public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
-        logException(joinPoint, exception);
+    //@AfterThrowing(value="restClientMethods()", throwing="exception")
+    @Around("restClientMethods() || restClientVoidMethods()")
+    public Object logErrorApplication(ProceedingJoinPoint joinPoint) {
+        try {
+            return joinPoint.proceed();
+        } catch (HttpStatusCodeException e) {
+            logException(joinPoint, e);
+            return null;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
 }
 

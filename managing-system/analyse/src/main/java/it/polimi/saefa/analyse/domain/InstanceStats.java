@@ -1,36 +1,37 @@
 package it.polimi.saefa.analyse.domain;
 
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Instance;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 
 import lombok.Getter;
 import lombok.Setter;
+
 
 @Getter
 @Setter
 public class InstanceStats {
     private Instance instance;
-    private Double averageResponseTime;
-    private Double maxResponseTime;
-    private Double availability;
-    private boolean dataUnavailable = false;
+    private double averageResponseTime;
+    //private double maxResponseTime;
+    private double availability;
+    private boolean fromNewData;
 
-    public InstanceStats(Instance instance, Double averageResponseTime, Double maxResponseTime, Double availability) {
+    public InstanceStats(Instance instance, double averageResponseTime, double availability) {
         this.instance = instance;
         this.averageResponseTime = averageResponseTime;
-        this.maxResponseTime = maxResponseTime;
+        //this.maxResponseTime = maxResponseTime;
         this.availability = availability;
+        fromNewData = true;
     }
 
+    // We don't have enough metrics to compute the stats, so we use the current value for each QoS
     public InstanceStats(Instance instance) {
         this.instance = instance;
-        this.dataUnavailable = true;
+        availability = instance.getCurrentValueForQoS(Availability.class).getValue();
+        averageResponseTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+        //maxResponseTime = instance.getCurrentValueForQoS(MaxResponseTime.class).getValue();
+        this.fromNewData = false;
     }
 
-    public String getInstanceId() {
-        return instance.getInstanceId();
-    }
-
-    public boolean isDataUnavailable() {
-        return dataUnavailable || averageResponseTime == null || maxResponseTime == null || availability == null;
-    }
 }

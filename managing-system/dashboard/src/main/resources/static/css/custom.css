@@ -266,6 +266,39 @@ table.detailsTable td.col2 {
     min-width: 400px;
 }
 
+table.simpleTable {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    overflow: hidden;
+    border: 2px solid black;
+    text-align: center;
+}
+table.simpleTable tbody td {
+    padding: 20px 8px;
+    vertical-align: center;
+    text-align: center;
+    horiz-align: center;
+}
+table.simpleTable thead th h3 {
+    padding: 10px;
+    text-align: center;
+    /* Center vertically */
+    position: relative;
+    transform: translate(0, -10%);
+}
+table.simpleTable > tbody > tr:not(:last-of-type) > td {
+    border-bottom: 2px solid black;
+}
+table.simpleTable > thead > tr > th {
+    border-bottom: 2px solid black;
+}
+
+div.horizontal, span {
+    display: inline-block;
+}
+
 h5.cardElementTitle {
     font-size: 16px;
     font-weight: 500;
@@ -277,6 +310,25 @@ h6.cardElementContent {
     font-weight: 300;
 }
 
+label {
+    font-size: 15px;
+}
+
+.green-color-box {
+    background-color: yellowgreen;
+    width: 12px;
+    height: 12px;
+}
+.red-color-box {
+    background-color: red;
+    width: 12px;
+    height: 12px;
+}
+.blue-color-box {
+    background-color: blue;
+    width: 12px;
+    height: 12px;
+}
 
 /*
 

@@ -1,7 +1,7 @@
 
 package it.polimi.saefa.analyse.domain;
 
-import it.polimi.saefa.knowledge.persistence.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import lombok.Getter;
 import lombok.Setter;
 

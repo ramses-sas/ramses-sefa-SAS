@@ -1,9 +1,8 @@
 package it.polimi.saefa.configmanager.rest;
 
 import it.polimi.saefa.configmanager.domain.ConfigManagerService;
-import it.polimi.saefa.configmanager.restinterface.AddOrUpdatePropertyRequest;
-import it.polimi.saefa.configmanager.restinterface.ConfigManagerRestInterface;
-import it.polimi.saefa.configmanager.restinterface.RemovePropertyRequest;
+import it.polimi.saefa.configmanager.restinterface.ChangePropertyRequest;
+import it.polimi.saefa.configmanager.restinterface.PropertyToChange;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,30 +14,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping(path="/rest")
-public class ConfigManagerRestController implements ConfigManagerRestInterface {
+public class ConfigManagerRestController {
 
 	@Autowired
 	private ConfigManagerService configManagerService;
 
-	@PostMapping(path = "/addOrUpdateProperty")
-	public void addOrUpdateProperty(@RequestBody AddOrUpdatePropertyRequest request) {
-		String filename = request.getServiceName() == null ? "application.properties" : request.getServiceName().toLowerCase() + ".properties";
+	@PostMapping(path = "/changeProperty")
+	public void changeProperty(@RequestBody ChangePropertyRequest request) {
+		String filename;
 		try {
-			configManagerService.addOrUpdatePropertyAndPush(request.getPropertyName(), request.getValue(), filename);
+			configManagerService.pull();
+			for (PropertyToChange propertyToChange : request.getPropertiesToChange()) {
+				filename = propertyToChange.getServiceName() == null ? "application.properties" : propertyToChange.getServiceName().toLowerCase() + ".properties";
+				configManagerService.changeProperty(propertyToChange.getPropertyName(), propertyToChange.getValue(), filename);
+			}
+			configManagerService.commitAndPush("ConfigManagerActuator: changing properties");
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to add or update property "+request.getPropertyName()
-					+" with value "+request.getValue()+" for service "+request.getServiceName(), e);
-		}
-	}
-
-	@PostMapping(path = "/removeProperty")
-	public void removeProperty(@RequestBody RemovePropertyRequest request) {
-		String filename = request.getServiceName() == null ? "application.properties" : request.getServiceName().toLowerCase() + ".properties";
-		try {
-			configManagerService.removePropertyAndPush(request.getPropertyName(), filename);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to remove property "+request.getPropertyName()
-					+" for service "+request.getServiceName(), e);
+			try {
+				configManagerService.rollback();
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+			throw new RuntimeException(e);
 		}
 	}
 

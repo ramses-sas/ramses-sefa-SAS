@@ -2,7 +2,6 @@ package it.polimi.saefa.orderingservice.domain;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,7 +58,6 @@ public class OrderingService {
 		else throw new CartNotFoundException("Cart with id " + cartId + " not found");
 	}
 
-	@Retry(name = "restaurant")
 	public boolean notifyRestaurant(Long cartId, boolean isTakeaway) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if(cart.isPresent() && (cart.get().isPaid()|| cart.get().isRequiresCashPayment())) {
@@ -70,7 +68,6 @@ public class OrderingService {
 	}
 
 	@CircuitBreaker(name = "payment", fallbackMethod = "paymentFallback")
-	@Retry(name = "payment")
 	public boolean processPayment(Long cartId, PaymentInfo paymentInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -85,8 +82,9 @@ public class OrderingService {
 	}
 
 	public boolean paymentFallback(Long cartId, PaymentInfo paymentInfo, RuntimeException e) {
-		log.warn("Payment fallback method called!");
-		if (circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
+		log.warn("Payment fallback method called from Circuit Breaker");
+
+		if(circuitBreakerRegistry.circuitBreaker("payment").getCircuitBreakerConfig().getIgnoreExceptionPredicate().test(e))
 			throw e;
 		throw new PaymentNotAvailableException("Payment service is not available: " + e.getMessage(), cartId);
 	}
@@ -101,7 +99,6 @@ public class OrderingService {
 	}
 
 	@CircuitBreaker(name = "delivery", fallbackMethod = "deliveryFallback")
-	@Retry(name = "delivery")
 	public boolean processDelivery(Long cartId, DeliveryInfo deliveryInfo) {
 		Optional<Cart> cart = orderingRepository.findById(cartId);
 		if (cart.isPresent()) {
@@ -119,7 +116,6 @@ public class OrderingService {
 		throw new DeliveryNotAvailableException("Delivery service is not available: " + e.getMessage(), cartId);
 	}
 
-	@Retry(name = "restaurant")
 	public Cart updateCartDetails(Cart cart) {
 		 double totalPrice = 0;
 		 for (CartItem item : cart.getItemList()) {

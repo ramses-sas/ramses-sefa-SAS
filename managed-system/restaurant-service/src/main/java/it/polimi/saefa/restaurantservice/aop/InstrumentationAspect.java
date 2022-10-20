@@ -1,5 +1,6 @@
 package it.polimi.saefa.restaurantservice.aop;
 
+import it.polimi.saefa.restaurantservice.exceptions.ForcedException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -21,6 +22,9 @@ public class InstrumentationAspect {
     private final Double sleepMean;
     private final Double sleepVariance;
     private final Double exceptionProbability;
+    @Autowired
+    private Environment env;
+    
 
     public InstrumentationAspect(Environment env) {
         String sleepMean, sleepVariance, exceptionProbability;
@@ -93,7 +97,7 @@ public class InstrumentationAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="restaurantServiceMethods()", throwing="exception")
+    @AfterThrowing(value="restaurantServiceMethods() || restaurantServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }
@@ -104,9 +108,11 @@ public class InstrumentationAspect {
         return Math.max((long)((new Random()).nextGaussian()*sleepVariance + sleepMean), 0);
     }
 
-    private void shouldThrowException() throws RuntimeException {
-        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
-            throw new RuntimeException("An artificial exception has been thrown!");
+    private void shouldThrowException() throws ForcedException {
+        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability){
+            log.warn("Throwing artificial exception");
+            throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
+        }
     }
 
 }

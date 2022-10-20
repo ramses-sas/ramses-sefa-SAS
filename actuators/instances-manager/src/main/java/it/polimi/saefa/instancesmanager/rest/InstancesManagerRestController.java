@@ -15,12 +15,11 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(path="/rest")
-public class InstancesManagerRestController implements InstancesManagerRestInterface {
+public class InstancesManagerRestController {
 
 	@Autowired
 	private InstancesManagerService instancesManagerService;
 
-	@Override
 	@PostMapping(path = "/addInstances")
 	public AddInstancesResponse addInstances(@RequestBody AddInstancesRequest request) {
 		AddInstancesResponse response = new AddInstancesResponse();
@@ -29,11 +28,16 @@ public class InstancesManagerRestController implements InstancesManagerRestInter
 		return response;
 	}
 
-	@Override
 	@PostMapping(path = "/removeInstance")
 	public RemoveInstanceResponse removeInstance(@RequestBody RemoveInstanceRequest request) {
 		instancesManagerService.removeInstance(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 		return new RemoveInstanceResponse(request.getServiceImplementationName(), request.getAddress(), request.getPort());
+	}
+
+	@PostMapping(path = "/changeProfile")
+	public String changeProfile(@RequestBody String newProfile) {
+		instancesManagerService.changeProfile(newProfile);
+		return "Profile changed to " + newProfile;
 	}
 
 }

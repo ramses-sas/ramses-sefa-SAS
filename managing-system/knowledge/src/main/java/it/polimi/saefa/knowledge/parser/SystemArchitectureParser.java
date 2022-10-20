@@ -3,8 +3,8 @@ package it.polimi.saefa.knowledge.parser;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.Service;
-import it.polimi.saefa.knowledge.persistence.domain.architecture.ServiceImplementation;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
+import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
 
 import java.io.Reader;
 import java.util.LinkedList;
@@ -19,16 +19,15 @@ public class SystemArchitectureParser {
             JsonObject serviceJson = service.getAsJsonObject();
             String serviceId = serviceJson.get("service_id").getAsString();
             JsonArray implementations = serviceJson.get("implementations").getAsJsonArray();
+
             List<ServiceImplementation> serviceImplementations = new LinkedList<>();
             implementations.forEach(impl -> {
                 JsonObject implementation = impl.getAsJsonObject();
                 String implementationId = implementation.get("implementation_id").getAsString();
-                double costPerInstance = implementation.get("cost_per_instance").getAsDouble();
-                double costPerRequest = implementation.get("cost_per_request").getAsDouble();
-                double costPerSecond = implementation.get("cost_per_second").getAsDouble();
-                double costPerBoot = implementation.get("cost_per_boot").getAsDouble();
                 double score = implementation.get("score").getAsDouble();
-                serviceImplementations.add(new ServiceImplementation(implementationId, costPerInstance, costPerRequest, costPerSecond, costPerBoot, score));
+                int implementationTrust = implementation.get("implementation_trust").getAsInt();
+                double instanceLoadShutdownThreshold = implementation.get("instance_load_shutdown_threshold") == null ? 0 : implementation.get("instance_load_shutdown_threshold").getAsDouble();
+                serviceImplementations.add(new ServiceImplementation(implementationId, score, implementationTrust, instanceLoadShutdownThreshold));
             });
             double totalScore = serviceImplementations.stream().map(ServiceImplementation::getScore).reduce(0.0, Double::sum);
             if (totalScore != 1.0) {

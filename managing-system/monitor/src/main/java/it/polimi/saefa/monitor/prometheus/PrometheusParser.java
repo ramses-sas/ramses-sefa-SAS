@@ -1,10 +1,9 @@
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.HttpRequestMetrics;
-import it.polimi.saefa.knowledge.persistence.domain.metrics.InstanceMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
+import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import prometheus.PrometheusScraper;
@@ -22,8 +21,8 @@ public class PrometheusParser {
     @Value("${ACTUATOR_RELATIVE_PATH}")
     private String actuatorRelativePath;
 
-    public InstanceMetrics parse(InstanceInfo instanceInfo) {
-        InstanceMetrics instanceMetrics = new InstanceMetrics(instanceInfo.getAppName(), instanceInfo.getInstanceId());
+    public InstanceMetricsSnapshot parse(InstanceInfo instanceInfo) {
+        InstanceMetricsSnapshot instanceMetricsSnapshot = new InstanceMetricsSnapshot(instanceInfo.getAppName(), instanceInfo.getInstanceId());
         List<MetricFamily> metricFamilies;
         try {
             URL url = new URL(instanceInfo.getHomePageUrl());
@@ -34,7 +33,7 @@ public class PrometheusParser {
             throw new RuntimeException(e);
         }
 
-        Map<String, HttpRequestMetrics> httpMetricsMap = new HashMap<>();
+        Map<String, HttpEndpointMetrics> httpMetricsMap = new HashMap<>();
 
         metricFamilies.forEach(metricFamily -> {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
@@ -44,57 +43,58 @@ public class PrometheusParser {
                 Map<String, String> labels = metric.getLabels();
                 switch (propertyName) {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->
-                            handleHttpServerRequestsSeconds(httpMetricsMap, (Histogram) metric);
+                            handleHttpServerRequestsTotalDurationMs(httpMetricsMap, (Histogram) metric);
                     case PrometheusMetrics.HTTP_REQUESTS_MAX_TIME ->
                             handleHttpServerRequestsMaxDuration(httpMetricsMap, (Gauge) metric);
                     case PrometheusMetrics.DISK_FREE_SPACE ->
-                            instanceMetrics.setDiskFreeSpace(((Gauge) metric).getValue());
+                            instanceMetricsSnapshot.setDiskFreeSpace(((Gauge) metric).getValue());
                     case PrometheusMetrics.DISK_TOTAL_SPACE ->
-                            instanceMetrics.setDiskTotalSpace(((Gauge) metric).getValue());
-                    case PrometheusMetrics.CPU_USAGE -> instanceMetrics.setCpuUsage(((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_BUFFERED_CALLS -> instanceMetrics.addCircuitBreakerBufferedCalls(labels.get("name"),
-                                    labels.get("kind"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_STATE -> instanceMetrics.addCircuitBreakerState(labels.get("name"),
-                            labels.get("state"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_CALLS_SECONDS -> instanceMetrics.addCircuitBreakerCallCountAndDurationSum(labels.get("name"),
-                            labels.get("kind"), (int) ((Summary) metric).getSampleCount(), ((Summary) metric).getSampleSum());
-                    case PrometheusMetrics.CB_CALLS_SECONDS_MAX ->  instanceMetrics.addCircuitBreakerCallMaxDuration(labels.get("name"),
-                            labels.get("kind"), ((Gauge)metric).getValue());
-                    case PrometheusMetrics.CB_NOT_PERMITTED_CALLS_TOTAL -> instanceMetrics.addCircuitBreakerNotPermittedCallsCount(labels.get("name"),
-                            (int) ((Counter) metric).getValue());
-                    case PrometheusMetrics.CB_SLOW_CALL_RATE -> instanceMetrics.addCircuitBreakerSlowCallRate(labels.get("name"),
-                            ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_SLOW_CALLS -> instanceMetrics.addCircuitBreakerSlowCallCount(labels.get("name"),
-                            labels.get("kind"), (int) ((Gauge) metric).getValue());
-                    case PrometheusMetrics.CB_FAILURE_RATE -> instanceMetrics.addCircuitBreakerFailureRate(labels.get("name"),
-                            ((Gauge) metric).getValue());
+                            instanceMetricsSnapshot.setDiskTotalSpace(((Gauge) metric).getValue());
+                    case PrometheusMetrics.CPU_USAGE ->
+                            instanceMetricsSnapshot.setCpuUsage(((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_BUFFERED_CALLS ->
+                            instanceMetricsSnapshot.addCircuitBreakerBufferedCalls(labels.get("name"), labels.get("kind"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_STATE ->
+                            instanceMetricsSnapshot.addCircuitBreakerState(labels.get("name"), labels.get("state"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_CALLS_SECONDS ->
+                            instanceMetricsSnapshot.addCircuitBreakerCallCountAndDurationSum(labels.get("name"), labels.get("kind"), (int) ((Summary) metric).getSampleCount(), ((Summary) metric).getSampleSum());
+                    case PrometheusMetrics.CB_CALLS_SECONDS_MAX ->
+                            instanceMetricsSnapshot.addCircuitBreakerCallMaxDuration(labels.get("name"), labels.get("kind"), ((Gauge)metric).getValue());
+                    case PrometheusMetrics.CB_NOT_PERMITTED_CALLS_TOTAL ->
+                            instanceMetricsSnapshot.addCircuitBreakerNotPermittedCallsCount(labels.get("name"), (int) ((Counter) metric).getValue());
+                    case PrometheusMetrics.CB_SLOW_CALL_RATE ->
+                            instanceMetricsSnapshot.addCircuitBreakerSlowCallRate(labels.get("name"), ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_SLOW_CALLS ->
+                            instanceMetricsSnapshot.addCircuitBreakerSlowCallCount(labels.get("name"), labels.get("kind"), (int) ((Gauge) metric).getValue());
+                    case PrometheusMetrics.CB_FAILURE_RATE ->
+                            instanceMetricsSnapshot.addCircuitBreakerFailureRate(labels.get("name"), ((Gauge) metric).getValue());
                     default -> { }
                 }
             });
         } );
-        instanceMetrics.setHttpMetrics(httpMetricsMap);
-        return instanceMetrics;
+        instanceMetricsSnapshot.setHttpMetrics(httpMetricsMap);
+        return instanceMetricsSnapshot;
     }
 
     private boolean isAnExcludedUrl(String url) {
         return url.contains("/actuator/");
     }
 
-    private void handleHttpServerRequestsSeconds(Map<String, HttpRequestMetrics> httpMetricsMap, Histogram metric) {
+    private void handleHttpServerRequestsTotalDurationMs(Map<String, HttpEndpointMetrics> httpMetricsMap, Histogram metric) {
         Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
         if (isAnExcludedUrl(labels.get("uri")))
             return;
-        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
-        metrics.addOrSetOutcomeMetricsDetails(labels.get("outcome"), Integer.parseInt(labels.get("status")), (int) metric.getSampleCount(), metric.getSampleSum());
+        HttpEndpointMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpEndpointMetrics(labels.get("uri"), labels.get("method")));
+        metrics.addOrSetOutcomeMetricsDetails(labels.get("outcome"), Integer.parseInt(labels.get("status")), (int) metric.getSampleCount(), metric.getSampleSum()*1000);
         httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
     }
 
-    private void handleHttpServerRequestsMaxDuration(Map<String, HttpRequestMetrics> httpMetricsMap, Gauge metric) {
+    private void handleHttpServerRequestsMaxDuration(Map<String, HttpEndpointMetrics> httpMetricsMap, Gauge metric) {
         Map<String, String> labels = metric.getLabels();//e.g. labels' key for http_server_requests_seconds are [exception, method, uri, status]
         if (isAnExcludedUrl(labels.get("uri")))
             return;
-        HttpRequestMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpRequestMetrics(labels.get("uri"), labels.get("method")));
-        metrics.addOrSetOutcomeMetricsMaxDuration(labels.get("outcome"), metric.getValue());
+        HttpEndpointMetrics metrics = httpMetricsMap.getOrDefault(labels.get("method") + "@" + labels.get("uri"), new HttpEndpointMetrics(labels.get("uri"), labels.get("method")));
+        metrics.addOrSetOutcomeMetricsMaxDuration(labels.get("outcome"), metric.getValue()*1000);
         httpMetricsMap.putIfAbsent(labels.get("method") + "@" + labels.get("uri"), metrics);
     }
 

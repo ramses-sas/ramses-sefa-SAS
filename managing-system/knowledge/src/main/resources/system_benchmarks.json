@@ -1,0 +1,129 @@
+{
+	"services" : [
+		{
+			"service_id":"RESTAURANT-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "restaurant-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 450
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.93
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"ORDERING-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "ordering-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 1300
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.92
+						}
+
+					]
+				}
+			]
+		},
+		{
+			"service_id":"PAYMENT-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "payment-proxy-1-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 400
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.93
+						}
+					]
+				},
+				{
+					"implementation_id" : "payment-proxy-2-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 300
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.93
+						}
+					]
+				},
+				{
+					"implementation_id" : "payment-proxy-3-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 550
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.94
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"DELIVERY-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "delivery-proxy-1-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 800
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.93
+						}
+					]
+				},
+				{
+					"implementation_id" : "delivery-proxy-2-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 700
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.92
+						}
+					]
+				},
+				{
+					"implementation_id" : "delivery-proxy-3-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 500
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.90
+						}
+					]
+				}
+			]
+		}
+	]
+}

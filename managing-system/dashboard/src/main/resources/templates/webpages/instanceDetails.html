@@ -1,0 +1,124 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(1)"></th:block>
+
+
+<div class="content">
+    <div class="row">
+        <div class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">Resources Metrics</h5>
+                <table class="configTable">
+                    <tbody>
+                        <tr th:each="entry : ${resourceTable}">
+                            <td th:text="${entry[0]}">Key goes here</td>
+                            <td th:text="${entry[1]}">Value goes here</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">HTTP Metrics</h5>
+                <table class="configTable">
+                    <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Count</th>
+                        <th>Average Duration</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${httpMetricsTable}">
+                        <td th:text="${entry[0]}">Endpoint goes here</td>
+                        <td th:text="${entry[1]}">Status goes here</td>
+                        <td th:text="${entry[2]}">Count goes here</td>
+                        <td th:text="${entry[3]}">Average Duration goes here</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div th:if="${!circuitBreakersTable.isEmpty()}" class="column">
+            <div class="card">
+                <h5 class="cardElementTitle">Circuit Breakers Metrics</h5>
+                <table class="configTable">
+                    <tbody>
+                    <tr th:each="entry : ${circuitBreakersTable}">
+                        <td th:text="${entry[0]}">Key goes here</td>
+                        <td th:text="${entry[1]}">Value goes here</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row" th:each="graph : ${graphs}">
+        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+        <br>
+    </div>
+    <!--div class="row">
+        <div class="column" th:each="graph : ${graphs}">
+            <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+            <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+        </div>
+    </div-->
+</div>
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Graphs scripts -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script th:inline="javascript" type="text/javascript" th:each="graph : ${graphs}" th:id="${graph.getYAxisName()}">
+    google.charts.load('current', {'packages':['line']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        /*<![CDATA[*/
+        var xAxisName = /*[[${graph.getXAxisName()}]]*/;
+        var yAxisName = /*[[${graph.getYAxisName()}]]*/;
+        var pointsList = /*[[${graph.getPoints()}]]*/;
+        //console.log(yAxisName);
+        //console.log(pointsList);
+        /*]]>*/
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', xAxisName);
+        data.addColumn('number', "Before Adaptation");
+        data.addColumn('number', "After Adaptation");
+        data.addColumn('number', "Threshold");
+        data.addRows(pointsList);
+
+        var options = {
+            chart: { title: yAxisName },
+            legend: {
+                position: 'none'
+            },
+            backgroundColor: '#f1f1f1',
+            chartArea: {
+                backgroundColor: '#f1f1f1',
+                width: '100%'
+            },
+            //width: Math.max(screen.availWidth/3.1, 450),
+            height: Math.max(screen.availHeight/2.6, 350),
+            series: {
+                0: {color: 'blue'},
+                1: {color: 'yellowgreen'},
+                2: {color: 'red'}
+            }
+        };
+        var chart = new google.charts.Line(document.getElementById(yAxisName));
+
+        chart.draw(data, google.charts.Line.convertOptions(options));
+    }
+</script>
+
+</body>
+</html>

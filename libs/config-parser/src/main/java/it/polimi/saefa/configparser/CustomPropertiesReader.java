@@ -1,7 +1,8 @@
 package it.polimi.saefa.configparser;
 
+import static it.polimi.saefa.configparser.CustomPropertiesDefinition.LBPREFIX;
+
 public class CustomPropertiesReader<T> {
-    private final String LBPREFIX = "loadbalancing.";
     private final T env;
 
     public CustomPropertiesReader(T env) {

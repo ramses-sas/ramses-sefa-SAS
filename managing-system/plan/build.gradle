@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':knowledge')
+    implementation fileTree(dir: '../libs', include: ['**/build/libs/*.jar'])
+    implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
+    implementation 'com.google.ortools:ortools-java:9.4.1874'
+}

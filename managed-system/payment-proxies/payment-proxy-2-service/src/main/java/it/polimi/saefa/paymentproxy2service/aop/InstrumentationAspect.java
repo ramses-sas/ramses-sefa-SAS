@@ -1,8 +1,10 @@
 package it.polimi.saefa.paymentproxy2service.aop;
 
+import it.polimi.saefa.paymentproxy2service.exception.ForcedException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,8 @@ public class InstrumentationAspect {
     private final Double sleepMean;
     private final Double sleepVariance;
     private final Double exceptionProbability;
+    @Autowired
+    private Environment env;
 
     public InstrumentationAspect(Environment env) {
         String sleepMean, sleepVariance, exceptionProbability;
@@ -89,7 +93,7 @@ public class InstrumentationAspect {
     }
 
     /* Eseguito se è stata sollevata un'eccezione */
-    @AfterThrowing(value="paymentProxyServiceMethods()", throwing="exception")
+    @AfterThrowing(value="paymentProxyServiceMethods() || paymentProxyServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
     }
@@ -100,9 +104,11 @@ public class InstrumentationAspect {
         return (long)((new Random()).nextGaussian()*sleepVariance + sleepMean);
     }
 
-    private void shouldThrowException() throws RuntimeException {
-        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability)
-            throw new RuntimeException("An artificial exception has been thrown!");
+    private void shouldThrowException() throws ForcedException {
+        if (exceptionProbability != null && (new Random()).nextDouble() < exceptionProbability){
+            log.warn("Throwing artificial exception");
+            throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
+        }
     }
 
 }

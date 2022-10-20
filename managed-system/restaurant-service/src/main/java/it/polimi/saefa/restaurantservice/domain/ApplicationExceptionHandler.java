@@ -1,5 +1,6 @@
 package it.polimi.saefa.restaurantservice.domain;
 
+import it.polimi.saefa.restaurantservice.exceptions.ForcedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,5 +15,11 @@ public class ApplicationExceptionHandler {
     @ResponseBody
     public ResponseEntity<String> processException(RestaurantNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ForcedException.class)
+    @ResponseBody
+    public ResponseEntity<String> processException(ForcedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

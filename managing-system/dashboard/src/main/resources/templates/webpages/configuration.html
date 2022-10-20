@@ -1,0 +1,81 @@
+<html lang="en">
+<th:block th:include="fragments/head :: head"></th:block>
+<body>
+
+<th:block th:include="fragments/navbar :: navbar(3)"></th:block>
+
+
+
+
+<div class="content">
+    <br>
+    <form th:if="${isAdaptationEnabled}" action="/configuration/stopAdaptation" method="POST">
+        <label for="stopAdaptation">Adaptation Status: Enabled  </label>
+        <input id="stopAdaptation" type="submit" value="Stop">
+    </form>
+    <form th:if="${!isAdaptationEnabled}" action="/configuration/startAdaptation" method="POST">
+        <label for="startAdaptation">Adaptation Status: Disabled  </label>
+        <input id="startAdaptation" type="submit" value="Start">
+    </form>
+    <br>
+    <!-- MONITOR -->
+    <div>
+        <h2>Monitor Module configuration</h2>
+        <br>
+        <form th:if="${isMonitorRunning}" action="/configuration/stopMonitorRoutine" method="POST">
+            <label for="stopMonitorRoutine">Current Status: Running  </label>
+            <input id="stopMonitorRoutine" type="submit" value="Stop">
+        </form>
+        <form th:if="${!isMonitorRunning}" action="/configuration/startMonitorRoutine" method="POST">
+            <label for="startMonitorRoutine">Current Status: Not Running  </label>
+            <input id="startMonitorRoutine" type="submit" value="Start">
+        </form>
+        <form action="/configuration/changeMonitorSchedulingPeriod" method="POST">
+            <label for="monitorSchedulingPeriod">Monitor scheduling period [ms]:</label>
+            <input type="number" id="monitorSchedulingPeriod" name="monitorSchedulingPeriod" min="1" th:value="${monitorSchedulingPeriod}">
+            <input type="submit" value="Change">
+        </form>
+        <p>Attention! A <i>quick</i> failure detection capability of the managing system highly relies on a frequent monitor routine.</p>
+    </div>
+    <br>
+    <!-- ANALYSE -->
+    <div>
+        <h2>Analyse Module configuration</h2>
+        <br>
+        <form action="/configuration/changeMetricsWindowSize" method="POST">
+            <label for="metricsWindowSize">Metrics Window Size:</label>
+            <input type="number" id="metricsWindowSize" name="metricsWindowSize" min="3" th:value="${metricsWindowSize}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeAnalysisWindowSize" method="POST">
+            <label for="analysisWindowSize">Analysis Window Size:</label>
+            <input type="number" id="analysisWindowSize" name="analysisWindowSize" min="1" th:value="${analysisWindowSize}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeFailureRateThreshold" method="POST">
+            <label for="failureRateThreshold">Failure Rate Threshold:</label>
+            <input type="number" id="failureRateThreshold" name="failureRateThreshold" min="0" max="1" step="any" th:value="${failureRateThreshold}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeUnreachableRateThreshold" method="POST">
+            <label for="unreachableRateThreshold">Unreachable Rate Threshold:</label>
+            <input type="number" id="unreachableRateThreshold" name="unreachableRateThreshold" min="0" max="1" step="any" th:value="${unreachableRateThreshold}">
+            <input type="submit" value="Change">
+        </form>
+        <form action="/configuration/changeQoSSatisfactionRate" method="POST">
+            <label for="qosSatisfactionRate">Parameters Satisfaction Rate:</label>
+            <input type="number" id="qosSatisfactionRate" name="qosSatisfactionRate" min="0" max="1" step="any" th:value="${qosSatisfactionRate}">
+            <input type="submit" value="Change">
+        </form>
+    </div>
+    <br>
+
+</div>
+
+
+<th:block th:include="fragments/footer :: footer"></th:block>
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+</body>
+</html>

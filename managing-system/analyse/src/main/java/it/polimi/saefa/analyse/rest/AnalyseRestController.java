@@ -2,44 +2,62 @@ package it.polimi.saefa.analyse.rest;
 
 import it.polimi.saefa.analyse.domain.AnalyseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
+@RequestMapping("/rest")
 public class AnalyseRestController {
     @Autowired
     private AnalyseService analyseService;
 
-    @GetMapping("/beginAnalysis")
-    public String beginAnalysis() {
+    @GetMapping("/start")
+    public String start() {
         (new Thread(() -> analyseService.startAnalysis())).start();
         return "OK";
     }
 
-    @PostMapping("/changeMetricsWindow")
-    public String changeMetricsWindow(@RequestBody ChangeParameterRequest request) {
-        analyseService.setNewMetricsWindowSize((int) request.getValue());
+    @PutMapping("/changeMetricsWindowSize")
+    public String changeMetricsWindowSize(@RequestParam int value) {
+        analyseService.setNewMetricsWindowSize(value);
         return "OK";
     }
 
-    @PostMapping("/changeAnalysisWindowSize")
-    public String changeAnalysisWindowSize(@RequestBody ChangeParameterRequest request) {
-        analyseService.setNewAnalysisWindowSize((int) request.getValue());
+    @PutMapping("/changeAnalysisWindowSize")
+    public String changeAnalysisWindowSize(@RequestParam int value) {
+        analyseService.setNewAnalysisWindowSize(value);
         return "OK";
     }
 
-    @PostMapping("/changeFailureThreshold")
-    public String changeFailureThreshold(@RequestBody ChangeParameterRequest request) {
-        analyseService.setNewFailureRateThreshold(request.getValue());
+    @PutMapping("/changeFailureRateThreshold")
+    public String changeFailureRateThreshold(@RequestParam double value) {
+        analyseService.setNewFailureRateThreshold(value);
         return "OK";
     }
 
-    @PostMapping("/changeUnreachableThreshold")
-    public String changeUnreachableThreshold(@RequestBody ChangeParameterRequest request) {
-        analyseService.setNewUnreachableRateThreshold(request.getValue());
+    @PutMapping("/changeUnreachableRateThreshold")
+    public String changeUnreachableRateThreshold(@RequestParam double value) {
+        analyseService.setNewUnreachableRateThreshold(value);
         return "OK";
+    }
+
+    @PutMapping("/changeQoSSatisfactionRate")
+    public String changeQoSSatisfactionRate(@RequestParam double value) {
+        analyseService.setQosSatisfactionRate(value);
+        return "OK";
+    }
+    
+    @GetMapping("/")
+    public GetInfoResponse getInfo() {
+        return new GetInfoResponse(analyseService.getMetricsWindowSize(), analyseService.getAnalysisWindowSize(), 
+                analyseService.getFailureRateThreshold(), analyseService.getUnreachableRateThreshold(), analyseService.getQosSatisfactionRate());
+    }
+
+    // TODO remove after test
+    @GetMapping("/break")
+    public String debug() {
+        analyseService.breakpoint();
+        return "Hello from Analysis Service";
     }
 
 }
