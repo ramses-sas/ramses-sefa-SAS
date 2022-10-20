@@ -80,13 +80,13 @@ public class DashboardWebController {
 			QoSHistory<? extends QoSSpecification> serviceART = s.getCurrentImplementation().getQoSCollection().getQoSHistoryMap().get(AverageResponseTime.class);
 			serviceQoSTable.add(new String[]{
 					"Availability",
-					serviceAvailability.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", serviceAvailability.getCurrentValue().getValue()*100)+"%",
+					serviceAvailability.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.2f", serviceAvailability.getCurrentValue().getDoubleValue()*100)+"%",
 					serviceAvailability.getSpecification().getConstraintDescription(),
 					serviceAvailability.getSpecification().getWeight().toString()}
 			);
 			serviceQoSTable.add(new String[]{
 					"Average Response Time [ms]",
-					serviceART.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.1f", serviceART.getCurrentValue().getValue()),
+					serviceART.getCurrentValue() == null ? "N/A" : String.format(Locale.ROOT,"%.1f", serviceART.getCurrentValue().getDoubleValue()),
 					serviceART.getSpecification().getConstraintDescription(),
 					serviceART.getSpecification().getWeight().toString()}
 			);
@@ -218,9 +218,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
-				graph.addPointBefore(v.getValue());
+				graph.addPointBefore(v.getDoubleValue());
 			} else {
-				graph.addPointAfter(v.getValue());
+				graph.addPointAfter(v.getDoubleValue());
 			}
 		}
 		graph.generateAggregatedPoints();
@@ -233,9 +233,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
-				graph.addPointBefore(v.getValue());
+				graph.addPointBefore(v.getDoubleValue());
 			} else
-				graph.addPointAfter(v.getValue());
+				graph.addPointAfter(v.getDoubleValue());
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;
@@ -257,9 +257,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
-				graph.addPointBefore(v.getValue());
+				graph.addPointBefore(v.getDoubleValue());
 			} else
-				graph.addPointAfter(v.getValue());
+				graph.addPointAfter(v.getDoubleValue());
 		}
 		graph.generateAggregatedPoints();
 		graphs[0] = graph;
@@ -271,9 +271,9 @@ public class DashboardWebController {
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
-				graph.addPointBefore(v.getValue());
+				graph.addPointBefore(v.getDoubleValue());
 			} else
-				graph.addPointAfter(v.getValue());
+				graph.addPointAfter(v.getDoubleValue());
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;

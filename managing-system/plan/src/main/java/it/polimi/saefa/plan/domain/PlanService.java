@@ -183,8 +183,8 @@ public class PlanService {
         Map<String, MPVariable> activationsVariables = new HashMap<>();
         MPObjective objective = solver.objective();// min{∑(w_i/z_i) - ∑(a_i * z_i)}
 
-        double serviceAvgRespTime = service.getCurrentValueForQoS(AverageResponseTime.class).getValue();
-        double serviceAvgAvailability = service.getCurrentValueForQoS(Availability.class).getValue();
+        double serviceAvgRespTime = service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+        double serviceAvgAvailability = service.getCurrentValueForQoS(Availability.class).getDoubleValue();
         double k_s = serviceAvgAvailability / serviceAvgRespTime; // service performance indicator
         MPConstraint sumOfWeights = solver.makeConstraint(1.0, 1.0, "sumOfWeights"); // ∑(w_i) = 1
 
@@ -210,8 +210,8 @@ public class PlanService {
             if (emptyWeights)
                 previousWeights.put(instance.getInstanceId(), defaultWeight);
 
-            double instanceAvgRespTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
-            double instanceAvailability = instance.getCurrentValueForQoS(Availability.class).getValue();
+            double instanceAvgRespTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+            double instanceAvailability = instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
             double k_i = instanceAvailability / instanceAvgRespTime;
             double z_i = k_i / k_s;
 
@@ -226,8 +226,8 @@ public class PlanService {
 
         for (Instance instance_i : service.getInstances()) {
             MPVariable weight_i = weightsVariables.get(instance_i.getInstanceId());
-            double instanceAvgRespTime_i = instance_i.getCurrentValueForQoS(AverageResponseTime.class).getValue();
-            double instanceAvailability_i = instance_i.getCurrentValueForQoS(Availability.class).getValue();
+            double instanceAvgRespTime_i = instance_i.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+            double instanceAvailability_i = instance_i.getCurrentValueForQoS(Availability.class).getDoubleValue();
             double k_i = instanceAvailability_i / instanceAvgRespTime_i;
             double z_i = k_i / k_s;
 
@@ -244,8 +244,8 @@ public class PlanService {
                 if(instance_i.equals(instance_j))
                     continue;
                 MPVariable weight_j = weightsVariables.get(instance_j.getInstanceId());
-                double instanceAvgRespTime_j = instance_j.getCurrentValueForQoS(AverageResponseTime.class).getValue();
-                double instanceAvailability_j = instance_j.getCurrentValueForQoS(Availability.class).getValue();
+                double instanceAvgRespTime_j = instance_j.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+                double instanceAvailability_j = instance_j.getCurrentValueForQoS(Availability.class).getDoubleValue();
                 growthConstraint.setCoefficient(activationsVariables.get(instance_j.getInstanceId()), z_i * previousWeights.get(instance_j.getInstanceId()));
 
                 double k_j = instanceAvailability_j / instanceAvgRespTime_j;
@@ -289,9 +289,9 @@ public class PlanService {
 
         for (String instanceId : weightsVariables.keySet()) {
             String P_i = String.format("%.2f", previousWeights.get(instanceId));
-            double avail_i_double = service.getInstance(instanceId).getCurrentValueForQoS(Availability.class).getValue();
+            double avail_i_double = service.getInstance(instanceId).getCurrentValueForQoS(Availability.class).getDoubleValue();
             String avail_i = String.format("%.2f", avail_i_double);
-            double ART_i_double = service.getInstance(instanceId).getCurrentValueForQoS(AverageResponseTime.class).getValue();
+            double ART_i_double = service.getInstance(instanceId).getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
             String ART_i = String.format("%.2f", ART_i_double);
             double k_i_double = avail_i_double/ART_i_double;
             String k_i = String.format("%.2f", k_i_double);
@@ -373,21 +373,21 @@ public class PlanService {
                         ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) adaptationOption;
                         for (Instance instance : instances) {
                             if(!changeLoadBalancerWeightsOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
-                                availabilityEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getValue();
+                                availabilityEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                     }
                     else if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
                         AddInstanceOption addInstanceOption = (AddInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if(!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
-                                availabilityEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getValue();
+                                availabilityEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                         availabilityEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBenchmark(Availability.class);
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if (!instance.getInstanceId().equals(shutdownInstanceOption.getInstanceToShutdownId()))
-                                availabilityEstimation += shutdownInstanceOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getValue();
+                                availabilityEstimation += shutdownInstanceOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                     }
 
@@ -395,7 +395,7 @@ public class PlanService {
                 else {
                     if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
                         for (Instance instance : instances) {
-                            availabilityEstimation += instance.getCurrentValueForQoS(Availability.class).getValue();
+                            availabilityEstimation += instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                         availabilityEstimation += service.getCurrentImplementation().getBenchmark(Availability.class);
                         availabilityEstimation /= instances.size() + 1;
@@ -403,7 +403,7 @@ public class PlanService {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if (!instance.getInstanceId().equals(shutdownInstanceOption.getInstanceToShutdownId()))
-                                availabilityEstimation += instance.getCurrentValueForQoS(Availability.class).getValue();
+                                availabilityEstimation += instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                         availabilityEstimation /= instances.size() - 1;
                     }
@@ -412,7 +412,7 @@ public class PlanService {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
                     availabilityEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(Availability.class);
                 }
-                double newBenefit = availabilityEstimation / service.getCurrentValueForQoS(Availability.class).getValue();
+                double newBenefit = availabilityEstimation / service.getCurrentValueForQoS(Availability.class).getDoubleValue();
                 log.debug(service.getServiceId() + ": " + adaptationOption.getClass().getSimpleName() + " option for Availability. BENEFIT: " + newBenefit);
 
                 if(newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))){
@@ -427,20 +427,20 @@ public class PlanService {
                         ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) adaptationOption;
                         for (Instance instance : instances) {
                             if(!changeLoadBalancerWeightsOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
-                                avgResponseTimeEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+                                avgResponseTimeEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
                         }
                     } else if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
                         AddInstanceOption addInstanceOption = (AddInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if(!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
-                                avgResponseTimeEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+                                avgResponseTimeEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
                         }
                         avgResponseTimeEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBenchmark(AverageResponseTime.class);
                     } else if (ShutdownInstanceOption.class.equals(adaptationOption.getClass())) {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if (!instance.getInstanceId().equals(shutdownInstanceOption.getInstanceToShutdownId()))
-                                avgResponseTimeEstimation += shutdownInstanceOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+                                avgResponseTimeEstimation += shutdownInstanceOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
                         }
                     }
 
@@ -448,7 +448,7 @@ public class PlanService {
                 else {
                     if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
                         for (Instance instance : instances) {
-                            avgResponseTimeEstimation += instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+                            avgResponseTimeEstimation += instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
                         }
                         avgResponseTimeEstimation += service.getCurrentImplementation().getBenchmark(AverageResponseTime.class);
                         avgResponseTimeEstimation /= instances.size() + 1;
@@ -456,7 +456,7 @@ public class PlanService {
                         ShutdownInstanceOption shutdownInstanceOption = (ShutdownInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
                             if (!instance.getInstanceId().equals(shutdownInstanceOption.getInstanceToShutdownId()))
-                                avgResponseTimeEstimation += instance.getCurrentValueForQoS(AverageResponseTime.class).getValue();
+                                avgResponseTimeEstimation += instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
                         }
                         avgResponseTimeEstimation /= instances.size() - 1;
                     }
@@ -466,7 +466,7 @@ public class PlanService {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
                     avgResponseTimeEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(AverageResponseTime.class);
                 }
-                double newBenefit =  service.getCurrentValueForQoS(AverageResponseTime.class).getValue() / avgResponseTimeEstimation;
+                double newBenefit =  service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue() / avgResponseTimeEstimation;
                 log.debug(service.getServiceId() + ": " + adaptationOption.getClass().getSimpleName() + " option for AVG RT. BENEFIT: " + newBenefit);
                 if(newBenefit > 1 && (!benefits.containsKey(AverageResponseTime.class) || newBenefit > benefits.get(AverageResponseTime.class))){
                     benefits.put(AverageResponseTime.class, newBenefit);
