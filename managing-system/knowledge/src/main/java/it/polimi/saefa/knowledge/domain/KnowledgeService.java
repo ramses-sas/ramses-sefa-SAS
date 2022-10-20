@@ -1,6 +1,8 @@
 package it.polimi.saefa.knowledge.domain;
 
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability;
+import it.polimi.saefa.knowledge.domain.adaptation.specifications.AverageResponseTime;
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
@@ -327,6 +329,7 @@ public class KnowledgeService {
 
 
 
+
     // Useful methods to investigate the metrics of the instances
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetrics(String instanceId) {
@@ -351,6 +354,16 @@ public class KnowledgeService {
 
     public InstanceMetricsSnapshot getLatestActiveByInstanceId(String instanceId) {
         return metricsRepository.findLatestOnlineMeasurementByInstanceId(instanceId).stream().findFirst().orElse(null);
+    }
+
+    public void invalidateQosHistory(String serviceId) {
+        Service service = servicesMap.get(serviceId);
+        service.getInstances().forEach(instance -> {
+            instance.invalidateQoSHistory(Availability.class);
+            instance.invalidateQoSHistory(AverageResponseTime.class);
+        });
+        service.invalidateQoSHistory(Availability.class);
+        service.invalidateQoSHistory(AverageResponseTime.class);
     }
 }
 
