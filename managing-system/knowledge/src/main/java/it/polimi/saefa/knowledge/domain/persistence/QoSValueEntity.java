@@ -1,12 +1,17 @@
 package it.polimi.saefa.knowledge.domain.persistence;
 
-import lombok.Data;
+import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class QoSValueEntity {
     @Id
     @GeneratedValue
@@ -17,11 +22,11 @@ public class QoSValueEntity {
     private String qos;
     private double value;
     private boolean invalidatesThisAndPrevious;
-    private double currentValue;
+    private Double currentValue;
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, double value, boolean invalidatesThisAndPrevious, double currentValue, Date timestamp) {
+    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, Double currentValue, double value, boolean invalidatesThisAndPrevious, Date timestamp) {
         this.serviceId = serviceId;
         this.serviceImplementationId = serviceImplementationId;
         this.instanceId = instanceId;
@@ -30,5 +35,9 @@ public class QoSValueEntity {
         this.invalidatesThisAndPrevious = invalidatesThisAndPrevious;
         this.currentValue = currentValue;
         this.timestamp = timestamp;
+    }
+
+    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, QoSHistory.Value currentValue, QoSHistory.Value value) {
+        this(serviceId, serviceImplementationId, instanceId, qos, (currentValue == null ? null : currentValue.getDoubleValue()), value.getDoubleValue(), value.invalidatesThisAndPreviousValues(), value.getTimestamp());
     }
 }

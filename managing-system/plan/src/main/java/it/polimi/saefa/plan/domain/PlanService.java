@@ -104,7 +104,8 @@ public class PlanService {
                             log.debug(addInstanceOptions.get(0).toString());
                         }
                     }
-                    chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
+                    if (!chosenAdaptationOptionList.isEmpty())
+                        chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
                 });
                 knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
             }
@@ -279,10 +280,10 @@ public class PlanService {
         double serviceAvgAvailability = service.getCurrentValueForQoS(Availability.class).getDoubleValue();
 
         sb.append("\n Minimization problem for service ").append(service.getServiceId()).append(" solved with status ").append(resultStatus);
-        sb.append("\nSoglia: ").append(shutdownThreshold).append("\n");
-        sb.append("Service response time: ").append(serviceAvgRespTime).append("\n");
-        sb.append("Service availability: ").append(serviceAvgAvailability).append("\n");
-        sb.append("Service k_s: ").append(k_s).append("\n");
+        sb.append("\nShutdown threshold: ").append(shutdownThreshold).append("\n");
+        sb.append("Service response time: ").append(String.format("%.2f", serviceAvgRespTime)).append("ms\n");
+        sb.append("Service availability: ").append(String.format("%.2f", serviceAvgAvailability)).append("\n");
+        sb.append("Service k_s: ").append(String.format("%.2e", k_s)).append("\n");
         sb.append("\nSolution: \n");
         sb.append("Objective value = ").append(objective.value()).append("\n");
 
@@ -293,10 +294,10 @@ public class PlanService {
             double ART_i_double = service.getInstance(instanceId).getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
             String ART_i = String.format("%.2f", ART_i_double);
             double k_i_double = avail_i_double/ART_i_double;
-            String k_i = String.format("%.2f", k_i_double);
+            String k_i = String.format("%.2e", k_i_double);
             double z_i_double = k_i_double/k_s;
-            String z_i = String.format("%.2f", z_i_double);
-            sb.append(instanceId + " { P_i="+P_i+", k_i="+k_i+", z_i="+z_i+", ART_i="+ART_i+", avail_i="+avail_i+" }\n");
+            String z_i = String.format("%.2e", z_i_double);
+            sb.append(instanceId + " { P_i="+P_i+", k_i="+k_i+", z_i="+z_i+", ART_i="+ART_i+"ms, avail_i="+avail_i+" }\n");
         }
 
         if (resultStatus != MPSolver.ResultStatus.OPTIMAL && resultStatus != MPSolver.ResultStatus.FEASIBLE && resultStatus != MPSolver.ResultStatus.UNBOUNDED) {
