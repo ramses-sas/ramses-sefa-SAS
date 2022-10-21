@@ -125,6 +125,7 @@ public class DashboardWebController {
 		model.addAttribute("serviceId", serviceId);
 		model.addAttribute("isLoadBalanced", service.getConfiguration().getLoadBalancerType() != ServiceConfiguration.LoadBalancerType.UNKNOWN);
 		model.addAttribute("latestAdaptationDate", service.getLatestAdaptationDate());
+		//model.addAttribute("currentValues", instancesTable);
 		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
 		model.addAttribute("graphs", computeServiceGraphs(service));
@@ -211,31 +212,31 @@ public class DashboardWebController {
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		graph = new GraphData("Instant", "Availability", ((Availability)service.getQoSSpecifications().get(Availability.class)).getMinThreshold());
+		graph = new GraphData("Timestamp (UTC)", "Availability", ((Availability)service.getQoSSpecifications().get(Availability.class)).getMinThreshold());
 		values = service.getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
-				graph.addPointBefore(v.getDoubleValue());
+				graph.addPointBefore(v);
 			} else {
-				graph.addPointAfter(v.getDoubleValue());
+				graph.addPointAfter(v);
 			}
 		}
 		graph.generateAggregatedPoints();
 		graphs[0] = graph;
 
-		graph = new GraphData("Instant", "Average Response Time [ms]", ((AverageResponseTime)service.getQoSSpecifications().get(AverageResponseTime.class)).getMaxThreshold());
+		graph = new GraphData("Timestamp (UTC)", "Average Response Time [ms]", ((AverageResponseTime)service.getQoSSpecifications().get(AverageResponseTime.class)).getMaxThreshold());
 		values = service.getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(service.getLatestAdaptationDate())) {
-				graph.addPointBefore(v.getDoubleValue());
+				graph.addPointBefore(v);
 			} else
-				graph.addPointAfter(v.getDoubleValue());
+				graph.addPointAfter(v);
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;
@@ -250,30 +251,30 @@ public class DashboardWebController {
 		GraphData graph;
 		int valuesSize, oldestValueIndex;
 
-		graph = new GraphData("Instant", "Availability", availabilityThreshold);
+		graph = new GraphData("Timestamp (UTC)", "Availability", availabilityThreshold);
 		values = instance.getQoSCollection().getValuesHistoryForQoS(Availability.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
-				graph.addPointBefore(v.getDoubleValue());
+				graph.addPointBefore(v);
 			} else
-				graph.addPointAfter(v.getDoubleValue());
+				graph.addPointAfter(v);
 		}
 		graph.generateAggregatedPoints();
 		graphs[0] = graph;
 
-		graph = new GraphData("Instant", "Average Response Time [ms]", artThreshold);
+		graph = new GraphData("Timestamp (UTC)", "Average Response Time [ms]", artThreshold);
 		values = instance.getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class);
 		valuesSize = values.size();
 		oldestValueIndex = maxHistorySize > valuesSize ? valuesSize-1 : maxHistorySize-1;
 		for (int i = 0; i <= oldestValueIndex; i++) { // get only latest X values
 			QoSHistory.Value v = values.get(oldestValueIndex-i);
 			if (v.getTimestamp().before(serviceLatestAdaptationDate)) {
-				graph.addPointBefore(v.getDoubleValue());
+				graph.addPointBefore(v);
 			} else
-				graph.addPointAfter(v.getDoubleValue());
+				graph.addPointAfter(v);
 		}
 		graph.generateAggregatedPoints();
 		graphs[1] = graph;

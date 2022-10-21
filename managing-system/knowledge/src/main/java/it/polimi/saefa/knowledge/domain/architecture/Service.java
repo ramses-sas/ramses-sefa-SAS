@@ -36,6 +36,11 @@ public class Service {
     }
 
     @JsonIgnore
+    public boolean isInTransitionState() {
+        return getInstances().stream().anyMatch(instance -> instance.getCurrentStatus() == InstanceStatus.BOOTING || instance.getCurrentStatus() == InstanceStatus.SHUTDOWN);
+    }
+
+    @JsonIgnore
     public List<Instance> getInstances() {
         return new LinkedList<>(getCurrentImplementation().getInstances().values());
     }

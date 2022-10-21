@@ -105,7 +105,8 @@ public class KnowledgeRestController {
     }
 
     @PostMapping("/proposeAdaptationOptions")
-    public ResponseEntity<String> proposeAdaptationOptions(@RequestBody List<AdaptationOption> adaptationOptions) {
+    public ResponseEntity<String> proposeAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions) {
+        /*
         Map<String, List<AdaptationOption>> servicesAdaptOptions = new HashMap<>();
         adaptationOptions.forEach(adaptationOption -> {
             if (servicesAdaptOptions.containsKey(adaptationOption.getServiceId())){
@@ -116,7 +117,8 @@ public class KnowledgeRestController {
                 servicesAdaptOptions.put(adaptationOption.getServiceId(), adaptationOptionsList);
             }
         });
-        knowledgeService.proposeAdaptationOptions(servicesAdaptOptions);
+         */
+        knowledgeService.proposeAdaptationOptions(adaptationOptions);
         return ResponseEntity.ok().body("Adaptation options correctly proposed");
     }
 

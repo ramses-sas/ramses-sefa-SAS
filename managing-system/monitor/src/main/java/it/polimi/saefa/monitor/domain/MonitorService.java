@@ -79,7 +79,10 @@ public class MonitorService {
             try {
                 log.debug("\nA new Monitor routine iteration started");
                 Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
-                log.debug("SERVICES: " + services);
+                log.debug("Discovery Service Status");
+                services.forEach((serviceId, instances) -> {
+                    log.debug("{}: [{}]", serviceId, instances.stream().map(InstanceInfo::getInstanceId).reduce((a, b) -> a + ", " + b).orElse("no instances"));
+                });
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
                 List<Thread> threads = new LinkedList<>();
                 AtomicBoolean invalidIteration = new AtomicBoolean(false);

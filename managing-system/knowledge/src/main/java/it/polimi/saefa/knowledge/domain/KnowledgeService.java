@@ -138,6 +138,7 @@ public class KnowledgeService {
                 Set<Instance> instancesToBeRemoved = new HashSet<>(service.getShutdownInstances());
                 instancesToBeRemoved.removeAll(shutdownInstancesStillMonitored);
                 for (Instance instance : instancesToBeRemoved) {
+                    log.debug("{}: Removing shutdown instance {}", service.getServiceId(), instance.getInstanceId());
                     service.removeInstance(instance);
                 }
             }

@@ -43,6 +43,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Graphs Legend -->
                     <div class="row">
                         <div class="column">
                             <div class="card">
@@ -128,6 +129,8 @@
 
         var chart = new google.charts.Line(document.getElementById(yAxisName));
         chart.draw(data, google.charts.Line.convertOptions(options));
+        //var chart = new google.visualization.LineChart(document.getElementById(yAxisName));
+        //chart.draw(data, options);
 
     }
 </script>

@@ -54,6 +54,7 @@ public class InstanceMetricsSnapshot {
         if (!serviceId.equals(that.serviceId)) return false;
         if (!instanceId.equals(that.instanceId)) return false;
         if (status != that.status) return false;
+        if (status == InstanceStatus.UNREACHABLE) return false;
         if (!Objects.equals(circuitBreakerMetrics, that.circuitBreakerMetrics))
             return false;
         return Objects.equals(httpMetrics, that.httpMetrics);

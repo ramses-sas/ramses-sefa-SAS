@@ -9,14 +9,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
+
 @Getter
 @Setter
 @Slf4j
 public class Availability extends QoSSpecification {
     @JsonProperty("min_threshold")
     private double minThreshold;
-    //@JsonIgnore
-    //private Double averageAvailability;
 
 
     @JsonCreator
@@ -38,7 +38,7 @@ public class Availability extends QoSSpecification {
 
     @Override
     public String getConstraintDescription() {
-        return "value > "+ minThreshold;
+        return "value > "+ String.format(Locale.ROOT,"%.2f", minThreshold*100) + "%";
     }
 
     @Override
@@ -47,16 +47,4 @@ public class Availability extends QoSSpecification {
         return value >= minThreshold;
     }
 
-    /*
-    @JsonCreator
-    public Availability(
-                        @JsonProperty("weight") Double weight,
-                        //@JsonProperty("priority") int priority,
-                        @JsonProperty("min_threshold") Double min_threshold) {
-        //super(value, weight, priority);
-        super(weight);
-
-        this.minThreshold = min_threshold;
-    }
-    */
 }

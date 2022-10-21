@@ -46,10 +46,18 @@ public class AnalyseService {
 
     // <serviceId, Service>
     private Map<String, Service> currentArchitectureMap;
+    // <serviceId, List<AdaptOpt>>
+    private Map<String, List<AdaptationOption>> servicesForcedAdaptationOptionsMap;
+    // <serviceId, List<AdaptOpt>>
+    private Map<String, List<AdaptationOption>> servicesProposedAdaptationOptionsMap;
 
-    // when there are booting or shutdown instances or there are not AnalysisWindowSize VALID values saved.
-    // of those services we compute the new QoS values of each instance and the only allowed adaptation options are the forced ones.
-    // <serviceId>
+    // Services are in the servicesToSkip set in one of the following cases:
+    // - when there is at least a booting instance
+    // - when there is at least a shutdown instance
+    // - when it has no active or booting instances (in this case we propose an AddInstanceOption)
+    // Of those services we compute the new QoS values ONLY of its instances and the only allowed adaptation options are the forced ones.
+    // If a service is in the servicesToSkip set, it CAN have (ONLY) FORCED Adaptation Options
+    // If the service is skipped, it is because it has problems or has an adaptation in progress
     private Set<String> servicesToSkip;
 
 
@@ -99,33 +107,27 @@ public class AnalyseService {
             updateWindowAndThresholds(); //update window size and thresholds if they have been changed from an admin
             currentArchitectureMap = knowledgeClient.getServicesMap();
             servicesToSkip = new HashSet<>();
-            List<AdaptationOption> forcedAdaptationOptions, proposedAdaptationOptions;
-            forcedAdaptationOptions = analyse();
-            proposedAdaptationOptions = adapt();
-            if (!forcedAdaptationOptions.isEmpty()) {
-                log.debug("Forced adaptation options:");
-                for (AdaptationOption adaptationOption : forcedAdaptationOptions) {
-                    log.debug("|--- {}", adaptationOption.getDescription());
+            servicesForcedAdaptationOptionsMap = new HashMap<>();
+            servicesProposedAdaptationOptionsMap = new HashMap<>();
+            analyse();
+            adapt();
+            for (String serviceId : servicesProposedAdaptationOptionsMap.keySet()) {
+                for (AdaptationOption opt : servicesProposedAdaptationOptionsMap.get(serviceId)) {
+                    log.debug("|--- {}", opt.getDescription());
                 }
             }
-            if (!proposedAdaptationOptions.isEmpty()) {
-                log.debug("Proposed adaptation options:");
-                for (AdaptationOption adaptationOption : proposedAdaptationOptions) {
-                    log.debug("|--- {}", adaptationOption.getDescription());
+            for (String serviceId : servicesForcedAdaptationOptionsMap.keySet()) {
+                for (AdaptationOption opt : servicesForcedAdaptationOptionsMap.get(serviceId)) {
+                    log.debug("|--- {}", opt.getDescription());
                 }
+                if (servicesProposedAdaptationOptionsMap.containsKey(serviceId))
+                    servicesProposedAdaptationOptionsMap.get(serviceId).addAll(servicesForcedAdaptationOptionsMap.get(serviceId));
+                else
+                    servicesProposedAdaptationOptionsMap.put(serviceId, servicesForcedAdaptationOptionsMap.get(serviceId));
             }
-            //TODO volendo cambiare con la map <ServiceId, List<AdaptOpt>>
-            // Se la chiave non c'è significa che non c'era una analysis window di quel servizio (e quindi la history non va invalidata)
-            // Se la chiave c'è ma la lista è vuota possiamo invalidare ma non c'è bisogno di adattamento
-            for (Service service : currentArchitectureMap.values()) {
-                if (forcedAdaptationOptions.stream().anyMatch(adaptationOption -> adaptationOption.getServiceId().equals(service.getServiceId()))) {
-                    invalidateAllQoSHistories(service);
-                }
-            }
-            proposedAdaptationOptions.addAll(forcedAdaptationOptions);
+            // Now servicesProposedAdaptationOptionsMap includes the forced
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
-            knowledgeClient.proposeAdaptationOptions(proposedAdaptationOptions);
-            //updateQoSCollectionsInKnowledge();
+            knowledgeClient.proposeAdaptationOptions(servicesProposedAdaptationOptionsMap);
             log.debug("Ending Analyse routine. Notifying the Plan to start the next iteration.\n");
             planClient.start();
         }  catch (Exception e) {
@@ -139,10 +141,10 @@ public class AnalyseService {
     // Given the available metrics, creates a new QoS.Value for all the instances when possible, and uses
     // their value to compute each new QoS.Value of the services. It also computes a list of
     // forced Adaptation Options to be applied immediately, as the creation (or removal) of instances upon failures.
-    private List<AdaptationOption> analyse() {
+    private void analyse() {
         log.debug("\nStarting analysis logic");
-        List<AdaptationOption> forcedAdaptationOptions = new LinkedList<>();
         for (Service service : currentArchitectureMap.values()) {
+            servicesForcedAdaptationOptionsMap.put(service.getServiceId(), new LinkedList<>());
             log.debug("Analysing service {}", service.getServiceId());
             boolean existsInstanceWithNewQoSValues = false;
             boolean atLeastOneBootingInstance = false;
@@ -158,7 +160,7 @@ public class AnalyseService {
                 if (instance.getCurrentStatus() == InstanceStatus.BOOTING) {
                     if ((new Date().getTime() - instance.getLatestInstanceMetricsSnapshot().getTimestamp().getTime()) > maxBootTimeSeconds * 1000) {
                         log.debug("Instance " + instance.getInstanceId() + " is still booting after " + maxBootTimeSeconds + " seconds. Forcing it to shutdown.");
-                        forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
+                        servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance boot timed out", true));
                     } else {
                         log.debug("Instance {} is booting, ignoring it", instance.getInstanceId());
                         atLeastOneBootingInstance = true;
@@ -167,8 +169,9 @@ public class AnalyseService {
                     continue;
                 }
                 if (instance.getCurrentStatus() == InstanceStatus.FAILED) {
-                    log.debug("Instance " + instance.getInstanceId() + " is in FAILED status. Forcing it to shutdown.");
-                    forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
+                    log.debug("{}: Instance {} is in FAILED status. Forcing it to shutdown.", service.getServiceId(), instance.getInstanceId());
+                    servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed", true));
+                    servicesToSkip.add(service.getServiceId());
                     continue;
                 }
 
@@ -186,7 +189,9 @@ public class AnalyseService {
                 double inactiveRate = failureRate + unreachableRate;
 
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
-                    forcedAdaptationOptions.add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
+                    log.debug("{}: Rates conditions of instance {} not satisfied.", service.getServiceId(), instance.getInstanceId());
+                    servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
+                    servicesToSkip.add(service.getServiceId());
                     continue;
                     /*
                     Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
@@ -205,104 +210,216 @@ public class AnalyseService {
                 }
 
                 List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(instanceMetricsSnapshot -> instanceMetricsSnapshot.isActive() && instanceMetricsSnapshot.getHttpMetrics().size()>0).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
-                // Todo andrebbe tolto. Vedi commento nella computeInstanceXXX
+
+                /* è stato tolto. I controlli vengono fatti nella computeInstanceXXX
                 if (activeMetrics.size() < 3) {
                     //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
                     // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
                     instancesStats.add(new InstanceStats(instance));
-                } else {
-                    InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
-                    InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
-                    /* Qui abbiamo almeno 3 metriche attive. Su 3 metriche, almeno due presentano un numero di richieste HTTP diverse
-                    (perché il CB può cambiare spontaneamente solo una volta) */
-                    instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(instance, oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(oldestActiveMetrics, latestActiveMetrics)));
-                    existsInstanceWithNewQoSValues = true;
-                }
+                } else {*/
+                InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
+                InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
+                instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(instance, oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(instance, oldestActiveMetrics, latestActiveMetrics)));
+                existsInstanceWithNewQoSValues = true;
             }
 
             if (instancesStats.isEmpty() && !atLeastOneBootingInstance) {
-                forcedAdaptationOptions.add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
-                log.warn("{} has no active or booting instances. Forcing AddInstance option.", service.getServiceId());
+                // Il servizio non è raggiungibile
+                log.warn("{}: no active or booting instances. Forcing AddInstance option.", service.getServiceId());
+                servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new AddInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), "No instances available", true));
                 servicesToSkip.add(service.getServiceId());
                 continue;
             }
+
             if (!existsInstanceWithNewQoSValues) {
-                log.warn("{} has no instances with enough metrics to compute new values for the QoSes. Skipping its analysis.", service.getServiceId());
-                servicesToSkip.add(service.getServiceId());
+                // Il servizio non va skippato perché la window potrebbe essere comunque piena. Il controllo verrà fatto dopo
+                log.warn("{}: no instances with enough metrics to compute new values for the QoSes. Skipping its analysis.", service.getServiceId());
                 continue;
             }
 
-            // Given the QoS of each service instance, compute the QoS for the service
-            // The stats of the service are not available if all the instances of the service are just born.
-            // In this case none of the instances have enough metrics to perform the analysis.
-            // Update the QoS of the service and of its instances ONLY LOCALLY.
-
-            updateQoSHistory(service, instancesStats);
+            // Given the stats of each service instance, compute the QoS for the service and for its instances
+            // The QoS of the service are not computed if the service is in the set of services to skip
+            updateQoSHistory(service, instancesStats, servicesToSkip.contains(service.getServiceId()));
 
         }
-        return forcedAdaptationOptions;
     }
+
+    /** For a given service, it computes the new latest QoS value for its instances and for itself from the InstancesStats (which are built on the metrics window).
+     * Then, if there are AnalysisWindowSize VALID values in the history of the service, it computes the new current value for the service and for each instance.
+     * The QoS of the service are not computed if the service is in the set of services to skip
+     * The update is then pushed in the Knowledge.
+     *
+     * @param service: the service analysed
+     * @param instancesStats: InstanceStats list, one for each instance
+     */
+    private void updateQoSHistory(Service service, List<InstanceStats> instancesStats, boolean skipServiceQoSComputation) {
+        // Logic to compute the new latest value for the service and its instances
+        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesValues = new HashMap<>();
+        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceValues = new HashMap<>();
+        double serviceAvailability = 0;
+        double serviceAverageResponseTime = 0;
+        for (InstanceStats instanceStats : instancesStats) {
+            String instanceId = instanceStats.getInstance().getInstanceId();
+            if (instanceStats.isFromNewData()) {
+                newInstancesValues.put(instanceId, new HashMap<>());
+                QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
+                QoSHistory.Value newInstanceValue;
+                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(Availability.class, instanceStats.getAvailability());
+                newInstancesValues.get(instanceId).put(Availability.class, newInstanceValue);
+                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
+                newInstancesValues.get(instanceId).put(AverageResponseTime.class, newInstanceValue);
+            }
+            double weight = service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM ?
+                    service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
+            serviceAvailability += instanceStats.getAvailability() * weight;
+            serviceAverageResponseTime += instanceStats.getAverageResponseTime() * weight;
+        }
+
+        if (!skipServiceQoSComputation) {
+            if (instancesStats.size() != service.getInstances().size())
+                throw new RuntimeException("THIS SHOULD NOT HAPPEN");
+            QoSCollection currentImplementationQoSCollection = service.getCurrentImplementation().getQoSCollection();
+            QoSHistory.Value newServiceValue;
+            newServiceValue = currentImplementationQoSCollection.createNewQoSValue(AverageResponseTime.class, serviceAverageResponseTime);
+            newServiceValues.put(AverageResponseTime.class, newServiceValue);
+            newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
+            newServiceValues.put(Availability.class, newServiceValue);
+        } else {
+            log.debug("{}: computation for the new latest QoS value of the service must be skipped", service.getServiceId());
+        }
+
+        // Logic for creating the current value
+        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
+        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
+        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
+        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
+        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
+            // If we should not propose adaptation options for the given service, don't update its QoS History (i.e., there are booting or shutdown instances)
+            if (!skipServiceQoSComputation) {
+                // Update the current values for the QoS of the service.
+                QoSHistory.Value newServiceCurrentValue;
+                newServiceCurrentValue = service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newServiceCurrentValues.put(Availability.class, newServiceCurrentValue);
+                newServiceCurrentValue = service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newServiceCurrentValues.put(AverageResponseTime.class, newServiceCurrentValue);
+            } else {
+                log.debug("{}: computation for the new current QoS value of the service must be skipped", service.getServiceId());
+            }
+            service.getInstances().forEach(instance -> {
+                // Update the current values for the QoS of the instances.
+                QoSHistory.Value newInstanceCurrentValue;
+                newInstancesCurrentValues.put(instance.getInstanceId(), new HashMap<>());
+                newInstanceCurrentValue = instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newInstancesCurrentValues.get(instance.getInstanceId()).put(Availability.class, newInstanceCurrentValue);
+                newInstanceCurrentValue = instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
+            });
+            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
+        } else {
+            log.debug("{} has NOT a full analysis window. Cannot compute a new current value.", service.getServiceId());
+        }
+
+        // Logic for pushing the new values in the Knowledge
+        knowledgeClient.updateServiceQosCollection(new UpdateServiceQosCollectionRequest(service.getServiceId(), newInstancesValues, newServiceValues, newInstancesCurrentValues, newServiceCurrentValues));
+
+    }
+
 
     // Creates and proposes to the knowledge a list of adaptation options for all the services that have filled their
     // analysis window. If the analysis window of a service is filled, the "currentQoSValue" of the service
     // is computed for each QoS. For each of them, this value is (by this time) the average of
     // the values in the analysis window, and it is used as the reference value for that QoS
     // for the service.
-    private List<AdaptationOption> adapt() {
+    private void adapt() {
         log.debug("\nStarting adaptation logic");
-        Set<String> analysedServices = new HashSet<>();
-        List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
+        // il servizio richiede o sta completando un adattamento (= ha problemi o li sta già risolvendo). Ma non è detto che avrà delle proposte di adattamento (magari ce le ha una dipendenza)
+        Map<String, Boolean> servicesRequiringOrCompletingAdaptation = new HashMap<>();
         for (Service service : currentArchitectureMap.values()) {
-            proposedAdaptationOptions.addAll(computeAdaptationOptions(service, analysedServices));
+            computeAdaptationOptions(service, servicesRequiringOrCompletingAdaptation);
         }
-        return proposedAdaptationOptions;
     }
-
 
 
     /**
-     * Computes the adaptation options for a service and the current value of the QoS of the service and its instances.
+     * Computes the adaptation options for a service. Invalidates the service QoS histories if it requires adaptation.
      * Recursive.
-     * @param service: the service to analyse
-     * @param analysedServices: the map of services that have already been analysed, to avoid circular dependencies
-     * @return the list of adaptation options for the service
+     * @param service the service to analyse
+     * @param servicesRequiringOrCompletingAdaptation the map of services that requires adaptation, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
+     * @return true if the service has problems and requires adaptation
      */
-    private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
-        List<AdaptationOption> adaptationOptions = new LinkedList<>();
-        if (analysedServices.contains(service.getServiceId())) // The service has already been analysed, so we can stop the recursion
-            return adaptationOptions;
-        log.debug("{}: Computing adaptation options", service.getServiceId());
-        analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
-        if (servicesToSkip.contains(service.getServiceId())) { //We do not compute proposed adaptation options if at least one instance of the service is booting or shutdown
-            log.warn("{} has at least one instance booting or shutdown. Skipping adaptation for that service.", service.getServiceId());
-            return adaptationOptions;
+    private boolean computeAdaptationOptions(Service service, Map<String, Boolean> servicesRequiringOrCompletingAdaptation) {
+        String serviceId = service.getServiceId();
+        if (servicesRequiringOrCompletingAdaptation.containsKey(serviceId))
+            return servicesRequiringOrCompletingAdaptation.get(serviceId); // return info about if the service requires adaptation
+        boolean hasForcedOptions = !servicesForcedAdaptationOptionsMap.get(serviceId).isEmpty();
+        servicesRequiringOrCompletingAdaptation.put(serviceId, hasForcedOptions); // Start saying that the service requires adaptation if it has forced options
+        //if (hasForcedOptions) // TODO_COPERTO move to plan
+        //    invalidateAllQoSHistories(service); // invalidate all the QoS histories of the service and of its instances
+        if (servicesToSkip.contains(serviceId)) {
+            log.warn("{}: the analysis decided to skip adaptation for this service.", serviceId);
+            servicesRequiringOrCompletingAdaptation.put(serviceId, true); // true because if the service is skipped, it is because it has problems or has an adaptation in progress
+            return servicesRequiringOrCompletingAdaptation.get(serviceId);
         }
-        List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
-        for (Service serviceDependency : serviceDependencies) {
-            log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
-            adaptationOptions.addAll(computeAdaptationOptions(serviceDependency, analysedServices));
-        }
-
-        // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
-        // Ergo la lista di adaptation option non contiene adaptation option riguardanti il servizio corrente
-        if (!adaptationOptions.isEmpty()) {
-            invalidateAllQoSHistories(service);
-            return adaptationOptions;
-        }
-
-        // Analisi del servizio corrente, se non ha dipendenze con problemi
+        List<AdaptationOption> proposedAdaptationOptions = new LinkedList<>();
         List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
         List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
-        // Cannot be null because otherwise they would be inserted in the servicesToSkip Set
-        // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
+        if (serviceAvailabilityHistory == null || serviceAvgRespTimeHistory == null) {
+            log.warn("{}: the analysis window is not filled yet. Skipping the proposal of Adaptation Options.", serviceId);
+            return servicesRequiringOrCompletingAdaptation.get(serviceId);
+        }
         log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
         log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
-        adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
-        adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
-        invalidateAllQoSHistories(service); // Invalidate both if there are adaptation options and if not
-        log.debug("{} ending adaptation options computation", service.getServiceId());
-        return adaptationOptions;
+        proposedAdaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
+        proposedAdaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+
+        // If there are proposed adaptation options for the service, say that the service requires adaptation.
+        // Otherwise, use the previous information
+        servicesRequiringOrCompletingAdaptation.put(serviceId, !proposedAdaptationOptions.isEmpty() || servicesRequiringOrCompletingAdaptation.get(serviceId));
+
+        // Dependencies analysis. if a dependency requires adaptation the function returns
+        for (Service serviceDependency : service.getDependencies().stream().map(currentArchitectureMap::get).toList()) {
+            log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
+            if (computeAdaptationOptions(serviceDependency, servicesRequiringOrCompletingAdaptation)) {
+                log.debug("{}: dependency {} has problems. First solving dependency's problems", serviceId, serviceDependency.getServiceId());
+                //if (!hasForcedOptions) // TODO_COPERTO move to plan. NB. Il plan deve ricorsivamente controllare che le dip delle dip delle dip di un servizio non hanno problemi // if the service has forced options, it is already invalidated
+                //    invalidateAllQoSHistories(service); // Invalidate service QoS History because one of its dependencies has problems
+                return servicesRequiringOrCompletingAdaptation.get(serviceId);
+            }
+        }
+
+        if (servicesRequiringOrCompletingAdaptation.get(serviceId)) {
+            // Qui il servizio ha sicuro problemi e richiede adattamento per lui (perché le dipendenze non richiedono adattamento)
+            if (!proposedAdaptationOptions.isEmpty()) {
+                log.debug("{}: no problems for dependencies. Proposing adaptation options", serviceId);
+                servicesProposedAdaptationOptionsMap.put(serviceId, proposedAdaptationOptions);
+            }
+            //if (!hasForcedOptions) // TODO_COPERTO move to plan // if the service has forced options, it is already invalidated
+            //    invalidateAllQoSHistories(service); // Invalidate service QoS History because it has problems
+        }
+        return servicesRequiringOrCompletingAdaptation.get(serviceId);
+
+
+        // The service QoS History is invalidated both if it has problems and if there is a dependency with problems.
     }
+
+
+
+    /** For a given service, it invalidates its history of QoSes and its instances' history of QoSes.
+     * The update is performed first locally, then the Knowledge is updated.
+     * @param service the service considered
+     */
+    private void invalidateAllQoSHistories(Service service) {
+        log.debug("Invalidating all QoS histories for service {}", service.getServiceId());
+        service.getInstances().forEach(instance -> {
+            instance.invalidateQoSHistory(Availability.class);
+            instance.invalidateQoSHistory(AverageResponseTime.class);
+        });
+        service.invalidateQoSHistory(Availability.class);
+        service.invalidateQoSHistory(AverageResponseTime.class);
+        knowledgeClient.invalidateQosHistory(service.getServiceId());
+    }
+
+
 
     private AdaptationOption createChangeImplementationOption(Service service, Class<? extends QoSSpecification> goal) {
         List<String> possibleImplementations = new LinkedList<>();
@@ -375,15 +492,14 @@ public class AnalyseService {
                 successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
             }
         }
-        // TODO: con questo controllo, che è quello corretto, non ha alcun senso il controllo fatto sopra sull'avere almeno 3 metriche
         if (successfulRequestsCount == 0) {
-            log.warn("{}: No successful requests for instance {}", instance.getServiceId(), instance.getInstanceId());
+            log.warn("{}: No successful requests for instance {}. Using its current value for ART", instance.getServiceId(), instance.getInstanceId());
             return instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
         }
         return successfulRequestsDuration/successfulRequestsCount;
     }
 
-    private double computeInstanceAvailability(InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics){
+    private double computeInstanceAvailability(Instance instance, InstanceMetricsSnapshot oldestActiveMetrics, InstanceMetricsSnapshot latestActiveMetrics){
         double successfulRequestsCount = 0;
         double totalRequestsCount = 0;
 
@@ -396,8 +512,10 @@ public class AnalyseService {
                 successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
             }
         }
-        if (totalRequestsCount == 0)
-            throw new RuntimeException("THIS SHOULD NOT HAPPEN");
+        if (totalRequestsCount == 0) {
+            log.warn("{}: No successful requests for instance {}. Using its current value for Availability", instance.getServiceId(), instance.getInstanceId());
+            return instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+        }
         return successfulRequestsCount/totalRequestsCount;
     }
 
@@ -414,99 +532,6 @@ public class AnalyseService {
     }
 
 
-
-    // Methods to update the QoS histories
-
-    /** For a given service, it computes the new latest value for its instances and for itself from the Instances stats built on the metrics window.
-     * Then, if there are AnalysisWindowSize VALID values in the history of the service, it computes the new current value for the service and for each instance.
-     * The update is then pushed in the Knowledge.
-     *
-     * @param service: the service analysed
-     * @param instancesStats: InstanceStats list, one for each instance
-     */
-    private void updateQoSHistory(Service service, List<InstanceStats> instancesStats) {
-        // Logic to compute the new latest value for the service and its instances
-        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesValues = new HashMap<>();
-        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceValues = new HashMap<>();
-        double serviceAvailability = 0;
-        double serviceAverageResponseTime = 0;
-        for (InstanceStats instanceStats : instancesStats) {
-            String instanceId = instanceStats.getInstance().getInstanceId();
-            if (instanceStats.isFromNewData()) {
-                newInstancesValues.put(instanceId, new HashMap<>());
-                QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
-                QoSHistory.Value newInstanceValue;
-                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(Availability.class, instanceStats.getAvailability());
-                newInstancesValues.get(instanceId).put(Availability.class, newInstanceValue);
-                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
-                newInstancesValues.get(instanceId).put(AverageResponseTime.class, newInstanceValue);
-            }
-            // TODO c'è un problema. Se ci sono instanze booting, la somma dei pesi delle istanze non-booting non è 1. Quindi la media del servizio non è corretta.
-            // Come risolvere? Non possiamo ridistribuire il peso. Non possiamo darlo tutto all'istanza più forte perché saremmo troppo dipendenti dall'implementazione del LB nel managed
-            double weight = service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM ?
-                    service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
-            serviceAvailability += instanceStats.getAvailability() * weight;
-            serviceAverageResponseTime += instanceStats.getAverageResponseTime() * weight;
-        }
-        // If we should not propose adaptation options for the given service, don't update its QoS History (i.e., there are booting or shutdown instances)
-        if (!servicesToSkip.contains(service.getServiceId())) {
-            QoSCollection currentImplementationQoSCollection = service.getCurrentImplementation().getQoSCollection();
-            QoSHistory.Value newServiceValue;
-            newServiceValue = currentImplementationQoSCollection.createNewQoSValue(AverageResponseTime.class, serviceAverageResponseTime);
-            newServiceValues.put(AverageResponseTime.class, newServiceValue);
-            newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
-            newServiceValues.put(Availability.class, newServiceValue);
-        }
-
-        // Logic for creating the current value
-        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
-        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
-        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
-        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
-        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
-            // If we should not propose adaptation options for the given service, don't update its QoS History (i.e., there are booting or shutdown instances)
-            if (!servicesToSkip.contains(service.getServiceId())) {
-                // Update the current values for the QoS of the service.
-                QoSHistory.Value newServiceCurrentValue;
-                newServiceCurrentValue = service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newServiceCurrentValues.put(Availability.class, newServiceCurrentValue);
-                newServiceCurrentValue = service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newServiceCurrentValues.put(AverageResponseTime.class, newServiceCurrentValue);
-            }
-            service.getInstances().forEach(instance -> {
-                // Update the current values for the QoS of the instances.
-                QoSHistory.Value newInstanceCurrentValue;
-                newInstancesCurrentValues.put(instance.getInstanceId(), new HashMap<>());
-                newInstanceCurrentValue = instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newInstancesCurrentValues.get(instance.getInstanceId()).put(Availability.class, newInstanceCurrentValue);
-                newInstanceCurrentValue = instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
-            });
-            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
-        } else {
-            // Skip the service if there are not AnalysisWindowSize VALID values saved.
-            log.debug("{} has not a full analysis window. Skipping adaptation for that service.", service.getServiceId());
-            servicesToSkip.add(service.getServiceId());
-        }
-
-        // Logic for pushing the new values in the Knowledge
-        knowledgeClient.updateServiceQosCollection(new UpdateServiceQosCollectionRequest(service.getServiceId(), newInstancesValues, newServiceValues, newInstancesCurrentValues, newServiceCurrentValues));
-
-    }
-
-    /** For a given service, it invalidates its history of QoSes and its instances' history of QoSes.
-     * The update is performed first locally, then the Knowledge is updated.
-     * @param service the service considered
-     */
-    private void invalidateAllQoSHistories(Service service) {
-        service.getInstances().forEach(instance -> {
-            instance.invalidateQoSHistory(Availability.class);
-            instance.invalidateQoSHistory(AverageResponseTime.class);
-        });
-        service.invalidateQoSHistory(Availability.class);
-        service.invalidateQoSHistory(AverageResponseTime.class);
-        knowledgeClient.invalidateQosHistory(service.getServiceId());
-    }
 
 
     // Methods to update the Analyse configuration
@@ -565,22 +590,95 @@ public class AnalyseService {
         log.info("breakpoint");
     }
 
-
-
-    /* Quando passavamo l'intera QoS collection alla knowledge. Prima della QoSrepo
-    private void updateQoSCollectionsInKnowledge() {
-        Map<String, Map<String, QoSCollection>> serviceInstancesNewQoSCollections = new HashMap<>();
-        Map<String, QoSCollection> serviceNewQoSCollections = new HashMap<>();
-        for(Service service : currentArchitectureMap.values()){
-            serviceNewQoSCollections.put(service.getServiceId(), service.getCurrentImplementation().getQoSCollection());
-            Map<String, QoSCollection> instanceNewQoSCollections = new HashMap<>();
-            for(Instance instance : service.getInstances()){
-                instanceNewQoSCollections.put(instance.getInstanceId(), instance.getQoSCollection());
-            }
-            serviceInstancesNewQoSCollections.put(service.getServiceId(), instanceNewQoSCollections);
-        }
-        knowledgeClient.updateInstancesQoSCollection(serviceInstancesNewQoSCollections);
-        knowledgeClient.updateServicesQoSCollection(serviceNewQoSCollections);
-    }
-     */
 }
+
+
+/*
+
+private List<AdaptationOption> computeAdaptationOptions(Service service, Set<String> analysedServices) {
+    List<AdaptationOption> adaptationOptions = new LinkedList<>();
+    if (analysedServices.contains(service.getServiceId())) // The service has already been analysed, so we can stop the recursion
+        return adaptationOptions;
+    log.debug("{}: Computing adaptation options", service.getServiceId());
+    analysedServices.add(service.getServiceId()); //must be added here to avoid issues related to circular dependencies
+    if (servicesToSkip.contains(service.getServiceId())) { //We do not compute proposed adaptation options if at least one instance of the service is booting or shutdown
+        log.warn("{} has at least one instance booting or shutdown. Skipping adaptation for that service.", service.getServiceId());
+        return adaptationOptions;
+    }
+    List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
+    for (Service serviceDependency : serviceDependencies) {
+        log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
+        adaptationOptions.addAll(computeAdaptationOptions(serviceDependency, analysedServices));
+    }
+
+    // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
+    // Ergo la lista di adaptation option non contiene adaptation option riguardanti il servizio corrente
+    if (!adaptationOptions.isEmpty()) {
+        invalidateAllQoSHistories(service);
+        return adaptationOptions;
+    }
+
+    // Analisi del servizio corrente, se non ha dipendenze con problemi
+    List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
+    List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
+    // Cannot be null because otherwise they would be inserted in the servicesToSkip Set
+    // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
+    log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
+    log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
+    adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
+    adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+    invalidateAllQoSHistories(service); // Invalidate both if there are adaptation options and if not
+    log.debug("{} ending adaptation options computation", service.getServiceId());
+    return adaptationOptions;
+}
+
+ */
+
+/*
+private List<AdaptationOption> computeAdaptationOptions(Service service) {
+        // TODO la analysed services è sbagliata così. Per le dipendenze che sono già state analizzate, bisogna controllare se sono state proposte adapt opt!!!!!
+        List<AdaptationOption> adaptationOptions = new LinkedList<>();
+        if (servicesProposedAdaptationOptionsMap.containsKey(service.getServiceId())) // The service has already been analysed, so we can stop the recursion
+            return ;
+        log.debug("{}: Computing adaptation options", service.getServiceId());
+        servicesProposedAdaptationOptionsMap.put(service.getServiceId(), adaptationOptions); //must be added here to say that the service has been analysed (to avoid issues related to circular dependencies)
+        if (servicesToSkip.contains(service.getServiceId())) {
+            //We do not compute proposed adaptation options if at least one instance of the service is booting or shutdown, or if it has not analysisWindow VALID values yet
+            log.warn("{}: the analysis decided to skip adaptation for this service.", service.getServiceId());
+            return false;
+        }
+        List<Service> serviceDependencies = service.getDependencies().stream().map(currentArchitectureMap::get).toList();
+        for (Service serviceDependency : serviceDependencies) {
+            log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
+            if (computeAdaptationOptions(serviceDependency)) {
+                log.debug("{}: No adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
+
+                return adaptationOptions; // empty list
+            }
+            // TODO fai chiamata rico
+            //adaptationOptions.addAll(computeAdaptationOptions(serviceDependency));
+
+        }
+
+        // Se le dipendenze del servizio corrente hanno problemi non analizzo me stesso ma provo prima a risolvere i problemi delle dipendenze
+        // Ergo la lista di adaptation option non contiene adaptation option riguardanti il servizio corrente
+        if (!adaptationOptions.isEmpty()) {
+            invalidateAllQoSHistories(service);
+            return adaptationOptions;
+        }
+        if (servicesProposedAdaptationOptionsMap.)
+
+        // Analisi del servizio corrente, se non ha dipendenze con problemi
+        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
+        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
+        // Cannot be null because otherwise they would be inserted in the servicesToSkip Set
+        // HERE WE CAN PROPOSE ADAPTATION OPTIONS IF NECESSARY: WE HAVE ANALYSIS_WINDOW_SIZE VALUES FOR THE SERVICE
+        log.debug("{}: current Availability value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(Availability.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(Availability.class).get(analysisWindowSize-1).getTimestamp());
+        log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
+        adaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
+        adaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+        invalidateAllQoSHistories(service); // Invalidate both if there are adaptation options and if not
+        log.debug("{} ending adaptation options computation", service.getServiceId());
+        return adaptationOptions;
+    }
+ */

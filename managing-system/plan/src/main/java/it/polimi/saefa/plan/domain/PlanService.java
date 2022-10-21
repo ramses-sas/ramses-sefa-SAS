@@ -44,7 +44,7 @@ public class PlanService {
     // In that case, only forced adaptation options are allowed.
     public void startPlan() {
         try {
-            log.info("Starting plan");
+            log.info("\nStarting plan");
             knowledgeClient.notifyModuleStart(Modules.PLAN);
             Map<String, Service> servicesMap = knowledgeClient.getServicesMap();
             Map<String, List<AdaptationOption>> proposedAdaptationOptions = knowledgeClient.getProposedAdaptationOptions();
@@ -86,7 +86,8 @@ public class PlanService {
                         AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId));
                         if (chosenOption != null)
                             chosenAdaptationOptionList.add(chosenOption);
-                    } else {
+                    }
+                    else {
                         // If there is at least a forced option, all the other options are ignored
                         log.debug("{} has forced Adaptation options", serviceId);
 
@@ -107,6 +108,16 @@ public class PlanService {
                     if (!chosenAdaptationOptionList.isEmpty())
                         chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
                 });
+                // call new recursive func
+                Set<String> servicesAlreadyProcessed = new HashSet<>();
+
+                servicesMap.forEach((serviceId, service) -> {
+                    // se il servizio ha delle opzioni di adattamento da applicare o è in uno stato transitorio, invalida la sua QoS History, quella dei servizi che dipendono da lui e così a ritroso
+                    if (service.isInTransitionState() || chosenAdaptationOptions.containsKey(serviceId)) {
+                        invalidateQoSHistoryOfServiceAndDependants(servicesMap, serviceId, servicesAlreadyProcessed);
+                    }
+                });
+
                 knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
             }
             log.info("Ending plan. Notifying the Execute module to start the next iteration.");
@@ -117,6 +128,30 @@ public class PlanService {
             e.printStackTrace();
             throw new RuntimeException("Error during the plan execution", e);
         }
+    }
+
+    private void invalidateQoSHistoryOfServiceAndDependants(Map<String, Service> servicesMap, String serviceId, Set<String> servicesAlreadyProcessed) {
+        if (servicesAlreadyProcessed.contains(serviceId))
+            return;
+        servicesAlreadyProcessed.add(serviceId);
+
+        Service service = servicesMap.get(serviceId);
+        log.debug("{}: invalidating QoS history", serviceId);
+        invalidateAllQoSHistories(service);
+        servicesMap.values().forEach(s -> {
+            if (s.getDependencies().contains(serviceId))
+                invalidateQoSHistoryOfServiceAndDependants(servicesMap, s.getServiceId(), servicesAlreadyProcessed);
+        });
+    }
+
+
+    /** For a given service, it invalidates its history of QoSes and its instances' history of QoSes.
+     * The update is performed first locally, then the Knowledge is updated.
+     * @param service the service considered
+     */
+    private void invalidateAllQoSHistories(Service service) {
+        log.debug("Invalidating all QoS histories for service {}", service.getServiceId());
+        knowledgeClient.invalidateQosHistory(service.getServiceId());
     }
 
     //quando è forced vanno aggiornati i pesi nel servizio, in modo che tutte le altre opzioni di adattamento siano coerenti con le opzioni che verranno applicate

@@ -28,12 +28,12 @@ public abstract class QoSSpecification {
     public boolean isSatisfied(List<Double> values, double percentage) {
         if (values == null || values.size() == 0)
             return false;
-        int count = 0;
+        double count = 0;
         for (Double d : values) {
             if (isSatisfied(d))
-                count++;
+                count += 1;
         }
-        return (double)(count / values.size()) >= percentage;
+        return (count / values.size()) >= percentage;
     }
 
     public abstract String getConstraintDescription();

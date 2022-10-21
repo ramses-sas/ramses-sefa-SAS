@@ -58,9 +58,9 @@ public class InstancesManagerService {
         switch (currentProfile) {
             case "DEFAULT":
                 simulationInstanceParamsMap.put(currentProfile, List.of(
-                    new SimulationInstanceParams(0.1, 1.7, 0.2),
-                    new SimulationInstanceParams(0.2, 2.0, 0.2),
-                    new SimulationInstanceParams(0.5, 4.0, 0.5)
+                    new SimulationInstanceParams(0.1, 0.5, 0.2),
+                    new SimulationInstanceParams(0.2, 1.0, 0.2),
+                    new SimulationInstanceParams(0.6, 0.1, 0.5)
                 ));
                 break;
             default:
@@ -100,7 +100,7 @@ public class InstancesManagerService {
             Container container = containers.get(0);
             try {
                 dockerClient.stopContainerCmd(container.getId()).exec();
-                dockerClient.removeContainerCmd(container.getId()).exec();
+                //dockerClient.removeContainerCmd(container.getId()).exec();
             } catch (NotFoundException|NotModifiedException e){
                 log.warn("Container {} already removed", container.getId());
             }
