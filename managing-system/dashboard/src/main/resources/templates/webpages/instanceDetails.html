@@ -4,6 +4,87 @@
 
 <th:block th:include="fragments/navbar :: navbar(1)"></th:block>
 
+<!--div class="content">
+    <table class="detailsTable">
+        <tbody>
+            <tr>
+                <td class="col1">
+                    <div class="row">
+                        <div class="card">
+                            <h5 class="cardElementTitle">Resources Metrics</h5>
+                            <table class="configTable">
+                                <tbody>
+                                <tr th:each="entry : ${resourceTable}">
+                                    <td th:text="${entry[0]}">Key goes here</td>
+                                    <td th:text="${entry[1]}">Value goes here</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <br>
+                            <h5 class="cardElementTitle">HTTP Metrics</h5>
+                            <table class="configTable">
+                                <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Status</th>
+                                    <th>Count</th>
+                                    <th>Average Duration</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="entry : ${httpMetricsTable}">
+                                    <td th:text="${entry[0]}">Endpoint goes here</td>
+                                    <td th:text="${entry[1]}">Status goes here</td>
+                                    <td th:text="${entry[2]}">Count goes here</td>
+                                    <td th:text="${entry[3]}">Average Duration goes here</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <br>
+                            <div th:if="${!circuitBreakersTable.isEmpty()}">
+                                <h5 class="cardElementTitle">Circuit Breakers Metrics</h5>
+                                <table class="configTable">
+                                    <tbody>
+                                    <tr th:each="entry : ${circuitBreakersTable}">
+                                        <td th:text="${entry[0]}">Key goes here</td>
+                                        <td th:text="${entry[1]}">Value goes here</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <br>
+                            <h5 class="cardElementTitle">QoS Current Values</h5>
+                            <table class="configTable">
+                                <thead>
+                                <tr>
+                                    <th>QoS</th>
+                                    <th>Value</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="entry : ${qoSCurrentValueTable}">
+                                    <td th:text="${entry[0]}">QoS goes here</td>
+                                    <td th:text="${entry[1]}">Value goes here</td>
+                                    <td th:text="${entry[2]}">Timestamp goes here</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td class="col2">
+                    <div class="row" th:each="graph : ${graphs}">
+                        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+                        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+                        <br>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div-->
+
 
 <div class="content">
     <div class="row">
@@ -57,17 +138,60 @@
             </div>
         </div>
     </div>
-    <div class="row" th:each="graph : ${graphs}">
-        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
-        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
-        <br>
-    </div>
-    <!--div class="row">
-        <div class="column" th:each="graph : ${graphs}">
-            <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
-            <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
-        </div>
-    </div-->
+    <table class="detailsTable">
+        <tbody>
+            <tr>
+                <td class="col1">
+                    <div class="row">
+                        <div class="column">
+                            <div class="card">
+                                <h5 class="cardElementTitle">Graph legend</h5>
+                                <div>
+                                    <div>
+                                        <span class="blue-color-box"></span>
+                                        <span><h6 class="cardElementContent">Before Adaptation</h6></span>
+                                    </div>
+                                    <div>
+                                        <span class="green-color-box"></span>
+                                        <span><h6 class="cardElementContent">After Adaptation</h6></span>
+                                    </div>
+                                    <div>
+                                        <span class="red-color-box"></span>
+                                        <span><h6 class="cardElementContent">Threshold</h6></span>
+                                    </div>
+                                </div>
+                                <br>
+                                <h5 class="cardElementTitle">QoS Current Values</h5>
+                                <table class="configTable">
+                                    <thead>
+                                    <tr>
+                                        <th>QoS</th>
+                                        <th>Value</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="entry : ${qoSCurrentValueTable}">
+                                        <td th:text="${entry[0]}">QoS goes here</td>
+                                        <td th:text="${entry[1]}">Value goes here</td>
+                                        <td th:text="${entry[2]}">Timestamp goes here</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="col2">
+                    <div class="row" th:each="graph : ${graphs}">
+                        <div class="card" th:if="${!graph.isEmpty()}" th:id="${graph.getYAxisName()}"></div>
+                        <div th:if="${graph.isEmpty()}" th:text="@{'No data to display for '+${graph.getYAxisName()}}"></div>
+                        <br>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 <th:block th:include="fragments/footer :: footer"></th:block>
