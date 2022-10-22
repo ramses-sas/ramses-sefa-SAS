@@ -235,8 +235,10 @@ public class KnowledgeService {
     public void proposeAdaptationOptions(Map<String, List<AdaptationOption>> proposedAdaptationOptions) {
         this.proposedAdaptationOptions = proposedAdaptationOptions;
         for (String serviceId : proposedAdaptationOptions.keySet()) {
-            Service service = servicesMap.get(serviceId);
-            service.getCurrentImplementation().incrementPenalty();
+            if (!proposedAdaptationOptions.get(serviceId).isEmpty()) {
+                Service service = servicesMap.get(serviceId);
+                service.getCurrentImplementation().incrementPenalty();
+            }
         }
     }
 
