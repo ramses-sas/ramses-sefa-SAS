@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -37,14 +38,18 @@ public class DashboardWebController {
 	@Autowired 
 	private DashboardWebService dashboardWebService;
 
+	final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	@PostConstruct
+	private void init() {
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 
 
 	/* Mostra home page */
 	@GetMapping("/")
 	public String index(Model model) {
 		Collection<Service> services = dashboardWebService.getArchitecture().values();
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		// <serviceId, [[Property, Value]]>
 		Map<String, List<String[]>> servicesConfigurationTable = new HashMap<>();
 		// <serviceId, [[QoSName, Value, Threshold, Weight]]>
@@ -93,7 +98,6 @@ public class DashboardWebController {
 			servicesQoSTable.put(s.getServiceId(), serviceQoSTable);
 
 			ServiceImplementation currentImplementation = s.getCurrentImplementation();
-			// [[ImplementationId, CostPerBoot, CostPerInstance, ...]]
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
 			currentImplementationTable.add(new String[]{"Score", String.valueOf(currentImplementation.getScore())});
@@ -122,10 +126,24 @@ public class DashboardWebController {
 				weight = service.getConfiguration().getLoadBalancerWeights().get(instance.getInstanceId());
 			instancesTable.add(new String[]{instance.getInstanceId(), instance.getCurrentStatus().toString(), weight == null ? "N/A" : String.format(Locale.ROOT,"%.3f", weight)});
 		}
+		// [[QoSName, Value, Timestamp]]
+		List<String[]> qoSCurrentValueTable = new ArrayList<>();
+		QoSHistory.Value availability = service.getCurrentValueForQoS(Availability.class);
+		QoSHistory.Value art = service.getCurrentValueForQoS(AverageResponseTime.class);
+		qoSCurrentValueTable.add(new String[]{
+				"Availability",
+				availability == null ? "N/A" : String.format(Locale.ROOT,"%.2f", availability.getDoubleValue()*100)+"%",
+				availability == null ? "N/A" : sdf.format(availability.getTimestamp())+" UTC"
+		});
+		qoSCurrentValueTable.add(new String[]{
+				"Average Response Time [ms]",
+				art == null ? "N/A" : String.format(Locale.ROOT, "%.1f", art.getDoubleValue()),
+				art == null ? "N/A" : sdf.format(art.getTimestamp()) + " UTC"
+		});
 		model.addAttribute("serviceId", serviceId);
 		model.addAttribute("isLoadBalanced", service.getConfiguration().getLoadBalancerType() != ServiceConfiguration.LoadBalancerType.UNKNOWN);
 		model.addAttribute("latestAdaptationDate", service.getLatestAdaptationDate());
-		//model.addAttribute("currentValues", instancesTable);
+		model.addAttribute("qoSCurrentValueTable", qoSCurrentValueTable);
 		model.addAttribute("possibleImplementations", service.getPossibleImplementations().keySet());
 		model.addAttribute("instancesTable", instancesTable);
 		model.addAttribute("graphs", computeServiceGraphs(service));
@@ -140,7 +158,9 @@ public class DashboardWebController {
 		List<String[]> resourceTable = new ArrayList<>();
 		List<String[]> httpMetricsTable = new ArrayList<>();
 		List<String[]> circuitBreakersTable = new ArrayList<>();
-		if (latestMetrics != null && !latestMetrics.isBooting()) {
+		// [[QoSName, Value, Timestamp]]
+		List<String[]> qoSCurrentValueTable = new ArrayList<>();
+		if (latestMetrics != null) {
 			resourceTable.add(new String[]{"CPU Usage", "" + String.format(Locale.ROOT, "%.2f", latestMetrics.getCpuUsage()*100)+"%"});
 			resourceTable.add(new String[]{"Disk Free Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskFreeSpace()/1024/1024/1024)+" GB"});
 			resourceTable.add(new String[]{"Disk Total Space", String.format(Locale.ROOT, "%.2f", latestMetrics.getDiskTotalSpace()/1024/1024/1024)+" GB"});
@@ -163,7 +183,20 @@ public class DashboardWebController {
 				}
 				circuitBreakersTable.add(new String[]{"", ""});
 			}
+			QoSHistory.Value availability = instance.getCurrentValueForQoS(Availability.class);
+			QoSHistory.Value art = instance.getCurrentValueForQoS(AverageResponseTime.class);
+			qoSCurrentValueTable.add(new String[]{
+					"Availability",
+					availability == null ? "N/A" : String.format(Locale.ROOT,"%.2f", availability.getDoubleValue()*100)+"%",
+					availability == null ? "N/A" : sdf.format(availability.getTimestamp())+" UTC"
+			});
+			qoSCurrentValueTable.add(new String[]{
+					"Average Response Time [ms]",
+					art == null ? "N/A" : String.format(Locale.ROOT, "%.1f", art.getDoubleValue()),
+					art == null ? "N/A" : sdf.format(art.getTimestamp()) + " UTC"
+			});
 		}
+		model.addAttribute("qoSCurrentValueTable", qoSCurrentValueTable);
 		model.addAttribute("resourceTable", resourceTable);
 		model.addAttribute("httpMetricsTable", httpMetricsTable);
 		model.addAttribute("circuitBreakersTable", circuitBreakersTable);

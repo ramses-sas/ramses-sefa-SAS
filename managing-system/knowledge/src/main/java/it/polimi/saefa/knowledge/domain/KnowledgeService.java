@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Null;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -206,9 +207,15 @@ public class KnowledgeService {
     // TODO verifica che ora i QoS vengono veramente creati dopo metricsWindow iterazioni
     public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String serviceId, String instanceId, int n) {
         QoSCollection qosCollection = servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection();
-        Date availabilityLatestValueTimestamp = qosCollection.getQoSHistory(Availability.class).getLatestValue().getTimestamp();
-        Date artLatestValueTimestamp = qosCollection.getQoSHistory(AverageResponseTime.class).getLatestValue().getTimestamp();
-        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValueTimestamp.after(availabilityLatestValueTimestamp) ? artLatestValueTimestamp : availabilityLatestValueTimestamp, Pageable.ofSize(n)).stream().toList();
+        QoSHistory.Value availabilityLatestValue = qosCollection.getQoSHistory(Availability.class).getLatestValue();
+        QoSHistory.Value artLatestValue = qosCollection.getQoSHistory(AverageResponseTime.class).getLatestValue();
+        if (availabilityLatestValue == null)
+            availabilityLatestValue = qosCollection.getQoSHistory(Availability.class).getCurrentValue();
+        if (artLatestValue == null)
+            artLatestValue = qosCollection.getQoSHistory(AverageResponseTime.class).getCurrentValue();
+        if (availabilityLatestValue == null || artLatestValue == null)
+            throw new RuntimeException("THIS SHOULD NOT HAPPEN");
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValue.getTimestamp().after(availabilityLatestValue.getTimestamp()) ? artLatestValue.getTimestamp() : availabilityLatestValue.getTimestamp(), Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
