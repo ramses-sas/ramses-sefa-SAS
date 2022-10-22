@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
 @Setter
@@ -284,6 +285,22 @@ public class AnalyseService {
             newServiceValues.put(AverageResponseTime.class, newServiceValue);
             newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
             newServiceValues.put(Availability.class, newServiceValue);
+
+            //todo remove after test
+            AtomicBoolean allAvailBelow = new AtomicBoolean(true);
+            AtomicBoolean allAvgAbove = new AtomicBoolean(true);
+
+            service.getInstances().forEach(instance -> {
+                if (allAvailBelow.get() && instance.getCurrentValueForQoS(Availability.class).getDoubleValue() > service.getCurrentValueForQoS(Availability.class).getDoubleValue())
+                    allAvailBelow.set(false);
+                if (allAvgAbove.get() && instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue() < service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
+                    allAvgAbove.set(false);
+            });
+
+            if (allAvailBelow.get() || allAvgAbove.get()) {
+                throw new RuntimeException("INVESTIGATE");
+            }
+
         } else {
             log.debug("{}: computation for the new latest QoS value of the service must be skipped", service.getServiceId());
         }

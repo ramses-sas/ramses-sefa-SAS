@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -83,7 +84,8 @@ public class PlanService {
                             if (option.getClass().equals(ChangeImplementationOption.class))
                                 handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId()));
                         }
-                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId));
+
+                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId).stream().filter(option -> option.getClass().equals(ChangeLoadBalancerWeightsOption.class) || ((ChangeLoadBalancerWeightsOption)option).getNewWeights()!=null).collect(Collectors.toList()));
                         if (chosenOption != null)
                             chosenAdaptationOptionList.add(chosenOption);
                     }
@@ -408,7 +410,6 @@ public class PlanService {
                     if (ChangeLoadBalancerWeightsOption.class.equals(adaptationOption.getClass())) {
                         ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) adaptationOption;
                         for (Instance instance : instances) {
-                            // TODO la changeLoadBalancerWeightsOption può avere la map di pesi a null. da togliere dalla lista di opzioni!!
                             if (!changeLoadBalancerWeightsOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
                                 availabilityEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
