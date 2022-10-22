@@ -408,14 +408,15 @@ public class PlanService {
                     if (ChangeLoadBalancerWeightsOption.class.equals(adaptationOption.getClass())) {
                         ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) adaptationOption;
                         for (Instance instance : instances) {
-                            if(!changeLoadBalancerWeightsOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
+                            // TODO la changeLoadBalancerWeightsOption può avere la map di pesi a null. da togliere dalla lista di opzioni!!
+                            if (!changeLoadBalancerWeightsOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
                                 availabilityEstimation += changeLoadBalancerWeightsOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                     }
                     else if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
                         AddInstanceOption addInstanceOption = (AddInstanceOption) adaptationOption;
                         for (Instance instance : instances) {
-                            if(!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
+                            if (!addInstanceOption.getInstancesToShutdownIds().contains(instance.getInstanceId()))
                                 availabilityEstimation += addInstanceOption.getOldInstancesNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                         availabilityEstimation += addInstanceOption.getNewInstanceWeight() * service.getCurrentImplementation().getBenchmark(Availability.class);

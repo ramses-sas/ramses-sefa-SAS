@@ -7,7 +7,7 @@
 					"implementation_id" : "restaurant-service",
 					"implementation_trust" : 1,
 					"score" : 1,
-					"instance_load_shutdown_threshold" : 0.7
+					"instance_load_shutdown_threshold" : 0.4
 				}
 
 			],
@@ -20,7 +20,7 @@
 					"implementation_id" : "ordering-service",
 					"implementation_trust" : 1,
 					"score" : 1,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				}
 			],
 			"dependencies" : [
@@ -42,19 +42,19 @@
 					"implementation_id" : "payment-proxy-1-service",
 					"implementation_trust" : 5,
 					"score" : 0.4,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "payment-proxy-2-service",
 					"implementation_trust" : 5,
 					"score" : 0.3,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "payment-proxy-3-service",
 					"implementation_trust" : 10,
 					"score" : 0.3,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				}
 			],
 			"dependencies" : []
@@ -66,19 +66,19 @@
 					"implementation_id" : "delivery-proxy-1-service",
 					"implementation_trust" : 4,
 					"score" : 0.4,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "delivery-proxy-2-service",
 					"implementation_trust" : 6,
 					"score" : 0.3,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "delivery-proxy-3-service",
 					"implementation_trust" : 7,
 					"score" : 0.3,
-					"instance_load_shutdown_threshold" : 0.1
+					"instance_load_shutdown_threshold" : 0.4
 				}
 			],
 			"dependencies" : []

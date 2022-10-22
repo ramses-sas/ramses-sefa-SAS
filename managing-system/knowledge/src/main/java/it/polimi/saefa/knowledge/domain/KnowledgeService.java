@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
 import javax.transaction.Transactional;
+import javax.validation.constraints.Max;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -202,8 +203,12 @@ public class KnowledgeService {
 
 
 
+    // TODO verifica che ora i QoS vengono veramente creati dopo metricsWindow iterazioni
     public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String serviceId, String instanceId, int n) {
-        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, servicesMap.get(serviceId).getLatestAdaptationDate(), Pageable.ofSize(n)).stream().toList();
+        QoSCollection qosCollection = servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection();
+        Date availabilityLatestValueTimestamp = qosCollection.getQoSHistory(Availability.class).getLatestValue().getTimestamp();
+        Date artLatestValueTimestamp = qosCollection.getQoSHistory(AverageResponseTime.class).getLatestValue().getTimestamp();
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValueTimestamp.after(availabilityLatestValueTimestamp) ? artLatestValueTimestamp : availabilityLatestValueTimestamp, Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
