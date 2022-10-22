@@ -207,7 +207,6 @@ public class PlanService {
     }
 
     public Map<String, Double> handleChangeLoadBalancerWeights(Service service) {
-
         Map<String, Double> previousWeights = service.getLoadBalancerWeights();
         double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / service.getInstances().size();
         double defaultWeight = 1.0 / service.getInstances().size();
@@ -220,10 +219,9 @@ public class PlanService {
         Map<String, MPVariable> activationsVariables = new HashMap<>();
         MPObjective objective = solver.objective();// min{∑(w_i/z_i) - ∑(a_i * z_i)}
 
-        Availability availabilitySpecification = (Availability) service.getQoSSpecifications().get(Availability.class);
-        AverageResponseTime averageResponseTimeSpecification = (AverageResponseTime) service.getQoSSpecifications().get(AverageResponseTime.class);
-
-        double k_s = computeServicePerformanceIndicatorK(service);
+        double serviceAvgRespTime = service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+        double serviceAvgAvailability = service.getCurrentValueForQoS(Availability.class).getDoubleValue();
+        double k_s = serviceAvgAvailability / serviceAvgRespTime; // service performance indicator
         MPConstraint sumOfWeights = solver.makeConstraint(1.0, 1.0, "sumOfWeights"); // ∑(w_i) = 1
 
         for (Instance instance : service.getInstances()) {
@@ -248,7 +246,9 @@ public class PlanService {
             if (emptyWeights)
                 previousWeights.put(instance.getInstanceId(), defaultWeight);
 
-            double k_i = computeInstancePerformanceIndicatorK(instance);
+            double instanceAvgRespTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+            double instanceAvailability = instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
+            double k_i = instanceAvailability / instanceAvgRespTime;
             double z_i = k_i / k_s;
 
             if (k_i != 0.0) {
@@ -262,7 +262,9 @@ public class PlanService {
 
         for (Instance instance_i : service.getInstances()) {
             MPVariable weight_i = weightsVariables.get(instance_i.getInstanceId());
-            double k_i = computeInstancePerformanceIndicatorK(instance_i);
+            double instanceAvgRespTime_i = instance_i.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+            double instanceAvailability_i = instance_i.getCurrentValueForQoS(Availability.class).getDoubleValue();
+            double k_i = instanceAvailability_i / instanceAvgRespTime_i;
             double z_i = k_i / k_s;
 
             if (k_i == 0) { //fatto nel for di sopra
@@ -278,9 +280,11 @@ public class PlanService {
                 if(instance_i.equals(instance_j))
                     continue;
                 MPVariable weight_j = weightsVariables.get(instance_j.getInstanceId());
+                double instanceAvgRespTime_j = instance_j.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+                double instanceAvailability_j = instance_j.getCurrentValueForQoS(Availability.class).getDoubleValue();
                 growthConstraint.setCoefficient(activationsVariables.get(instance_j.getInstanceId()), z_i * previousWeights.get(instance_j.getInstanceId()));
 
-                double k_j = computeInstancePerformanceIndicatorK(instance_j);
+                double k_j = instanceAvailability_j / instanceAvgRespTime_j;
                 double k_ij = k_i / k_j;
 
                 if (k_i >= k_j) {
@@ -311,9 +315,6 @@ public class PlanService {
         final MPSolver.ResultStatus resultStatus = solver.solve();
 
         StringBuilder sb = new StringBuilder();
-        double serviceAvgRespTime = service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
-        double serviceAvgAvailability = service.getCurrentValueForQoS(Availability.class).getDoubleValue();
-
         sb.append("\n Minimization problem for service ").append(service.getServiceId()).append(" solved with status ").append(resultStatus);
         sb.append("\nShutdown threshold: ").append(shutdownThreshold).append("\n");
         sb.append("Service response time: ").append(String.format("%.2f", serviceAvgRespTime)).append("ms\n");
@@ -358,25 +359,7 @@ public class PlanService {
         log.debug(sb.toString());
 
         return newWeights;
-
     }
-
-    private double computeInstancePerformanceIndicatorK(Instance instance){
-        double availability = instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
-        double responseTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
-        double availabilityWeight = instance.getQoSCollection().getQoSHistoryMap().get(Availability.class).getSpecification().getWeight();
-        double responseTimeWeight = instance.getQoSCollection().getQoSHistoryMap().get(AverageResponseTime.class).getSpecification().getWeight();
-        return availability * availabilityWeight - responseTime * responseTimeWeight;
-    }
-
-    private double computeServicePerformanceIndicatorK(Service service){
-        double availability = service.getCurrentValueForQoS(Availability.class).getDoubleValue();
-        double responseTime = service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
-        double availabilityWeight = service.getQoSSpecifications().get(Availability.class).getWeight();
-        double responseTimeWeight = service.getQoSSpecifications().get(AverageResponseTime.class).getWeight();
-        return availability * availabilityWeight - responseTime * responseTimeWeight;
-    }
-
 
     public ChangeImplementationOption handleChangeImplementation(ChangeImplementationOption changeImplementationOption, Service service){
         String bestImplementationId = null;
@@ -539,6 +522,7 @@ public class PlanService {
             log.warn("{}: No beneficial adaptation option", service.getServiceId());
             return null;
         }
+
 
         log.debug("\n\t\t\t\t{}: Selected option {} for {} with benefit {}. \n\t\t\t\tDetails: {}", service.getServiceId(), bestOptionForGoal.get(bestBenefitClass).getClass().getSimpleName(), bestBenefitClass.getSimpleName(), benefits.get(bestBenefitClass), bestOptionForGoal.get(bestBenefitClass));
         return bestOptionForGoal.get(bestBenefitClass);
