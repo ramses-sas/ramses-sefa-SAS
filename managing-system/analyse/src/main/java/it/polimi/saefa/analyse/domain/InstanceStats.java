@@ -28,8 +28,8 @@ public class InstanceStats {
     // We don't have enough metrics to compute the stats, so we use the current value for each QoS
     public InstanceStats(Instance instance) {
         this.instance = instance;
-        availability = instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
-        averageResponseTime = instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+        availability = instance.getLatestValueForQoS(Availability.class).getDoubleValue();
+        averageResponseTime = instance.getLatestValueForQoS(AverageResponseTime.class).getDoubleValue();
         //maxResponseTime = instance.getCurrentValueForQoS(MaxResponseTime.class).getValue();
         this.fromNewData = false;
     }

@@ -85,7 +85,7 @@ public class PlanService {
                                 handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId()));
                         }
 
-                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId).stream().filter(option -> option.getClass().equals(ChangeLoadBalancerWeightsOption.class) || ((ChangeLoadBalancerWeightsOption)option).getNewWeights()!=null).collect(Collectors.toList()));
+                        AdaptationOption chosenOption = extractBestOption(servicesMap.get(serviceId), proposedAdaptationOptions.get(serviceId).stream().filter(option -> !option.getClass().equals(ChangeLoadBalancerWeightsOption.class) || ((ChangeLoadBalancerWeightsOption)option).getNewWeights()!=null).collect(Collectors.toList()));
                         if (chosenOption != null)
                             chosenAdaptationOptionList.add(chosenOption);
                     }
