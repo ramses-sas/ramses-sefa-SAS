@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.rest;
+package it.polimi.saefa.knowledge.rest.api;
 
 import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import lombok.Getter;

@@ -370,7 +370,7 @@ public class PlanService {
         for(String implementationId: changeImplementationOption.getPossibleImplementations()){
             Class<? extends QoSSpecification> goal = changeImplementationOption.getQosGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
-            double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal()) * implementation.getScore();
+            double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal()) * implementation.getPreference();
             if(bestImplementationId == null) {
                 bestImplementationId = implementationId;
                 bestImplementationBenefit = benchmark;

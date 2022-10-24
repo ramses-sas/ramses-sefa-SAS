@@ -6,9 +6,9 @@ import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.*;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceImplementation;
-import it.polimi.saefa.knowledge.rest.AddInstanceRequest;
-import it.polimi.saefa.knowledge.rest.ChangeOfImplementationRequest;
-import it.polimi.saefa.knowledge.rest.ShutdownInstanceRequest;
+import it.polimi.saefa.knowledge.rest.api.AddInstanceRequest;
+import it.polimi.saefa.knowledge.rest.api.ChangeOfImplementationRequest;
+import it.polimi.saefa.knowledge.rest.api.ShutdownInstanceRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 

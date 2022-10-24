@@ -100,7 +100,7 @@ public class DashboardWebController {
 			ServiceImplementation currentImplementation = s.getCurrentImplementation();
 			List<String[]> currentImplementationTable = new ArrayList<>();
 			currentImplementationTable.add(new String[]{"Implementation Id", currentImplementation.getImplementationId()});
-			currentImplementationTable.add(new String[]{"Score", String.valueOf(currentImplementation.getScore())});
+			currentImplementationTable.add(new String[]{"Preference", String.valueOf(currentImplementation.getPreference())});
 			currentImplementationTable.add(new String[]{"Trust", String.valueOf(currentImplementation.getTrust())});
 			currentImplementationTable.add(new String[]{"Penalty", String.valueOf(currentImplementation.getPenalty())});
 			servicesCurrentImplementationTable.put(s.getServiceId(), currentImplementationTable);

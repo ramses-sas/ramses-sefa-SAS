@@ -10,6 +10,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,7 @@ public class InstancesManagerService {
     private final Map<String, List<SimulationInstanceParams>> simulationInstanceParamsMap;
 
 
-    public InstancesManagerService(Environment env) {
+    public InstancesManagerService(Environment env, @Value("${CURRENT_PROFILE}") String currentProfile){
         this.env = env;
         localIp = getMachineLocalIp();//InetAddress.getLocalHost().getHostAddress();
         //if (localIp.equals("127.0.0.1"))
@@ -53,10 +54,10 @@ public class InstancesManagerService {
             //log.warn("Container: {}", container);
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
-        currentProfile = "DEFAULT";
+        this.currentProfile = currentProfile;
         simulationInstanceParamsMap = new HashMap<>();
         switch (currentProfile) {
-            case "DEFAULT":
+            case "Scenario1":
                 simulationInstanceParamsMap.put(currentProfile, List.of(
                     new SimulationInstanceParams(0.1, 0.5, 0.2),
                     new SimulationInstanceParams(0.2, 1.0, 0.2),

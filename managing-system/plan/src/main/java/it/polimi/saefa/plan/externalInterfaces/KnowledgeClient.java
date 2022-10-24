@@ -3,7 +3,7 @@ package it.polimi.saefa.plan.externalInterfaces;
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
-import it.polimi.saefa.knowledge.rest.AddQoSValueRequest;
+import it.polimi.saefa.knowledge.rest.api.AddQoSValueRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

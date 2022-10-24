@@ -15,7 +15,7 @@ import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
 import it.polimi.saefa.knowledge.domain.metrics.HttpEndpointMetrics;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
-import it.polimi.saefa.knowledge.rest.UpdateServiceQosCollectionRequest;
+import it.polimi.saefa.knowledge.rest.api.UpdateServiceQosCollectionRequest;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

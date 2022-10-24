@@ -2,14 +2,13 @@ package it.polimi.saefa.knowledge.rest;
 
 import it.polimi.saefa.knowledge.domain.Modules;
 import it.polimi.saefa.knowledge.domain.adaptation.options.AdaptationOption;
-import it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification;
 import it.polimi.saefa.knowledge.domain.adaptation.values.QoSCollection;
-import it.polimi.saefa.knowledge.domain.adaptation.values.QoSHistory;
 import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.knowledge.domain.KnowledgeService;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.rest.api.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -209,8 +208,23 @@ public class KnowledgeRestController {
     }
 
 
+    @PutMapping("/service/{serviceId}/implementation/{implementationId}/preference")
+    public ResponseEntity<String> updateImplementationPreference(@PathVariable String serviceId, @PathVariable String implementationId, @RequestParam(name = "value") double preference){
+        knowledgeService.updateImplementationPreference(serviceId, implementationId, preference);
+        return ResponseEntity.ok("Implementation preference updated");
+    }
 
+    @PutMapping("/service/{serviceId}/availabilityThreshold")
+    public ResponseEntity<String> updateAvailabilityThreshold(@PathVariable String serviceId, @RequestParam(name = "value") double availabilityThreshold){
+        knowledgeService.updateAvailabilityThreshold(serviceId, availabilityThreshold);
+        return ResponseEntity.ok("Availability threshold updated");
+    }
 
+    @PutMapping("/service/{serviceId}/responseTimeThreshold")
+    public ResponseEntity<String> updateResponseTimeThreshold(@PathVariable String serviceId, @RequestParam(name = "value") double responseTimeThreshold){
+        knowledgeService.updateResponseTimeThreshold(serviceId, responseTimeThreshold);
+        return ResponseEntity.ok("Response time threshold updated");
+    }
 
 
 
