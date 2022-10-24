@@ -212,12 +212,6 @@ public class AnalyseService {
 
                 List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(instanceMetricsSnapshot -> instanceMetricsSnapshot.isActive() && instanceMetricsSnapshot.getHttpMetrics().size()>0).toList(); //la lista contiene almeno un elemento grazie all'inactive rate
 
-                /* è stato tolto. I controlli vengono fatti nella computeInstanceXXX
-                if (activeMetrics.size() < 3) {
-                    //non ci sono abbastanza metriche per questa istanza, scelta ottimistica di considerarla come buona.
-                    // 3 istanze attive ci garantiscono che ne abbiamo due con un numero di richieste diverse
-                    instancesStats.add(new InstanceStats(instance));
-                } else {*/
                 InstanceMetricsSnapshot oldestActiveMetrics = activeMetrics.get(activeMetrics.size() - 1);
                 InstanceMetricsSnapshot latestActiveMetrics = activeMetrics.get(0);
                 instancesStats.add(new InstanceStats(instance, computeInstanceAvgResponseTime(instance, oldestActiveMetrics, latestActiveMetrics), computeInstanceAvailability(instance, oldestActiveMetrics, latestActiveMetrics)));
@@ -261,7 +255,7 @@ public class AnalyseService {
         double serviceAverageResponseTime = 0;
         for (InstanceStats instanceStats : instancesStats) {
             String instanceId = instanceStats.getInstance().getInstanceId();
-            if (instanceStats.isFromNewData()) {
+            if (instanceStats.isFromNewData()) { // only for the instances with a full metrics window
                 newInstancesValues.put(instanceId, new HashMap<>());
                 QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
                 QoSHistory.Value newInstanceValue;

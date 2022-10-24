@@ -25,7 +25,7 @@ public class InstanceStats {
         fromNewData = true;
     }
 
-    // We don't have enough metrics to compute the stats, so we use the current value for each QoS
+    // We don't have metricsWindow metricsSnaphots to compute the stats, so we use the current value for each QoS
     public InstanceStats(Instance instance) {
         this.instance = instance;
         availability = instance.getLatestValueForQoS(Availability.class).getDoubleValue();
