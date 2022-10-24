@@ -40,19 +40,19 @@
 			"implementations" : [
 				{
 					"implementation_id" : "payment-proxy-1-service",
-					"implementation_trust" : 5,
+					"implementation_trust" : 2,
 					"preference" : 0.4,
 					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "payment-proxy-2-service",
-					"implementation_trust" : 5,
+					"implementation_trust" : 3,
 					"preference" : 0.3,
 					"instance_load_shutdown_threshold" : 0.4
 				},
 				{
 					"implementation_id" : "payment-proxy-3-service",
-					"implementation_trust" : 10,
+					"implementation_trust" : 4,
 					"preference" : 0.3,
 					"instance_load_shutdown_threshold" : 0.4
 				}
