@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +64,7 @@ public class MonitorService {
     }
 
     /*
-    // TODO decomment to start routine on startup
+    // decomment to start routine on startup
     @PostConstruct
     public void initRoutine() {
         monitorRoutine = taskScheduler.scheduleWithFixedDelay(new MonitorRoutine(), schedulingPeriod);
@@ -72,12 +73,11 @@ public class MonitorService {
 
     // ASSUNZIONE: IL PERIODO DEVE ESSERE "ABBASTANZA" MINORE DEL PERIODO DI AGGIORNAMENTO DEL DISCOVERY SERVICE (PER EUREKA DI DEFAULT 90SEC)
     // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)
-    //@Scheduled(fixedDelayString = "#{monitorConfig.period}") //delay in milliseconds
     class MonitorRoutine implements Runnable {
         @Override
         public void run() {
+            log.debug("\nA new Monitor routine iteration started");
             try {
-                log.debug("\nA new Monitor routine iteration started");
                 Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
                 log.debug("Discovery Service Status");
                 services.forEach((serviceId, instances) -> {
