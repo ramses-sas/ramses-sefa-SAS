@@ -117,7 +117,7 @@ public class DashboardWebController {
 	@GetMapping("/service/{serviceId}")
 	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
-		log.info("Service: " + service);
+		//log.info("Service: " + service);
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
 		for (Instance instance : service.getInstances()) {

@@ -351,11 +351,16 @@ public class AnalyseService {
 
 
     /**
-     * Computes the adaptation options for a service. Invalidates the service QoS histories if it requires adaptation.
+     * Computes the adaptation options for a service.
      * Recursive.
      * @param service the service to analyse
      * @param servicesRequiringOrCompletingAdaptation the map of services that requires adaptation, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
      * @return true if the service has problems and requires adaptation
+     */
+
+    /*
+    servicesRequiringOrCompletingAdaptation: services already considered for the adaptation proposal logic. If a service is not in the map, it is not analysed yet.
+    If the value is true, the service is in transient state (it has been recently adapted) or it requires adaptation.
      */
     private boolean computeAdaptationOptions(Service service, Map<String, Boolean> servicesRequiringOrCompletingAdaptation) {
         String serviceId = service.getServiceId();
@@ -363,8 +368,6 @@ public class AnalyseService {
             return servicesRequiringOrCompletingAdaptation.get(serviceId); // return info about if the service requires adaptation
         boolean hasForcedOptions = !servicesForcedAdaptationOptionsMap.get(serviceId).isEmpty();
         servicesRequiringOrCompletingAdaptation.put(serviceId, hasForcedOptions); // Start saying that the service requires adaptation if it has forced options
-        //if (hasForcedOptions) // TODO_COPERTO move to plan
-        //    invalidateAllQoSHistories(service); // invalidate all the QoS histories of the service and of its instances
         if (servicesToSkip.contains(serviceId)) { //todo potremmo direttamemte inizializzare la map con quelli toSkip o usare un solo set/map
             log.warn("{}: the analysis decided to skip adaptation for this service.", serviceId);
             servicesRequiringOrCompletingAdaptation.put(serviceId, true); // true because if the service is skipped, it is because it has problems or has an adaptation in progress
@@ -391,8 +394,6 @@ public class AnalyseService {
             log.debug("{}: Possibly computing adaptation options for dependency {}", service.getServiceId(), serviceDependency.getServiceId());
             if (computeAdaptationOptions(serviceDependency, servicesRequiringOrCompletingAdaptation)) {
                 log.debug("{}: dependency {} has problems. First solving dependency's problems", serviceId, serviceDependency.getServiceId());
-                //if (!hasForcedOptions) // TODO_COPERTO move to plan. NB. Il plan deve ricorsivamente controllare che le dip delle dip delle dip di un servizio non hanno problemi // if the service has forced options, it is already invalidated
-                //    invalidateAllQoSHistories(service); // Invalidate service QoS History because one of its dependencies has problems
                 return servicesRequiringOrCompletingAdaptation.get(serviceId);
             }
         }
@@ -403,13 +404,8 @@ public class AnalyseService {
                 log.debug("{}: no problems for dependencies. Proposing adaptation options", serviceId);
                 servicesProposedAdaptationOptionsMap.put(serviceId, proposedAdaptationOptions);
             }
-            //if (!hasForcedOptions) // TODO_COPERTO move to plan // if the service has forced options, it is already invalidated
-            //    invalidateAllQoSHistories(service); // Invalidate service QoS History because it has problems
         }
         return servicesRequiringOrCompletingAdaptation.get(serviceId);
-
-
-        // The service QoS History is invalidated both if it has problems and if there is a dependency with problems.
     }
 
 
