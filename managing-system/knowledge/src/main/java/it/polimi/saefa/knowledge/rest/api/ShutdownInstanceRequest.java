@@ -1,4 +1,4 @@
-package it.polimi.saefa.knowledge.rest;
+package it.polimi.saefa.knowledge.rest.api;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

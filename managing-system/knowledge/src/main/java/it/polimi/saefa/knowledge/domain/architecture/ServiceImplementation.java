@@ -24,7 +24,7 @@ public class ServiceImplementation {
     // <qosClass, qosBenchmark>
     private final Map<Class<? extends QoSSpecification>, Double> qoSBenchmarks = new HashMap<>();
 
-    private double score; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
+    private double preference; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
     private int trust; //valutazione di quanto è affidabile questa implementazione
     private int penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
     //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui QoS
@@ -32,9 +32,9 @@ public class ServiceImplementation {
     // should be seen as rate/threshold (i.e., shutdown the instances which process less than this threshold percentage with respect to the ideal case)
     private double instanceLoadShutdownThreshold;
 
-    public ServiceImplementation(String implementationId, double score, int trust, double instanceLoadShutdownThreshold) {
+    public ServiceImplementation(String implementationId, double preference, int trust, double instanceLoadShutdownThreshold) {
         this.implementationId = implementationId;
-        this.score = score;
+        this.preference = preference;
         this.trust = trust;
         this.instanceLoadShutdownThreshold = instanceLoadShutdownThreshold;
     }

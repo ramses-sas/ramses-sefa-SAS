@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Null;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -382,6 +383,21 @@ public class KnowledgeService {
         service.invalidateQoSHistory(Availability.class);
         service.invalidateQoSHistory(AverageResponseTime.class);
         qosRepository.invalidateServiceQoSHistory(serviceId, service.getCurrentImplementationId());
+    }
+
+    public void updateImplementationPreference(String serviceId, String implementationId, double preference) {
+        Service service = servicesMap.get(serviceId);
+        service.getPossibleImplementations().get(implementationId).setPreference(preference);
+    }
+
+    public void updateAvailabilityThreshold(String serviceId, double availabilityThreshold) {
+        Service service = servicesMap.get(serviceId);
+        ((Availability)(service.getQoSSpecifications().get(Availability.class))).setMinThreshold(availabilityThreshold);
+    }
+
+    public void updateResponseTimeThreshold(String serviceId, double responseTimeThreshold) {
+        Service service = servicesMap.get(serviceId);
+        ((AverageResponseTime)(service.getQoSSpecifications().get(AverageResponseTime.class))).setMaxThreshold(responseTimeThreshold);
     }
 }
 

@@ -24,14 +24,14 @@ public class SystemArchitectureParser {
             implementations.forEach(impl -> {
                 JsonObject implementation = impl.getAsJsonObject();
                 String implementationId = implementation.get("implementation_id").getAsString();
-                double score = implementation.get("score").getAsDouble();
+                double preference = implementation.get("preference").getAsDouble();
                 int implementationTrust = implementation.get("implementation_trust").getAsInt();
                 double instanceLoadShutdownThreshold = implementation.get("instance_load_shutdown_threshold") == null ? 0 : implementation.get("instance_load_shutdown_threshold").getAsDouble();
-                serviceImplementations.add(new ServiceImplementation(implementationId, score, implementationTrust, instanceLoadShutdownThreshold));
+                serviceImplementations.add(new ServiceImplementation(implementationId, preference, implementationTrust, instanceLoadShutdownThreshold));
             });
-            double totalScore = serviceImplementations.stream().map(ServiceImplementation::getScore).reduce(0.0, Double::sum);
-            if (totalScore != 1.0) {
-                throw new RuntimeException("Total score of service " + serviceId + " is not 1.0");
+            double totalPreference = serviceImplementations.stream().map(ServiceImplementation::getPreference).reduce(0.0, Double::sum);
+            if (totalPreference != 1.0) {
+                throw new RuntimeException("Total preference of service " + serviceId + " is not 1.0");
             }
             JsonArray dependencies = serviceJson.get("dependencies").getAsJsonArray();
             List<String> serviceDependencies = new LinkedList<>();
