@@ -276,6 +276,10 @@ public class AnalyseService {
             serviceAverageResponseTime += instanceStats.getAverageResponseTime() * weight;
         }
 
+        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
+        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
+
+        // Logic for creating the current value of the service and of the instances, only if the service is not to skip
         if (!skipServiceQoSComputation) {
             if (instancesStats.size() != service.getInstances().size())
                 throw new RuntimeException("THIS SHOULD NOT HAPPEN");
@@ -285,18 +289,12 @@ public class AnalyseService {
             newServiceValues.put(AverageResponseTime.class, newServiceValue);
             newServiceValue = currentImplementationQoSCollection.createNewQoSValue(Availability.class, serviceAvailability);
             newServiceValues.put(Availability.class, newServiceValue);
-        } else {
-            log.debug("{}: computation for the new latest QoS value of the service must be skipped", service.getServiceId());
-        }
 
-        // Logic for creating the current value
-        Map<String, Map<Class<? extends QoSSpecification>, QoSHistory.Value>> newInstancesCurrentValues = new HashMap<>();
-        Map<Class<? extends QoSSpecification>, QoSHistory.Value> newServiceCurrentValues = new HashMap<>();
-        List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
-        List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
-        if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
-            // If we should not propose adaptation options for the given service, don't update its QoS History (i.e., there are booting or shutdown instances)
-            if (!skipServiceQoSComputation) {
+            // Logic for creating the current value
+            List<Double> serviceAvailabilityHistory = service.getLatestAnalysisWindowForQoS(Availability.class, analysisWindowSize);
+            List<Double> serviceAvgRespTimeHistory = service.getLatestAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize);
+            if (serviceAvailabilityHistory != null && serviceAvgRespTimeHistory != null) { // Null if there are not AnalysisWindowSize VALID values in the history
+                // If we should not propose adaptation options for the given service, don't update its QoS History (i.e., there are booting or shutdown instances)
                 // Update the current values for the QoS of the service.
                 QoSHistory.Value newServiceCurrentValue;
                 newServiceCurrentValue = service.changeCurrentValueForQoS(Availability.class, serviceAvailabilityHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
@@ -304,37 +302,37 @@ public class AnalyseService {
                 newServiceCurrentValue = service.changeCurrentValueForQoS(AverageResponseTime.class, serviceAvgRespTimeHistory.stream().mapToDouble(Double::doubleValue).average().orElseThrow());
                 newServiceCurrentValues.put(AverageResponseTime.class, newServiceCurrentValue);
 
+                service.getInstances().forEach(instance -> {
+                    // Update the current values for the QoS of the instances.
+                    QoSHistory.Value newInstanceCurrentValue;
+                    newInstancesCurrentValues.put(instance.getInstanceId(), new HashMap<>());
+                    newInstanceCurrentValue = instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                    newInstancesCurrentValues.get(instance.getInstanceId()).put(Availability.class, newInstanceCurrentValue);
+                    newInstanceCurrentValue = instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
+                    newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
+                });
+
+                //todo remove after test
+                AtomicBoolean allAvailBelow = new AtomicBoolean(true);
+                AtomicBoolean allAvgAbove = new AtomicBoolean(true);
+
+                service.getInstances().forEach(instance -> {
+                    if (allAvailBelow.get() && instance.getCurrentValueForQoS(Availability.class).getDoubleValue() >= service.getCurrentValueForQoS(Availability.class).getDoubleValue())
+                        allAvailBelow.set(false);
+                    if (allAvgAbove.get() && instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue() <= service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
+                        allAvgAbove.set(false);
+                });
+
+                if (allAvailBelow.get() || allAvgAbove.get()) {
+                    throw new RuntimeException("INVESTIGATE");
+                }
+
+                log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
             } else {
-                log.debug("{}: computation for the new current QoS value of the service must be skipped", service.getServiceId());
+                log.debug("{} has NOT a full analysis window. Cannot compute a new current value.", service.getServiceId());
             }
-            service.getInstances().forEach(instance -> {
-                // Update the current values for the QoS of the instances.
-                QoSHistory.Value newInstanceCurrentValue;
-                newInstancesCurrentValues.put(instance.getInstanceId(), new HashMap<>());
-                newInstanceCurrentValue = instance.changeCurrentValueForQoS(Availability.class, instance.getLatestFilledAnalysisWindowForQoS(Availability.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newInstancesCurrentValues.get(instance.getInstanceId()).put(Availability.class, newInstanceCurrentValue);
-                newInstanceCurrentValue = instance.changeCurrentValueForQoS(AverageResponseTime.class, instance.getLatestFilledAnalysisWindowForQoS(AverageResponseTime.class, analysisWindowSize).stream().mapToDouble(Double::doubleValue).average().orElseThrow());
-                newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
-            });
-
-            //todo remove after test
-            AtomicBoolean allAvailBelow = new AtomicBoolean(true);
-            AtomicBoolean allAvgAbove = new AtomicBoolean(true);
-
-            service.getInstances().forEach(instance -> {
-                if (allAvailBelow.get() && instance.getCurrentValueForQoS(Availability.class).getDoubleValue() >= service.getCurrentValueForQoS(Availability.class).getDoubleValue())
-                    allAvailBelow.set(false);
-                if (allAvgAbove.get() && instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue() <= service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
-                    allAvgAbove.set(false);
-            });
-
-            if (allAvailBelow.get() || allAvgAbove.get()) {
-                throw new RuntimeException("INVESTIGATE");
-            }
-
-            log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
         } else {
-            log.debug("{} has NOT a full analysis window. Cannot compute a new current value.", service.getServiceId());
+            log.debug("{}: computation for the new latest QoS value of the service must be skipped", service.getServiceId());
         }
 
         // Logic for pushing the new values in the Knowledge
