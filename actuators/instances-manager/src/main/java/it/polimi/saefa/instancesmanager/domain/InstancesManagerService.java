@@ -59,9 +59,10 @@ public class InstancesManagerService {
         switch (currentProfile) {
             case "Scenario1":
                 simulationInstanceParamsMap.put(currentProfile, List.of(
-                    new SimulationInstanceParams(0.1, 0.5, 0.2),
-                    new SimulationInstanceParams(0.2, 1.0, 0.2),
-                    new SimulationInstanceParams(0.6, 0.1, 0.5)
+                    // (failureRate, sleepDuration, sleepVariance)
+                    new SimulationInstanceParams(0.9, 1.0, 0.2),
+                    new SimulationInstanceParams(0.01, 0.15, 0.04),
+                    new SimulationInstanceParams(0.0, 0.01, 0.01)
                 ));
                 break;
             default:
@@ -75,7 +76,10 @@ public class InstancesManagerService {
         List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
         List<SimulationInstanceParams> simulationInstanceParamsList;
         synchronized (lock) {
-            simulationInstanceParamsList = simulationInstanceParamsMap.get(currentProfile);
+            if (serviceImplementationName.equalsIgnoreCase("restaurant-service"))
+                simulationInstanceParamsList = simulationInstanceParamsMap.get(currentProfile);
+            else
+                simulationInstanceParamsList = List.of(new SimulationInstanceParams(0.0, 0.0, 0.0));
         }
         for (int i = 0; i < numberOfInstances; i++) {
             int randomPort = getRandomPort();
