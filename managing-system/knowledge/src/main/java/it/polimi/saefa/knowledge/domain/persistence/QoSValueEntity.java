@@ -23,10 +23,11 @@ public class QoSValueEntity {
     private double value;
     private boolean invalidatesThisAndPrevious;
     private Double currentValue;
+    private double threshold;
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, Double currentValue, double value, boolean invalidatesThisAndPrevious, Date timestamp) {
+    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, double threshold, Double currentValue, double value, boolean invalidatesThisAndPrevious, Date timestamp) {
         this.serviceId = serviceId;
         this.serviceImplementationId = serviceImplementationId;
         this.instanceId = instanceId;
@@ -37,7 +38,7 @@ public class QoSValueEntity {
         this.timestamp = timestamp;
     }
 
-    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, QoSHistory.Value currentValue, QoSHistory.Value value) {
-        this(serviceId, serviceImplementationId, instanceId, qos, (currentValue == null ? null : currentValue.getDoubleValue()), value.getDoubleValue(), value.invalidatesThisAndPreviousValues(), value.getTimestamp());
+    public QoSValueEntity(String serviceId, String serviceImplementationId, String instanceId, String qos, double threshold, QoSHistory.Value currentValue, QoSHistory.Value value) {
+        this(serviceId, serviceImplementationId, instanceId, qos, threshold, (currentValue == null ? null : currentValue.getDoubleValue()), value.getDoubleValue(), value.invalidatesThisAndPreviousValues(), value.getTimestamp());
     }
 }
