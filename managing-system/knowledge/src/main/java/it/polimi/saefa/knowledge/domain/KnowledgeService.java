@@ -18,10 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-import javax.transaction.Transactional;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Null;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -326,9 +322,15 @@ public class KnowledgeService {
         newInstancesValues.forEach((instanceId, newInstanceQoSValues) -> {
             Instance instance = service.getInstance(instanceId);
             newInstanceQoSValues.forEach((qosClass, qosValue) -> {
+                double threshold = -1;
+                QoSSpecification qosSpecification = service.getQoSSpecifications().get(qosClass);
+                if (qosClass.equals(Availability.class))
+                    threshold = ((Availability) qosSpecification).getMinThreshold();
+                else if (qosClass.equals(AverageResponseTime.class))
+                    threshold = ((AverageResponseTime) qosSpecification).getMaxThreshold();
                 instance.getQoSCollection().addNewQoSValue(qosClass, qosValue);
                 qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), instanceId,
-                        qosClass.getSimpleName(), instance.getCurrentValueForQoS(qosClass), qosValue));
+                        qosClass.getSimpleName(), threshold, instance.getCurrentValueForQoS(qosClass), qosValue));
             });
         });
         // Update the current value of each QoS for the service
@@ -337,9 +339,15 @@ public class KnowledgeService {
         });
         // Add the latest value of each QoS for the service. Then persist it.
         newServiceValues.forEach((qosClass, qosValue) -> {
+            double threshold = -1;
+            QoSSpecification qosSpecification = service.getQoSSpecifications().get(qosClass);
+            if (qosClass.equals(Availability.class))
+                threshold = ((Availability) qosSpecification).getMinThreshold();
+            else if (qosClass.equals(AverageResponseTime.class))
+                threshold = ((AverageResponseTime) qosSpecification).getMaxThreshold();
             service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, qosValue);
             qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), null,
-                    qosClass.getSimpleName(), service.getCurrentValueForQoS(qosClass), qosValue));
+                    qosClass.getSimpleName(), threshold, service.getCurrentValueForQoS(qosClass), qosValue));
         });
     }
 
