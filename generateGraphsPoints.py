@@ -18,7 +18,7 @@ try:
             for qos in qoses:
                 print("\n",service, ": "+qos)
                 select_query = "SELECT q.service_implementation_id, q.current_value, q.value, q.threshold, q.invalidates_this_and_previous, q.timestamp FROM qosvalue_entity q"
-                select_query += " WHERE service_id = '"+service+"' AND qos = '"+qos+"' AND q.instance_id IS NULL LIMIT 20"
+                select_query += " WHERE service_id = '"+service+"' AND qos = '"+qos+"' AND q.instance_id IS NULL"
                 with connection.cursor() as cursor:
                     timestamps = []
                     current_values = []
@@ -39,7 +39,7 @@ try:
                         timestamps.append(row[5])
                     values_coordinates = [(i+1, values[i]) for i in range(len(values))]
                     thresholds_coordinates = [(i+1, thresholds[i]) for i in range(len(thresholds))]
-                    current_values_coordinates = [(i+1, current_values[i] if current_values[i] is not None else 0.0) for i in range(len(current_values))]
+                    current_values_coordinates = [(i+1, current_values[i]) for i in range(len(current_values)) if current_values[i] is not None]
                     invalidates_coordinates = [(i+1, values[i]) for i in range(len(invalidates)) if invalidates[i] == 1]
 
                     files_to_generate = [values_coordinates, thresholds_coordinates, current_values_coordinates, invalidates_coordinates]
@@ -50,7 +50,7 @@ try:
                             for val in file_to_generate:
                                 print(val[0], val[1])
                                 f.writelines(str(val[0])+" "+str(val[1])+"\n")
-            break
+
                     
 except Error as e:
     print(e)
