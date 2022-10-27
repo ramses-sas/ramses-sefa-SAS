@@ -212,7 +212,8 @@ public class KnowledgeService {
             artLatestValue = qosCollection.getQoSHistory(AverageResponseTime.class).getCurrentValue();
         if (availabilityLatestValue == null || artLatestValue == null)
             throw new RuntimeException("THIS SHOULD NOT HAPPEN");
-        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValue.getTimestamp().after(availabilityLatestValue.getTimestamp()) ? artLatestValue.getTimestamp() : availabilityLatestValue.getTimestamp(), Pageable.ofSize(n)).stream().toList();
+        List<InstanceMetricsSnapshot> toReturn = metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValue.getTimestamp().after(availabilityLatestValue.getTimestamp()) ? artLatestValue.getTimestamp() : availabilityLatestValue.getTimestamp(), Pageable.ofSize(n)).stream().toList();
+        return toReturn;
     }
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {

@@ -258,10 +258,10 @@ public class AnalyseService {
                 newInstancesValues.put(instanceId, new HashMap<>());
                 QoSCollection currentInstanceQoSCollection = instanceStats.getInstance().getQoSCollection();
                 QoSHistory.Value newInstanceValue;
-                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(Availability.class, instanceStats.getAvailability());
-                newInstancesValues.get(instanceId).put(Availability.class, newInstanceValue);
                 newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(AverageResponseTime.class, instanceStats.getAverageResponseTime());
                 newInstancesValues.get(instanceId).put(AverageResponseTime.class, newInstanceValue);
+                newInstanceValue = currentInstanceQoSCollection.createNewQoSValue(Availability.class, instanceStats.getAvailability());
+                newInstancesValues.get(instanceId).put(Availability.class, newInstanceValue);
             }
             double weight = (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) ?
                     service.getLoadBalancerWeight(instanceStats.getInstance()) : 1.0/instancesStats.size();
@@ -512,14 +512,14 @@ public class AnalyseService {
             HttpEndpointMetrics oldestEndpointMetrics = oldestActiveMetrics.getHttpMetrics().get(endpoint);
             totalRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCount();
             successfulRequestsCount += latestActiveMetrics.getHttpMetrics().get(endpoint).getTotalCountOfSuccessful();
-            if(oldestEndpointMetrics != null){
+            if (oldestEndpointMetrics != null) {
                 totalRequestsCount -= oldestEndpointMetrics.getTotalCount();
                 successfulRequestsCount -= oldestEndpointMetrics.getTotalCountOfSuccessful();
             }
         }
         if (totalRequestsCount == 0) {
             log.warn("{}: No successful requests for instance {}. Using its current value for Availability", instance.getServiceId(), instance.getInstanceId());
-            return instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue();
+            return instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
         }
         return successfulRequestsCount/totalRequestsCount;
     }

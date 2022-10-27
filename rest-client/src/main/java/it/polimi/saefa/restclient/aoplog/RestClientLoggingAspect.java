@@ -64,7 +64,7 @@ public class RestClientLoggingAspect {
 
     /* Eseguito se è stata sollevata un'eccezione */
     //@AfterThrowing(value="restClientMethods()", throwing="exception")
-    @Around("restClientMethods() || restClientVoidMethods()")
+    //@Around("restClientMethods() || restClientVoidMethods()")
     public Object logErrorApplication(ProceedingJoinPoint joinPoint) {
         try {
             return joinPoint.proceed();

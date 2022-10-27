@@ -1,6 +1,7 @@
 from mysql.connector import *
 import os
 
+FILEPATH = os.path.dirname(os.path.realpath(__file__))
 
 services = ["RESTAURANT-SERVICE", "ORDERING-SERVICE", "PAYMENT-PROXY-SERVICE", "DELIVERY-PROXY-SERVICE"]
 qoses = ["Availability", "AverageResponseTime"]
@@ -61,13 +62,13 @@ try:
                     files_to_generate = [values_coordinates, thresholds_coordinates, current_values_coordinates, invalidates_coordinates]
                     for file_to_generate in files_to_generate:
                         var_name = [ k for k,v in locals().items() if v is file_to_generate][0]
-                        os.makedirs("Sim/"+service, exist_ok = True)
-                        with open("Sim/"+service+"/"+qos+"_"+var_name.replace("_coordinates","")+".txt", "w") as f:
+                        os.makedirs(FILEPATH+"/"+service, exist_ok = True)
+                        with open(FILEPATH+"/"+service+"/"+qos+"_"+var_name.replace("_coordinates","")+".txt", "w") as f:
                             f.writelines("i value\n")
                             for val in file_to_generate:
                                 print(val[0], val[1])
                                 f.writelines(str(val[0])+" "+str(val[1])+"\n")
-                    with open("Sim/"+service+"/"+qos+"_adaptation.txt", "w") as f:
+                    with open(FILEPATH+"/"+service+"/"+qos+"_adaptation.txt", "w") as f:
                         f.writelines("i\n")
                         for val in adaptation_coordinates:
                             print(val)
