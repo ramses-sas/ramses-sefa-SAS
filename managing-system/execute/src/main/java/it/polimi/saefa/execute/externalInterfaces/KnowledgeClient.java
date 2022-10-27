@@ -48,6 +48,6 @@ public interface KnowledgeClient {
     ResponseEntity<String> notifyChangeOfImplementation(@RequestBody ChangeOfImplementationRequest request);
 
 
-    @PutMapping("/rest/activeModule")
+    @PutMapping("/rest/failedModule")
     String setFailedModule(@RequestParam Modules module);
 }

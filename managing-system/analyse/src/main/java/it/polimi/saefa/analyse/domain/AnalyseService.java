@@ -133,7 +133,6 @@ public class AnalyseService {
             planClient.start();
         }  catch (Exception e) {
             knowledgeClient.setFailedModule(Modules.ANALYSE);
-            log.error(e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Error during the Analyse execution: " + e.getMessage());
         }
@@ -318,7 +317,7 @@ public class AnalyseService {
                 });
 
                 if (allAvailBelow.get() || allAvgAbove.get()) {
-                    throw new RuntimeException("INVESTIGATE");
+                    log.error("INVESTIGATE");
                 }
 
                 log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());

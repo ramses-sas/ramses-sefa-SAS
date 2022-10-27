@@ -43,6 +43,7 @@ public class KnowledgeRestController {
 
     @PutMapping("/failedModule")
     public String setFailedModule(@RequestParam Modules module) {
+        log.error("Module {} failed", module);
         knowledgeService.setFailedModule(module);
         return "Failed module " + module + " correctly set";
     }

@@ -83,7 +83,7 @@ public interface KnowledgeClient {
     @PostMapping("/rest/updateInstancesQoSCollection")
     ResponseEntity<String> updateInstancesQoSCollection(@RequestBody Map<String, Map<String, QoSCollection>> instanceQoSMap);
 
-    @PutMapping("/rest/activeModule")
+    @PutMapping("/rest/failedModule")
     String setFailedModule(@RequestParam Modules module);
 
     @PostMapping("/rest/service/{serviceId}/invalidateQosHistory")
