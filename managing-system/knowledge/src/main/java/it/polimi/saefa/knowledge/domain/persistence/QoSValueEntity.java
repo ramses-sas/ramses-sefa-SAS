@@ -32,6 +32,7 @@ public class QoSValueEntity {
         this.serviceImplementationId = serviceImplementationId;
         this.instanceId = instanceId;
         this.qos = qos;
+        this.threshold = threshold;
         this.value = value;
         this.invalidatesThisAndPrevious = invalidatesThisAndPrevious;
         this.currentValue = currentValue;
