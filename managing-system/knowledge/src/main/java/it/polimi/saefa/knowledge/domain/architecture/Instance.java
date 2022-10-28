@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -48,8 +49,8 @@ public class Instance {
         return toReturn;
     }
 
-    public <T extends QoSSpecification> QoSHistory.Value changeCurrentValueForQoS(Class<T> qoSClass, double newValue) {
-        return getQoSCollection().changeCurrentValueForQoS(qoSClass, newValue);
+    public <T extends QoSSpecification> QoSHistory.Value changeCurrentValueForQoS(Class<T> qoSClass, double newValue, Date date) {
+        return getQoSCollection().changeCurrentValueForQoS(qoSClass, newValue, date);
     }
 
     public <T extends QoSSpecification> void invalidateQoSHistory(Class<T> qoSClass) {

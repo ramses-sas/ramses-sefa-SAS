@@ -15,8 +15,8 @@ public class QoSCollection {
 
 
     // Functions on current value
-    public QoSHistory.Value changeCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, double value) {
-        qoSHistoryMap.get(qosSpecificationClass).setCurrentValue(new QoSHistory.Value(value, new Date()));
+    public QoSHistory.Value changeCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, double value, Date date) {
+        qoSHistoryMap.get(qosSpecificationClass).setCurrentValue(new QoSHistory.Value(value, date));
         return qoSHistoryMap.get(qosSpecificationClass).getCurrentValue();
     }
 
@@ -34,9 +34,9 @@ public class QoSCollection {
 
 
     // Functions on values history
-    public <T extends QoSSpecification> QoSHistory.Value createNewQoSValue(Class<T> qosClass, Double value) {
+    public <T extends QoSSpecification> QoSHistory.Value createNewQoSValue(Class<T> qosClass, double value, Date date) {
         QoSHistory<T> qoSHistory = (QoSHistory<T>) qoSHistoryMap.get(qosClass);
-        return qoSHistory.addValue(value);
+        return qoSHistory.addValue(value, date);
     }
 
     public <T extends QoSSpecification> void addNewQoSValue(Class<T> qosClass, QoSHistory.Value value) {

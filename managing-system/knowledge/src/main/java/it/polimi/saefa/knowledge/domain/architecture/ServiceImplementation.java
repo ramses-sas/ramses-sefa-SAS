@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class ServiceImplementation {
         Instance instance = new Instance(instanceId, serviceId);
         for (QoSSpecification specification : qoSSpecifications) {
             instance.getQoSCollection().createHistory(specification);
-            instance.getQoSCollection().changeCurrentValueForQoS(specification.getClass(), getBenchmark(specification.getClass()));
+            instance.getQoSCollection().changeCurrentValueForQoS(specification.getClass(), getBenchmark(specification.getClass()), new Date());
         }
         instances.put(instanceId, instance);
         return instance;

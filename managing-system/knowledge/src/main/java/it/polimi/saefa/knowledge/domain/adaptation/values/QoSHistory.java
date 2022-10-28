@@ -21,8 +21,8 @@ public class QoSHistory<T extends QoSSpecification> {
         this.specification = specification;
     }
 
-    public Value addValue(double value) {
-        valuesStack.add(0, new Value(value, new Date()));
+    public Value addValue(double value, Date date) {
+        valuesStack.add(0, new Value(value, date));
         return valuesStack.get(0);
     }
 
@@ -76,7 +76,7 @@ public class QoSHistory<T extends QoSSpecification> {
         private final double doubleValue;
         private final Date timestamp;
 
-        public Value(double doubleValue, Date timestamp) {
+        protected Value(double doubleValue, Date timestamp) {
             this.doubleValue = doubleValue;
             this.timestamp = timestamp;
         }

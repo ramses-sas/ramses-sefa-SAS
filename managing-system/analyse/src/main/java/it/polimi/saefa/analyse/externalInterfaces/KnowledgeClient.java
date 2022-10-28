@@ -71,9 +71,6 @@ public interface KnowledgeClient {
             @RequestParam int n
     );
 
-    @PostMapping("/rest/addNewQoSValue")
-    ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request);
-
     @PostMapping("/rest/proposeAdaptationOptions")
     ResponseEntity<String> proposeAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions);
 

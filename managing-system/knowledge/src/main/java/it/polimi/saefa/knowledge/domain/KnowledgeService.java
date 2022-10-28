@@ -266,12 +266,12 @@ public class KnowledgeService {
 
 
     // Update QoS-related properties
-    public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value) {
-        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().createNewQoSValue(qosClass, value);
+    public void addNewInstanceQoSValue(String serviceId, String instanceId, Class<? extends QoSSpecification> qosClass, Double value, Date date) {
+        servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection().createNewQoSValue(qosClass, value, date);
     }
 
-    public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value) {
-        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().createNewQoSValue(qosClass, value);
+    public void addNewServiceQoSValue(String serviceId, Class<? extends QoSSpecification> qosClass, Double value, Date date) {
+        servicesMap.get(serviceId).getCurrentImplementation().getQoSCollection().createNewQoSValue(qosClass, value, date);
     }
 
     public void updateServiceQoSCollection(String serviceId, QoSCollection qoSCollection) {

@@ -168,15 +168,17 @@ public class KnowledgeRestController {
         return ResponseEntity.ok("Configuration changed");
     }
 
+    /*
     @PostMapping("/addNewQoSValue")
     public ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request){
-        if(request.getInstanceId() == null){
-            knowledgeService.addNewServiceQoSValue(request.getServiceId(), request.getQoSClass(), request.getValue());
+        if (request.getInstanceId() == null){
+            knowledgeService.addNewServiceQoSValue(request.getServiceId(), request.getQoSClass(), request.getValue(), request.getDate());
         } else if (request.getInstanceId() != null){
-            knowledgeService.addNewInstanceQoSValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue());
+            knowledgeService.addNewInstanceQoSValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue(), request.getDate());
         }
         return ResponseEntity.ok().body("QoS value added");
     }
+     */
 
     @PostMapping("/service/{serviceId}/setLoadBalancerWeights")
     public ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights) {
