@@ -105,7 +105,7 @@ public class KnowledgeService {
                         if (!instance.getLatestInstanceMetricsSnapshot().equals(metricsSnapshot)) {
                             metricsRepository.save(metricsSnapshot);
                             instance.setLatestInstanceMetricsSnapshot(metricsSnapshot);
-                            instance.setCurrentStatus(metricsSnapshot.getStatus());
+                            instance.setCurrentStatus(metricsSnapshot.getStatus()); // Qui se un'istanza era booting ora è active o unreachable
                         } else
                             log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
                         if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
@@ -116,9 +116,13 @@ public class KnowledgeService {
                 }
                 // Failure detection of instances
                 if (!previouslyActiveInstances.isEmpty()) {
+                    // Dal set di istanze attive in precedenza tolgo quelle attive adesso e quelle che sono state spente
                     Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
                     failedInstances.removeAll(currentlyActiveInstances);
                     failedInstances.removeIf(instance -> instance.getCurrentStatus() == InstanceStatus.SHUTDOWN);
+                    if (failedInstances.stream().anyMatch(instance -> instance.getCurrentStatus() == InstanceStatus.BOOTING)) {
+                        log.error("Marking as FAILED instances that are BOOTING!!!!!!!");
+                    }
 
                     // There should be only the instances that have been shutdown and are still monitored
                     failedInstances.forEach(instance -> {
@@ -201,7 +205,6 @@ public class KnowledgeService {
 
 
 
-    // TODO verifica che ora i QoS vengono veramente creati dopo metricsWindow iterazioni
     public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String serviceId, String instanceId, int n) {
         QoSCollection qosCollection = servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection();
         QoSHistory.Value availabilityLatestValue = qosCollection.getQoSHistory(Availability.class).getLatestValue();

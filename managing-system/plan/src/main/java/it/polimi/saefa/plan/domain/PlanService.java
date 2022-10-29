@@ -61,11 +61,11 @@ public class PlanService {
                     if (forcedAdaptationOptions.isEmpty()) {
                         log.debug("{} has no forced options. Analysing proposed adaptation options.", serviceId);
                         for (AdaptationOption option : options) {
-                            log.debug(option.getDescription());
+                            log.debug("Proposed option: {}", option.getDescription());
                             if (option.getClass().equals(ChangeLoadBalancerWeightsOption.class)) {
                                 ChangeLoadBalancerWeightsOption changeLoadBalancerWeightsOption = (ChangeLoadBalancerWeightsOption) option;
                                 Map<String, Double> newWeights = handleChangeLoadBalancerWeights(servicesMap.get(option.getServiceId()));
-                                if (newWeights != null) { //If it's null it means that the problem has no solution
+                                if (newWeights != null) { // If it's null it means that the problem has no solution
                                     List<String> instancesToShutdownIds = new LinkedList<>();
                                     newWeights.forEach((instanceId, weight) -> {
                                         if (weight == 0.0) {
@@ -80,7 +80,7 @@ public class PlanService {
                             if (option.getClass().equals(AddInstanceOption.class))
                                 handleAddInstance((AddInstanceOption) option, servicesMap.get(option.getServiceId()));
                             if (option.getClass().equals(ShutdownInstanceOption.class))
-                                handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false);
+                                handleShutdownInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), false);
                             if (option.getClass().equals(ChangeImplementationOption.class))
                                 handleChangeImplementation((ChangeImplementationOption) option, servicesMap.get(option.getServiceId()));
                         }
@@ -96,7 +96,7 @@ public class PlanService {
                         //We first perform all the ShutdownInstanceOptions and then perform the final AddInstanceOption, if any. This same order must be respected by the Execute.
                         for (AdaptationOption option : forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(ShutdownInstanceOption.class)).toList()) {
                             log.debug(option.toString());
-                            chosenAdaptationOptionList.add(handleRemoveInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), true));
+                            chosenAdaptationOptionList.add(handleShutdownInstance((ShutdownInstanceOption) option, servicesMap.get(option.getServiceId()), true));
                         }
                         List<AddInstanceOption> addInstanceOptions = forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(AddInstanceOption.class)).map(option -> (AddInstanceOption) option).toList();
                         if (addInstanceOptions.size() > 1) {
@@ -157,10 +157,10 @@ public class PlanService {
     }
 
     //quando è forced vanno aggiornati i pesi nel servizio, in modo che tutte le altre opzioni di adattamento siano coerenti con le opzioni che verranno applicate
-    private ShutdownInstanceOption handleRemoveInstance(ShutdownInstanceOption shutdownInstanceOption, Service service, boolean isForced) {
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM){
-            shutdownInstanceOption.setNewWeights(redistributeWeight(service.getLoadBalancerWeights(), shutdownInstanceOption.getInstanceToShutdownId()));
-            if(isForced){
+    private ShutdownInstanceOption handleShutdownInstance(ShutdownInstanceOption shutdownInstanceOption, Service service, boolean isForced) {
+        if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
+            shutdownInstanceOption.setNewWeights(redistributeWeight(service.getLoadBalancerWeights(), List.of(shutdownInstanceOption.getInstanceToShutdownId())));
+            if (isForced) {
                 service.setLoadBalancerWeights(shutdownInstanceOption.getNewWeights());
                 service.removeInstance(service.getInstancesMap().get(shutdownInstanceOption.getInstanceToShutdownId()));
             }
@@ -168,42 +168,33 @@ public class PlanService {
         return shutdownInstanceOption;
     }
 
+    // returns the new weights after redistributing the weight of the instances to shutdown. The instances shutdown are removed from the map. They can be retrieved computing the key set difference
+    private Map<String, Double> recursivelyRemoveInstancesUnderThreshold(Map<String, Double> originalWeights, double threshold) {
+        List<String> instancesToShutdownIds = originalWeights.entrySet().stream().filter(entry -> entry.getValue() < threshold).map(Map.Entry::getKey).toList();
+        if (instancesToShutdownIds.isEmpty()) // Stop when no instances are under the threshold
+            return originalWeights;
+        double newThreshold = threshold * originalWeights.size() / (originalWeights.size() - instancesToShutdownIds.size());
+        Map<String, Double> newWeights = redistributeWeight(originalWeights, instancesToShutdownIds);
+        return recursivelyRemoveInstancesUnderThreshold(newWeights, newThreshold);
+    }
+
     //We assume that only one AddInstance option per service for each loop iteration is proposed by the Analyse module.
     private AddInstanceOption handleAddInstance(AddInstanceOption addInstanceOption, Service service) {
-        if(service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
-            Set<String> instancesToRemove = new HashSet<>();
+        if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / (service.getInstances().size()+1);
-            boolean allWeightsOverThreshold = false;
-            Map<String, Double> oldWeightsRedistributed = service.getLoadBalancerWeights();
-
-            // TODO valuta ricorsione
-            while(!allWeightsOverThreshold) {
-                List<String> instancesToRemoveCurrentIteration = new LinkedList<>();
-                allWeightsOverThreshold = true;
-                int newNumberOfInstances = oldWeightsRedistributed.size()+1;
-                oldWeightsRedistributed = reduceWeightsForNewInstance(oldWeightsRedistributed, newNumberOfInstances);
-                for (String instanceId : oldWeightsRedistributed.keySet()) {
-                    if (oldWeightsRedistributed.get(instanceId) < shutdownThreshold) {
-                        instancesToRemoveCurrentIteration.add(instanceId);
-                        allWeightsOverThreshold = false;
-                        // TODO verifica che sia corretta
-                        log.debug("Instance {} has weight {} and will be removed. Shutdown threshold: {}", instanceId, oldWeightsRedistributed.get(instanceId), shutdownThreshold);
-                        shutdownThreshold = shutdownThreshold*(newNumberOfInstances-instancesToRemoveCurrentIteration.size()-1)/(newNumberOfInstances-instancesToRemoveCurrentIteration.size());
-                        log.debug("New shutdown threshold: {}", shutdownThreshold);
-                    }
-                }
-                for (String instanceId : instancesToRemoveCurrentIteration) {
-                    oldWeightsRedistributed = redistributeWeight(oldWeightsRedistributed, instanceId);
-                }
-                instancesToRemove.addAll(instancesToRemoveCurrentIteration);
+            Map<String, Double> weightsRedistributed = reduceWeightsForNewInstance(service.getLoadBalancerWeights(), 1);
+            weightsRedistributed.put("NEWINSTANCE", 1/(double)(weightsRedistributed.size()+1));
+            weightsRedistributed = recursivelyRemoveInstancesUnderThreshold(weightsRedistributed, shutdownThreshold);
+            addInstanceOption.setNewInstanceWeight(weightsRedistributed.remove("NEWINSTANCE"));
+            addInstanceOption.setOldInstancesNewWeights(weightsRedistributed);
+            Map<String, Double> finalWeightsRedistributed = weightsRedistributed;
+            addInstanceOption.setInstancesToShutdownIds(service.getLoadBalancerWeights().keySet().stream().filter(id -> !finalWeightsRedistributed.containsKey(id)).toList());
+            if (!addInstanceOption.getInstancesToShutdownIds().isEmpty()) {
+                log.warn("The Analyse module proposed to add an instance to service {} but also to shutdown some instances.", service.getServiceId());
+                log.warn("New Instance weight: {}", addInstanceOption.getNewInstanceWeight());
+                log.warn("Old instances new weights: {}", addInstanceOption.getOldInstancesNewWeights());
+                log.warn("Instances to shutdown: {}", addInstanceOption.getInstancesToShutdownIds());
             }
-
-            int newNumberOfInstances = oldWeightsRedistributed.size()+1;
-            Double newWeight = 1.0 / (newNumberOfInstances);
-
-            addInstanceOption.setNewInstanceWeight(newWeight);
-            addInstanceOption.setOldInstancesNewWeights(oldWeightsRedistributed);
-            addInstanceOption.setInstancesToShutdownIds(instancesToRemove.stream().toList());
         }
         return addInstanceOption;
     }
@@ -534,13 +525,13 @@ public class PlanService {
         log.info("breakpoint");
     }
 
-    /**
+    /*
      * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.
      *
      * @param originalWeights
      * @param instanceToRemoveId
      * @return the new originalWeights map
-     */
+     *
     private Map<String, Double> redistributeWeight(Map<String, Double> originalWeights, String instanceToRemoveId) {
         Map<String, Double> newWeights = new HashMap<>();
         double instanceWeight = originalWeights.get(instanceToRemoveId);
@@ -553,19 +544,42 @@ public class PlanService {
         }
         return newWeights;
     }
+    */
+
+
+    /**
+     * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.
+     *
+     * @param originalWeights the original weights of the instances
+     * @param instancesToRemoveIds the instances that will be shutdown
+     * @return the new originalWeights map. It does not contain the instances that will be shutdown
+     */
+    private Map<String, Double> redistributeWeight(Map<String, Double> originalWeights, List<String> instancesToRemoveIds) {
+        Map<String, Double> newWeights = new HashMap<>();
+        double totalWeightToRemove = originalWeights.entrySet().stream().filter(entry -> instancesToRemoveIds.contains(entry.getKey())).mapToDouble(Map.Entry::getValue).sum();
+        int newSizeOfActiveInstances = originalWeights.size() - instancesToRemoveIds.size();
+        double weightToAdd = totalWeightToRemove / newSizeOfActiveInstances;
+        for (String instanceId : originalWeights.keySet()) {
+            if (!instancesToRemoveIds.contains(instanceId)) { // if the instance is not in the list of instances to shutdown
+                double weight = originalWeights.get(instanceId) + weightToAdd; // increment the weight of the instance with 1/newSizeOfActiveInstances of the total weight to remove
+                newWeights.put(instanceId, weight);
+            }
+        }
+        return newWeights;
+    }
 
     /**
      * Reduces the active instances weight to give enough weight to the new instance.
+     * The weights map parameter is not modified.
      *
-     * @param weights
+     * @param weights the original weights of the active instances. This is not affected by the changes
      * @return the new weights map
      */
-    private Map<String, Double> reduceWeightsForNewInstance(Map<String, Double> weights, int newNumberOfInstances) {
+    private Map<String, Double> reduceWeightsForNewInstance(Map<String, Double> weights, int newNumberOfNewInstances) {
         Map<String, Double> newWeights = new HashMap<>();
         int oldNumberOfInstances = weights.size();
-
         for (String instanceId : weights.keySet()) {
-            newWeights.put(instanceId, weights.get(instanceId) * (double) oldNumberOfInstances / (double) newNumberOfInstances);
+            newWeights.put(instanceId, weights.get(instanceId) * (double) oldNumberOfInstances / (double) (oldNumberOfInstances+newNumberOfNewInstances));
         }
         return newWeights;
     }

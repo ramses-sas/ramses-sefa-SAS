@@ -30,7 +30,7 @@ public class HttpEndpointMetrics {
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class OutcomeMetrics{
+    public static class OutcomeMetrics {
         private String outcome;
         private int status;
         private long count = 0;
@@ -40,7 +40,7 @@ public class HttpEndpointMetrics {
         @JsonIgnore
         @Transient
         public double getAverageDuration() {
-            if(count== 0)
+            if (count == 0)
                 return 0;
             return totalDuration / count;
         }
