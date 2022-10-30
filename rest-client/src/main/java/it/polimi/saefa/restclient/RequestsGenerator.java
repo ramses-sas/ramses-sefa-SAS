@@ -31,6 +31,8 @@ public class RequestsGenerator {
     private int adapt;
     @Value("${TRIAL_DURATION_MINUTES}")
     private long trialDurationMinutes;
+    @Value("${spring.task.scheduling.pool.size}")
+    private int poolSize;
 
     @Autowired
     private RequestGeneratorService requestGeneratorService;
@@ -45,9 +47,15 @@ public class RequestsGenerator {
 
     @PostConstruct
     public void init() {
+
         startSimulation();
 
-        // Start Monitor and enable adaptation if ADAPT env var is != 0 after 10 seconds
+        log.info("Adapt? {}", adapt != 0);
+        log.info("Scheduling period: {} ms", schedulingPeriod);
+        log.info("Trial duration: {} minutes", trialDurationMinutes);
+        log.info("Thread pool size: {}", poolSize);
+
+        // After 10 seconds start Monitor. Then enable adaptation if ADAPT env var is != 0
         TimerTask startManagingTask = new TimerTask() {
             public void run() {
                 log.info("Starting Monitor Routine");
@@ -110,18 +118,18 @@ public class RequestsGenerator {
                 if (confirmedOrder == null) throw new RuntimeException("Impossible to confirm order [1]");
                 if (!confirmedOrder.isConfirmed()) {
                     if (confirmedOrder.getRequiresCashPayment()) {
-                        log.info("Order confirmed, but requires cash payment");
+                        log.debug("Order confirmed, but requires cash payment");
                         confirmedOrder = requestGeneratorService.confirmCashPayment(cartId, "Via REST Client", "Roma", 1, "12345", "1234567890", new Date());
                     }
                     if (confirmedOrder == null) throw new RuntimeException("Impossible to confirm order [2]");
                     if (!confirmedOrder.isConfirmed() && confirmedOrder.getIsTakeAway()) {
-                        log.info("Order confirmed, but requires take away");
+                        log.debug("Order confirmed, but requires take away");
                         confirmedOrder = requestGeneratorService.handleTakeAway(cartId, true);
                     }
                     if (confirmedOrder == null) throw new RuntimeException("Impossible to confirm order [3]");
                 }
                 if (!confirmedOrder.isConfirmed()) throw new RuntimeException("Order not confirmed");
-                log.info("Order confirmed!");
+                log.debug("Order confirmed!");
             } catch (Exception e) {
                 //log.error(e.getMessage());
             }

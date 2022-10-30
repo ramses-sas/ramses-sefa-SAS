@@ -98,6 +98,8 @@ public class AnalyseService {
         this.unreachableRateThreshold = unreachableRateThreshold;
         this.qosSatisfactionRate = qosSatisfactionRate;
         this.maxBootTimeSeconds = maxBootTimeSeconds;
+        log.debug("AnalysisWindowSize: {}", analysisWindowSize);
+        log.debug("MetricsWindowSize: {}", metricsWindowSize);
     }
 
     // Start the Analyse Module routine
@@ -188,7 +190,6 @@ public class AnalyseService {
                 double unreachableRate = metrics.stream().reduce(0.0, (acc, m) -> acc + (m.isUnreachable() ? 1:0), Double::sum) / metrics.size();
                 double inactiveRate = failureRate + unreachableRate;
 
-                // Todo qui non ci entriamo mai se un'istanza è failed. In pratica noi mettiamo a failed già la prima volta che non riceviamo metrics. Quindi il failure rate lo scaghiamo
                 if (unreachableRate >= unreachableRateThreshold || failureRate >= failureRateThreshold || inactiveRate >= 1) { //in ordine di probabilità
                     log.debug("{}: Rates conditions of instance {} not satisfied.", service.getServiceId(), instance.getInstanceId());
                     servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));

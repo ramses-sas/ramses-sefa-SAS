@@ -2,23 +2,21 @@ package it.polimi.saefa.monitor.domain;
 
 import com.netflix.appinfo.InstanceInfo;
 import it.polimi.saefa.knowledge.domain.Modules;
+import it.polimi.saefa.knowledge.domain.architecture.Instance;
 import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
+import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
 import it.polimi.saefa.monitor.InstancesSupplier;
 import it.polimi.saefa.monitor.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
 import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -27,7 +25,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-@Service
+@org.springframework.stereotype.Service
 @EnableScheduling
 public class MonitorService {
     private final Set<String> managedServices = new HashSet<>();
@@ -57,10 +55,14 @@ public class MonitorService {
     private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
     private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
+    // TODO remove after testing
+    private Map<String, Service> servicesMap;
+
     public MonitorService(KnowledgeClient knowledgeClient, ThreadPoolTaskScheduler taskScheduler) {
         this.knowledgeClient = knowledgeClient;
         this.taskScheduler = taskScheduler;
-        knowledgeClient.getServices().forEach(service -> managedServices.add(service.getServiceId()));
+        servicesMap = knowledgeClient.getServicesMap();
+        servicesMap.values().forEach(service -> managedServices.add(service.getServiceId()));
     }
 
     /*
@@ -79,10 +81,17 @@ public class MonitorService {
             log.debug("\nA new Monitor routine iteration started");
             try {
                 Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
+                servicesMap = knowledgeClient.getServicesMap();
                 log.debug("Discovery Service Status");
                 services.forEach((serviceId, instances) -> {
-                    log.debug("{}: [{}]", serviceId, instances.stream().map(InstanceInfo::getInstanceId).reduce((a, b) -> a + ", " + b).orElse("no instances"));
+                    // TODO remove after testing
+                    if (servicesMap.get(serviceId).getInstances().size() != instances.size()) {
+                        log.warn("!!! Discovery Service and Knowledge Service are not in sync for service {}", serviceId);
+                        log.warn("!!! Knowledge: {} - [{}]", serviceId, servicesMap.get(serviceId).getInstances().stream().map(i -> i.getInstanceId()+"_"+i.getCurrentStatus()).reduce((a, b) -> a + ", " + b).orElse("no instances"));
+                    }
+                    log.debug("Discovery Service: {} - [{}]", serviceId, instances.stream().map(InstanceInfo::getInstanceId).reduce((a, b) -> a + ", " + b).orElse("no instances"));
                 });
+
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
                 List<Thread> threads = new LinkedList<>();
                 AtomicBoolean invalidIteration = new AtomicBoolean(false);
@@ -98,8 +107,8 @@ public class MonitorService {
                                     log.debug("Adding metric for instance {}", instanceMetricsSnapshot.getInstanceId());
                                     metricsList.add(instanceMetricsSnapshot);
                                 } catch (Exception e) {
-                                    log.error("Error adding metrics for {}. Considering it as unreachable", instance.getInstanceId());
-                                    log.error("The exception is: " + e.getMessage());
+                                    log.warn("Error adding metrics for {}. Note that it might have been shutdown by the executor. Creating a snapshot with status UNREACHABLE", instance.getInstanceId());
+                                    log.warn("The exception is: " + e.getMessage());
                                     instanceMetricsSnapshot = new InstanceMetricsSnapshot(instance.getAppName(), instance.getInstanceId());
                                     instanceMetricsSnapshot.setStatus(InstanceStatus.UNREACHABLE);
                                     instanceMetricsSnapshot.applyTimestamp();

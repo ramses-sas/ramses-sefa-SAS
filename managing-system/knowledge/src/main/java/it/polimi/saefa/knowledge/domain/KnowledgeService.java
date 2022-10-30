@@ -100,12 +100,14 @@ public class KnowledgeService {
                     if (!Objects.equals(metricsSnapshot.getServiceImplementationId(), service.getCurrentImplementationId())) //Skip the metricsSnapshot if it is not related to the current implementation
                         continue;
                     Instance instance = service.getInstance(metricsSnapshot.getInstanceId());
+                    if (instance == null)
+                        throw new RuntimeException("Instance " +metricsSnapshot.getInstanceId()+" not found in service "+metricsSnapshot.getServiceId());
                     // If the instance has been shutdown, skip its metrics snapshot in the buffer. Next buffer won't contain its metrics snapshots.
                     if (instance.getCurrentStatus() != InstanceStatus.SHUTDOWN) {
                         if (!instance.getLatestInstanceMetricsSnapshot().equals(metricsSnapshot)) {
                             metricsRepository.save(metricsSnapshot);
                             instance.setLatestInstanceMetricsSnapshot(metricsSnapshot);
-                            instance.setCurrentStatus(metricsSnapshot.getStatus()); // Qui se un'istanza era booting ora è active o unreachable
+                            instance.setCurrentStatus(metricsSnapshot.getStatus());
                         } else
                             log.warn("Metrics Snapshot already saved: " + metricsSnapshot);
                         if (metricsSnapshot.isActive() || metricsSnapshot.isUnreachable())
