@@ -18,11 +18,14 @@ import it.polimi.saefa.knowledge.domain.architecture.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,21 +41,26 @@ public class KnowledgeInit implements InitializingBean {
     private ConfigurationRepository configurationRepository;
     @Autowired
     private EurekaClient discoveryClient;
+    @Autowired
+    private Environment environment;
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        ClassLoader classLoader = getClass().getClassLoader();
-        //FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
-        Reader architectureReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_architecture.json")));
-        //FileReader architectureReader = new FileReader(Objects.requireNonNull(classLoader.getResource("system_architecture.json")).getFile());
+        String configDirPath = environment.getProperty("CONFIGURATION_PATH");
+        if (configDirPath == null) {
+            configDirPath = Paths.get("").toAbsolutePath().toString();
+            log.warn("No configuration path specified. Using current working directory: {}", configDirPath);
+        }
+        //ClassLoader classLoader = getClass().getClassLoader();
+        //Reader architectureReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_architecture.json")));
+        FileReader architectureReader = new FileReader(ResourceUtils.getFile(configDirPath+"/system_architecture.json"));
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
-        //FileReader qoSReader = new FileReader(ResourceUtils.getFile("classpath:qos_specification.json"));
-        Reader qoSReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("qos_specification.json")));
-        //FileReader qoSReader = new FileReader(Objects.requireNonNull(classLoader.getResource("qos_specification.json")).getFile());
+        //Reader qoSReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("qos_specification.json")));
+        FileReader qoSReader = new FileReader(ResourceUtils.getFile(configDirPath+"/qos_specification.json"));
         Map<String, List<QoSSpecification>> servicesQoS = QoSParser.parse(qoSReader);
-        //FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
-        Reader benchmarkReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_benchmarks.json")));
-        //FileReader benchmarkReader = new FileReader(Objects.requireNonNull(classLoader.getResource("system_benchmarks.json")).getFile());
+        //Reader benchmarkReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_benchmarks.json")));
+        FileReader benchmarkReader = new FileReader(ResourceUtils.getFile(configDirPath+"/system_benchmarks.json"));
         Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
 
         serviceList.forEach(service -> {
@@ -79,8 +87,6 @@ public class KnowledgeInit implements InitializingBean {
             service.setConfiguration(configurationParser.parsePropertiesAndCreateConfiguration(service.getServiceId()));
             configurationRepository.save(service.getConfiguration());
             knowledgeService.addService(service);
-
-
         });
         configurationParser.parseGlobalProperties(knowledgeService.getServicesMap());
 
