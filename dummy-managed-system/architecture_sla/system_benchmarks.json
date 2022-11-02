@@ -1,0 +1,41 @@
+{
+	"services" : [
+		{
+			"service_id":"A-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "a-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 50
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.92
+						}
+					]
+				}
+			]
+		},
+		{
+			"service_id":"B-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "b-service",
+					"adaptation_benchmarks" : [
+						{
+							"name": "average_response_time",
+							"benchmark": 40
+						},
+						{
+							"name": "availability",
+							"benchmark": 0.95
+						}
+
+					]
+				}
+			]
+		}
+	]
+}

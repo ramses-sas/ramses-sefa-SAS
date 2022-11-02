@@ -349,8 +349,11 @@ public class KnowledgeService {
             QoSSpecification qosSpecification = service.getQoSSpecifications().get(qosClass);
             if (qosClass.equals(Availability.class))
                 threshold = ((Availability) qosSpecification).getMinThreshold();
-            else if (qosClass.equals(AverageResponseTime.class))
+            else if (qosClass.equals(AverageResponseTime.class)) {
                 threshold = ((AverageResponseTime) qosSpecification).getMaxThreshold();
+                if (qosValue.getDoubleValue() > 5000)
+                    log.warn("HUGE ART! ");
+            }
             service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, qosValue);
             qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), null,
                     qosClass.getSimpleName(), threshold, service.getCurrentValueForQoS(qosClass), qosValue));
