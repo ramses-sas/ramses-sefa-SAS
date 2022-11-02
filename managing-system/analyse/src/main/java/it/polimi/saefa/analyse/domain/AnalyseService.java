@@ -180,7 +180,7 @@ public class AnalyseService {
                 // Get the latest "metricsWindowSize" metrics of the instance collected after the latest adaptation of the service
                 List<InstanceMetricsSnapshot> metrics = knowledgeClient.getLatestNMetricsOfCurrentInstance(instance.getServiceId(), instance.getInstanceId(), metricsWindowSize);
 
-                // Not enough data to perform analysis. Can happen only at startup and after an adaptation.
+                // Not enough data to perform analysis. Can happen only at startup or after an adaptation.
                 if (metrics.size() != metricsWindowSize) {
                     instancesStats.add(new InstanceStats(instance));
                     continue;
@@ -308,21 +308,6 @@ public class AnalyseService {
                     newInstancesCurrentValues.get(instance.getInstanceId()).put(AverageResponseTime.class, newInstanceCurrentValue);
                 });
 
-                //todo remove after test
-                AtomicBoolean allAvailBelow = new AtomicBoolean(true);
-                AtomicBoolean allAvgAbove = new AtomicBoolean(true);
-
-                service.getInstances().forEach(instance -> {
-                    if (allAvailBelow.get() && instance.getCurrentValueForQoS(Availability.class).getDoubleValue() >= service.getCurrentValueForQoS(Availability.class).getDoubleValue())
-                        allAvailBelow.set(false);
-                    if (allAvgAbove.get() && instance.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue() <= service.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
-                        allAvgAbove.set(false);
-                });
-
-                if (allAvailBelow.get() || allAvgAbove.get()) {
-                    log.error("INVESTIGATE");
-                }
-
                 log.debug("{} has a full analysis window. Updating its current values and its instances' current values.", service.getServiceId());
             } else {
                 log.debug("{} has NOT a full analysis window. Cannot compute a new current value.", service.getServiceId());
@@ -409,24 +394,6 @@ public class AnalyseService {
         }
         return servicesRequiringOrCompletingAdaptation.get(serviceId);
     }
-
-
-
-    /** For a given service, it invalidates its history of QoSes and its instances' history of QoSes.
-     * The update is performed first locally, then the Knowledge is updated.
-     * @param service the service considered
-     */
-    private void invalidateAllQoSHistories(Service service) {
-        log.debug("Invalidating all QoS histories for service {}", service.getServiceId());
-        service.getInstances().forEach(instance -> {
-            instance.invalidateQoSHistory(Availability.class);
-            instance.invalidateQoSHistory(AverageResponseTime.class);
-        });
-        service.invalidateQoSHistory(Availability.class);
-        service.invalidateQoSHistory(AverageResponseTime.class);
-        knowledgeClient.invalidateQosHistory(service.getServiceId());
-    }
-
 
 
     private AdaptationOption createChangeImplementationOption(Service service, Class<? extends QoSSpecification> goal) {
