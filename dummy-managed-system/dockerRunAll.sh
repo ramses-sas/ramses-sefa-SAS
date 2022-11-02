@@ -41,30 +41,23 @@ BuildNRun() {
   bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
 }
 
-BuildOnly() {
-  bash "$SCRIPTS_PATH/dockerBuild.sh"
-}
-
 cd "../libs/config-parser/" || return
 ./gradlew clean; ./gradlew build
 cd "../load-balancer/"
 ./gradlew clean; ./gradlew build
 cd "../../dummy-managed-system/"
 
-if [ "$IS_REMOTE" = "no" ] ; then
-  cd "servers/eureka-registry-server/" || return
-  bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
-  cd ../..
-  sleep 2
-  cd "servers/config-server/" || return
-  bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
-  cd ../..
-  echo; echo
-  echo "Waiting for the config server to be ready..."
-  sleep 10
-fi
 
-
+cd "servers/eureka-registry-server/" || return
+bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
+cd ../..
+sleep 2
+cd "servers/config-server/" || return
+bash "$SCRIPTS_PATH/dockerBuild.sh"; bash "$SCRIPTS_PATH/dockerRun.sh"
+cd ../..
+echo; echo
+echo "Waiting for the config server to be ready..."
+sleep 10
 
 PrintSuccess "Starting all the services..."
 echo

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @LoadBalancerClient(name = "B-SERVICE", configuration = LoadBalancerConfig.class)
 public interface BServiceClient {
 
-    @GetMapping("/")
+    @GetMapping("/rest/generateRandomInt")
     int generateRandomInteger();
 
 }
