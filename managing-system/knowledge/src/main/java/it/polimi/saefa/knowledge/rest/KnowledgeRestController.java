@@ -159,8 +159,6 @@ public class KnowledgeRestController {
         return ResponseEntity.ok().body("Adaptation options correctly chosen");
     }
 
-
-
     // Execute-related functions
     @PostMapping("/changeConfiguration")
     public ResponseEntity<String> changeConfiguration(@RequestBody Map<String, ServiceConfiguration> request) {
