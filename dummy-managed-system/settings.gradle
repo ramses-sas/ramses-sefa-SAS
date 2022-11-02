@@ -1,0 +1,9 @@
+rootProject.name = 'dummy-managed-system'
+
+include 'services-restapi'
+
+include 'A-service'
+include 'B-service'
+
+include 'servers:eureka-registry-server'
+include 'servers:config-server'

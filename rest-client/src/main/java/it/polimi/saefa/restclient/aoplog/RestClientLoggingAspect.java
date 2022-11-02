@@ -9,6 +9,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 @Component
 @Aspect
@@ -64,14 +65,16 @@ public class RestClientLoggingAspect {
 
     /* Eseguito se è stata sollevata un'eccezione */
     //@AfterThrowing(value="restClientMethods()", throwing="exception")
-    //@Around("restClientMethods() || restClientVoidMethods()")
+    @Around("restClientMethods() || restClientVoidMethods()")
     public Object logErrorApplication(ProceedingJoinPoint joinPoint) {
         try {
             return joinPoint.proceed();
         } catch (HttpStatusCodeException e) {
-            logException(joinPoint, e);
+            if (!Objects.requireNonNull(e.getMessage()).toLowerCase().contains("artificial"))
+                logException(joinPoint, e);
             return null;
         } catch (Throwable e) {
+            logException(joinPoint, e);
             throw new RuntimeException(e);
         }
     }

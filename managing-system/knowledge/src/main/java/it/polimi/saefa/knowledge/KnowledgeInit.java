@@ -21,8 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -38,11 +41,18 @@ public class KnowledgeInit implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
+        ClassLoader classLoader = getClass().getClassLoader();
+        //FileReader architectureReader = new FileReader(ResourceUtils.getFile("classpath:system_architecture.json"));
+        Reader architectureReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_architecture.json")));
+        //FileReader architectureReader = new FileReader(Objects.requireNonNull(classLoader.getResource("system_architecture.json")).getFile());
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
-        FileReader qoSReader = new FileReader(ResourceUtils.getFile("classpath:qos_specification.json"));
+        //FileReader qoSReader = new FileReader(ResourceUtils.getFile("classpath:qos_specification.json"));
+        Reader qoSReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("qos_specification.json")));
+        //FileReader qoSReader = new FileReader(Objects.requireNonNull(classLoader.getResource("qos_specification.json")).getFile());
         Map<String, List<QoSSpecification>> servicesQoS = QoSParser.parse(qoSReader);
-        FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
+        //FileReader benchmarkReader = new FileReader(ResourceUtils.getFile("classpath:system_benchmarks.json"));
+        Reader benchmarkReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_benchmarks.json")));
+        //FileReader benchmarkReader = new FileReader(Objects.requireNonNull(classLoader.getResource("system_benchmarks.json")).getFile());
         Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
 
         serviceList.forEach(service -> {
