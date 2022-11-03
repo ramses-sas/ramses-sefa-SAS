@@ -78,10 +78,8 @@ public class AnalyseService {
     ) {
         if (analysisWindowSize < 1)
             throw new IllegalArgumentException("Analysis window size must be greater than 0");
-        if (metricsWindowSize < 3)
-            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
-            // Quindi comunque metricsWindowSize>=3
-            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        if (metricsWindowSize < 2)
+            throw new IllegalArgumentException("Metrics window size must be greater than 1.");
         if (failureRateThreshold < 0 || failureRateThreshold > 1)
             throw new IllegalArgumentException("Failure rate threshold must be between 0 and 1.");
         if (unreachableRateThreshold < 0 || unreachableRateThreshold > 1)
@@ -356,13 +354,8 @@ public class AnalyseService {
      * Computes the adaptation options for a service.
      * Recursive.
      * @param service the service to analyse
-     * @param servicesRequiringOrCompletingAdaptation the map of services that requires adaptation, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
-     * @return true if the service has problems and requires adaptation
-     */
-
-    /*
-    servicesRequiringOrCompletingAdaptation: services already considered for the adaptation proposal logic. If a service is not in the map, it is not analysed yet.
-    If the value is true, the service is in transient state (it has been recently adapted) or it requires adaptation.
+     * @param servicesRequiringOrCompletingAdaptation the map of services already considered for the adaptation proposal logic, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
+     * @return true if the service is in transient state (it has been recently adapted) or it requires adaptation.
      */
     private boolean computeAdaptationOptions(Service service, Map<String, Boolean> servicesRequiringOrCompletingAdaptation) {
         String serviceId = service.getServiceId();
@@ -545,10 +538,8 @@ public class AnalyseService {
     // Methods to update the Analyse configuration
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
-        if (newMetricsWindowSize < 3)
-            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
-            // Quindi comunque metricsWindowSize>=3
-            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        if (newMetricsWindowSize < 2)
+            throw new IllegalArgumentException("Metrics window size must be greater than 1.");
         this.newMetricsWindowSize = newMetricsWindowSize;
     }
 
