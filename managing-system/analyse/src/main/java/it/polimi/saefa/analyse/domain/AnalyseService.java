@@ -386,6 +386,10 @@ public class AnalyseService {
         log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
         proposedAdaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
         proposedAdaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+        if(service.shouldConsiderChangingImplementation()){
+            proposedAdaptationOptions.add(createChangeImplementationOption(service, Availability.class));
+            proposedAdaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
+        }
 
         // If there are proposed adaptation options for the service, say that the service requires adaptation.
         // Otherwise, use the previous information
@@ -447,8 +451,6 @@ public class AnalyseService {
                     i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getDoubleValue())
             ).toList();
 
-            if(service.shouldConsiderChangingImplementation())
-                adaptationOptions.add(createChangeImplementationOption(service, Availability.class));
             // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (instances.size()>1 && lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
@@ -470,8 +472,6 @@ public class AnalyseService {
                     i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
             ).toList();
 
-            if(service.shouldConsiderChangingImplementation())
-                adaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
             // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (instances.size()>1 && slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));
