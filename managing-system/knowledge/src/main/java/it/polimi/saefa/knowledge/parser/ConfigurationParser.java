@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.knowledge.parser;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -5,6 +6,7 @@ import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.CustomProperty;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.architecture.ServiceConfiguration;
+import it.polimi.saefa.knowledge.externalinterfaces.ProbeClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import java.util.*;
 @Component
 public class ConfigurationParser {
     @Autowired
-    private EurekaClient discoveryClient;
+    private ProbeClient probeClient;
 
 
     public ServiceConfiguration parsePropertiesAndCreateConfiguration(String serviceId) {
@@ -91,7 +93,8 @@ public class ConfigurationParser {
         return discoveryClient.getApplication("CONFIG-SERVER").getInstances().get(0);
     }
 
-    /*@GetMapping("/refreshConfigurations")
+    */
+/*@GetMapping("/refreshConfigurations")
     public String refreshConfigurations() {
         new Thread( () -> {
             parseGlobalProperties();
@@ -116,7 +119,9 @@ public class ConfigurationParser {
             }
         }).start();
         return "OK";
-    }*/
+    }*//*
+
 
 
 }
+*/

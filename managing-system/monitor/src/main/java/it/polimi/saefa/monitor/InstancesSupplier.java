@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.monitor;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -41,3 +42,4 @@ public class InstancesSupplier {
 }
 
 
+*/

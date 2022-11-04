@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @org.springframework.stereotype.Service
@@ -67,29 +69,29 @@ public class ProbeService {
         return instanceMetricsSnapshots;
     }
 
-    public List<Service> getServices() {
-        List<Service> services = new LinkedList<>();
+    public Map<String, ServiceInfo> getServices() {
+        Map<String, ServiceInfo> serviceInfoList = new HashMap<>();
         discoveryClient.getApplications().getRegisteredApplications().forEach(application -> {
-            Service service = getService(application);
-            services.add(service);
+            ServiceInfo serviceInfo = getService(application);
+            serviceInfoList.put(serviceInfo.getServiceId(), serviceInfo);
         });
-        return services;
+        return serviceInfoList;
     }
 
     public ServiceConfiguration getServiceConfiguration(String serviceId, String currentImplementationId) {
         return configurationParser.parsePropertiesAndCreateConfiguration(serviceId, currentImplementationId);
     }
 
-    private Service getService(Application application) {
-        Service service = new Service(application.getName());
-        application.getInstances().forEach(instance -> service.addInstance(instance.getInstanceId()));
-        if(service.getInstances().isEmpty())
-            throw new RuntimeException("No instances found for service " + service.getServiceId());
-        service.setCurrentImplementationId(application.getInstances().get(0).getInstanceId().split("@")[0]);
-        return service;
+    private ServiceInfo getService(Application application) {
+        ServiceInfo serviceInfo = new ServiceInfo(application.getName());
+        application.getInstances().forEach(instance -> serviceInfo.addInstance(instance.getInstanceId()));
+        if(serviceInfo.getInstances().isEmpty())
+            throw new RuntimeException("No instances found for service " + serviceInfo.getServiceId());
+        serviceInfo.setCurrentImplementationId(application.getInstances().get(0).getInstanceId().split("@")[0]);
+        return serviceInfo;
     }
 
-    private Service getService(String serviceId){
+    private ServiceInfo getService(String serviceId){
         Application application = discoveryClient.getApplication(serviceId);
         return getService(application);
     }

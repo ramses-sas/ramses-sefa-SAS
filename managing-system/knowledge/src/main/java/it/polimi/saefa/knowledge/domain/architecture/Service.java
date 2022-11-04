@@ -83,7 +83,10 @@ public class Service {
     public void setConfiguration(ServiceConfiguration configuration) {
         this.configuration = configuration;
         if(this.configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
-            if(this.configuration.getLoadBalancerWeights() == null || this.configuration.getLoadBalancerWeights().isEmpty()) {
+            if(this.configuration.getLoadBalancerWeights() == null) {
+                this.configuration.setLoadBalancerWeights(new HashMap<>());
+            }
+            if(this.configuration.getLoadBalancerWeights().isEmpty()) {
                 getInstances().forEach(instance -> configuration.getLoadBalancerWeights().put(instance.getInstanceId(), 1.0/getInstances().size()));
             }
         }

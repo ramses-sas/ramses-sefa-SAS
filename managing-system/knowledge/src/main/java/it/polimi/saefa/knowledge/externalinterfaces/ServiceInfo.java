@@ -1,7 +1,5 @@
-package it.polimi.saefa.probe.domain;
+package it.polimi.saefa.knowledge.externalinterfaces;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.polimi.saefa.probe.configuration.ServiceConfiguration;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,12 +8,12 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class Service {
+public class ServiceInfo {
     private String serviceId;
     private String currentImplementationId;
     private List<String> instances;
 
-    public Service(String serviceId) {
+    public ServiceInfo(String serviceId) {
         this.serviceId = serviceId;
         this.instances = new LinkedList<>();
     }

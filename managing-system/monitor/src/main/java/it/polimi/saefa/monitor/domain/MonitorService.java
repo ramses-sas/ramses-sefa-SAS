@@ -1,15 +1,12 @@
 package it.polimi.saefa.monitor.domain;
 
-import com.netflix.appinfo.InstanceInfo;
 import it.polimi.saefa.knowledge.domain.Modules;
-import it.polimi.saefa.knowledge.domain.architecture.Instance;
-import it.polimi.saefa.knowledge.domain.architecture.InstanceStatus;
 import it.polimi.saefa.knowledge.domain.architecture.Service;
 import it.polimi.saefa.knowledge.domain.metrics.InstanceMetricsSnapshot;
-import it.polimi.saefa.monitor.InstancesSupplier;
+import it.polimi.saefa.monitor.externalinterfaces.ProbeClient;
+import it.polimi.saefa.knowledge.externalinterfaces.ServiceInfo;
 import it.polimi.saefa.monitor.externalinterfaces.AnalyseClient;
 import it.polimi.saefa.monitor.externalinterfaces.KnowledgeClient;
-import it.polimi.saefa.monitor.prometheus.PrometheusParser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +35,9 @@ public class MonitorService {
 
     @Autowired
     private AnalyseClient analyseClient;
+
     @Autowired
-    private InstancesSupplier instancesSupplier;
-    @Autowired
-    private PrometheusParser prometheusParser;
+    private ProbeClient probeClient;
 
     @Value("${INTERNET_CONNECTION_CHECK_HOST}")
     private String internetConnectionCheckHost;
@@ -80,53 +76,43 @@ public class MonitorService {
         public void run() {
             log.debug("\nA new Monitor routine iteration started");
             try {
-                Map<String, List<InstanceInfo>> services = instancesSupplier.getServicesInstances();
+                Map<String, ServiceInfo> probeServiceRuntimeArchitecture = probeClient.getSystemArchitecture();
                 servicesMap = knowledgeClient.getServicesMap();
-                log.debug("Discovery Service Status");
-                services.forEach((serviceId, instances) -> {
+                probeServiceRuntimeArchitecture.forEach((serviceId, serviceInfo) -> {
                     // TODO remove after testing
-                    if (servicesMap.get(serviceId).getInstances().size() != instances.size()) {
-                        log.warn("!!! Discovery Service and Knowledge Service are not in sync for service {}", serviceId);
-                        log.warn("!!! Knowledge: {} - [{}]", serviceId, servicesMap.get(serviceId).getInstances().stream().map(i -> i.getInstanceId()+"_"+i.getCurrentStatus()).reduce((a, b) -> a + ", " + b).orElse("no instances"));
+                    if (servicesMap.containsKey(serviceId)) {
+                        if (servicesMap.get(serviceId).getInstances().size() != serviceInfo.getInstances().size()) {
+                            log.warn("!!! Probe and Knowledge Service are not in sync for service {}", serviceId);
+                            log.warn("!!! Knowledge: {} - [{}]", serviceId, servicesMap.get(serviceId).getInstances().stream().map(i -> i.getInstanceId() + "_" + i.getCurrentStatus()).reduce((a, b) -> a + ", " + b).orElse("no instances"));
+                        }
+                        log.debug("Service: {} - [{}]", serviceId, serviceInfo.getInstances().stream().reduce((a, b) -> a + ", " + b).orElse("no instances"));
                     }
-                    log.debug("Discovery Service: {} - [{}]", serviceId, instances.stream().map(InstanceInfo::getInstanceId).reduce((a, b) -> a + ", " + b).orElse("no instances"));
                 });
 
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
                 List<Thread> threads = new LinkedList<>();
                 AtomicBoolean invalidIteration = new AtomicBoolean(false);
 
-                services.forEach((serviceId, serviceInstances) -> {
-                    if (managedServices.contains(serviceId)) {
-                        serviceInstances.forEach(instance -> {
-                            Thread thread = new Thread(() -> {
-                                InstanceMetricsSnapshot instanceMetricsSnapshot;
-                                try {
-                                    instanceMetricsSnapshot = prometheusParser.parse(instance);
-                                    instanceMetricsSnapshot.applyTimestamp();
-                                    log.debug("Adding metric for instance {}", instanceMetricsSnapshot.getInstanceId());
-                                    metricsList.add(instanceMetricsSnapshot);
-                                } catch (Exception e) {
-                                    log.warn("Error adding metrics for {}. Note that it might have been shutdown by the executor. Creating a snapshot with status UNREACHABLE", instance.getInstanceId());
-                                    log.warn("The exception is: " + e.getMessage());
-                                    instanceMetricsSnapshot = new InstanceMetricsSnapshot(instance.getAppName(), instance.getInstanceId());
-                                    instanceMetricsSnapshot.setStatus(InstanceStatus.UNREACHABLE);
-                                    instanceMetricsSnapshot.applyTimestamp();
-                                    metricsList.add(instanceMetricsSnapshot);
-                                    try {
-                                        if (!pingHost(internetConnectionCheckHost, internetConnectionCheckPort, 5000))
-                                            invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
-                                    } catch (Exception e1) {
-                                        log.error("Error checking internet connection");
-                                        log.error(e1.getMessage());
-                                        invalidIteration.set(true);
-                                    }
+                managedServices.forEach(serviceId -> {
+                    Thread thread = new Thread( () -> {
+                        try {
+                            if (probeServiceRuntimeArchitecture.containsKey(serviceId)) {
+                                List<InstanceMetricsSnapshot> instancesSnapshots = probeClient.takeSnapshot(serviceId);
+                                if (instancesSnapshots == null) {
+                                    invalidIteration.set(true);
+                                } else {
+                                    metricsList.addAll(instancesSnapshots);
                                 }
-                            });
-                            threads.add(thread);
-                            thread.start();
-                        });
-                    }
+                            } else {
+                                log.warn("No instances for service {} is not in the runtime architecture!", serviceId);
+                            }
+                        } catch (Exception e) {
+                            log.error("Error while taking snapshot for service {}", serviceId, e);
+                            invalidIteration.set(true);
+                        }
+                    });
+                    threads.add(thread);
+                    thread.start();
                 });
 
                 threads.forEach(thread -> {
@@ -145,7 +131,7 @@ public class MonitorService {
 
                 instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
                 if (getLoopIterationFinished()) {
-                    log.debug("Monitor routine completed. Updating Knowledge and notifying the Plan to start the next iteration.\n");
+                    log.debug("Monitor routine completed. Updating Knowledge and notifying the Analyse to start the next iteration.\n");
                     knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
                     instanceMetricsListBuffer.clear();
                     loopIterationFinished.set(false);

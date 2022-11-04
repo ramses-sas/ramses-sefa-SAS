@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.monitor.prometheus;
 
 public class PrometheusMetrics {
@@ -17,3 +18,4 @@ public class PrometheusMetrics {
 
     private PrometheusMetrics() { }
 }
+*/

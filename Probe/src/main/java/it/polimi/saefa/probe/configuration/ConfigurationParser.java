@@ -3,7 +3,6 @@ package it.polimi.saefa.probe.configuration;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import it.polimi.saefa.configparser.CustomProperty;
-import it.polimi.saefa.probe.domain.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
 
 @Slf4j
 @Component

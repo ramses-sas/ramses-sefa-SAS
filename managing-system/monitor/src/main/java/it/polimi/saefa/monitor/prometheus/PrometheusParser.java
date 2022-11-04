@@ -1,3 +1,4 @@
+/*
 package it.polimi.saefa.monitor.prometheus;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -100,3 +101,4 @@ public class PrometheusParser {
 
 
 }
+*/
