@@ -78,10 +78,8 @@ public class AnalyseService {
     ) {
         if (analysisWindowSize < 1)
             throw new IllegalArgumentException("Analysis window size must be greater than 0");
-        if (metricsWindowSize < 3)
-            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
-            // Quindi comunque metricsWindowSize>=3
-            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        if (metricsWindowSize < 2)
+            throw new IllegalArgumentException("Metrics window size must be greater than 1.");
         if (failureRateThreshold < 0 || failureRateThreshold > 1)
             throw new IllegalArgumentException("Failure rate threshold must be between 0 and 1.");
         if (unreachableRateThreshold < 0 || unreachableRateThreshold > 1)
@@ -341,13 +339,8 @@ public class AnalyseService {
      * Computes the adaptation options for a service.
      * Recursive.
      * @param service the service to analyse
-     * @param servicesRequiringOrCompletingAdaptation the map of services that requires adaptation, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
-     * @return true if the service has problems and requires adaptation
-     */
-
-    /*
-    servicesRequiringOrCompletingAdaptation: services already considered for the adaptation proposal logic. If a service is not in the map, it is not analysed yet.
-    If the value is true, the service is in transient state (it has been recently adapted) or it requires adaptation.
+     * @param servicesRequiringOrCompletingAdaptation the map of services already considered for the adaptation proposal logic, to avoid circular dependencies. If the service entry is not in the map, it is not analysed yet.
+     * @return true if the service is in transient state (it has been recently adapted) or it requires adaptation.
      */
     private boolean computeAdaptationOptions(Service service, Map<String, Boolean> servicesRequiringOrCompletingAdaptation) {
         String serviceId = service.getServiceId();
@@ -371,6 +364,10 @@ public class AnalyseService {
         log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
         proposedAdaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
         proposedAdaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
+        if(service.shouldConsiderChangingImplementation()){
+            proposedAdaptationOptions.add(createChangeImplementationOption(service, Availability.class));
+            proposedAdaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
+        }
 
         // If there are proposed adaptation options for the service, say that the service requires adaptation.
         // Otherwise, use the previous information
@@ -414,8 +411,6 @@ public class AnalyseService {
                     i -> !availabilitySpecs.isSatisfied(i.getCurrentValueForQoS(Availability.class).getDoubleValue())
             ).toList();
 
-            if(service.shouldConsiderChangingImplementation())
-                adaptationOptions.add(createChangeImplementationOption(service, Availability.class));
             // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (instances.size()>1 && lessAvailableInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), Availability.class, "At least one instance satisfies the avg Availability specifications"));
@@ -437,8 +432,6 @@ public class AnalyseService {
                     i -> !avgRespTimeSpecs.isSatisfied(i.getCurrentValueForQoS(AverageResponseTime.class).getDoubleValue())
             ).toList();
 
-            if(service.shouldConsiderChangingImplementation())
-                adaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
             // If there is more than one instance and at least one instance satisfies the avg Response time specifications, then we can try to change the LB weights.
             if (instances.size()>1 && slowInstances.size()<instances.size() && service.getConfiguration().getLoadBalancerType().equals(ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM))
                 adaptationOptions.add(new ChangeLoadBalancerWeightsOption(service.getServiceId(), service.getCurrentImplementationId(), AverageResponseTime.class, "At least one instance satisfies the avg Response time specifications"));
@@ -512,10 +505,8 @@ public class AnalyseService {
     // Methods to update the Analyse configuration
 
     public void setNewMetricsWindowSize(Integer newMetricsWindowSize) throws IllegalArgumentException {
-        if (newMetricsWindowSize < 3)
-            // 3 istanze attive ci garantiscono che ne abbiamo almeno due con un numero di richieste diverse (perché il CB può cambiare spontaneamente solo una volta)
-            // Quindi comunque metricsWindowSize>=3
-            throw new IllegalArgumentException("Metrics window size must be greater than 2.");
+        if (newMetricsWindowSize < 2)
+            throw new IllegalArgumentException("Metrics window size must be greater than 1.");
         this.newMetricsWindowSize = newMetricsWindowSize;
     }
 

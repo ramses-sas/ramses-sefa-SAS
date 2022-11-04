@@ -1,0 +1,33 @@
+{
+	"services"	: [
+		{
+			"service_id":"A-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "a-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+
+			],
+			"dependencies" : [
+				{
+					"name" : "B-SERVICE"
+				}
+			]
+		},
+		{
+			"service_id":"B-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "b-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+			],
+			"dependencies" : []
+		}
+	]
+}

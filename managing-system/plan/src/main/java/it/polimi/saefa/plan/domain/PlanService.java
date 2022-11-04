@@ -13,8 +13,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.util.ResourceUtils;
 
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileReader;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,18 +36,52 @@ public class PlanService {
     @Autowired
     private ExecuteClient executeClient;
 
+    @Autowired
+    private Environment env;
+
     @Getter
     @Setter
     private boolean adaptationAuthorized = false;
 
+    /*
     static {
         try {
             System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
             System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
         } catch (Exception e) {
-            throw new RuntimeException("Error loading or-tools libraries", e);
+            try {
+                ClassLoader classLoader = PlanService.class.getClassLoader();
+                System.load(Objects.requireNonNull(classLoader.getResource(jarDir+"libjniortools.dylib")).getPath());
+                System.load(Objects.requireNonNull(classLoader.getResource(jarDir+"libortools.9.dylib")).getPath());
+            } catch (Exception e2) {
+                throw new RuntimeException("Error loading or-tools libraries", e2);
+            }
         }
     }
+     */
+
+    /*
+    @PostConstruct
+    public void init() {
+        log.info("PlanService initialized");
+        try {
+            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
+            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
+        } catch (Exception e) {
+            try {
+                ClassLoader classLoader = PlanService.class.getClassLoader();
+                String libDir = env.getProperty("LIB_DIR");
+                log.debug("libDir: {}", libDir);
+                System.load(libDir+"/libjniortools.dylib");
+                System.load(libDir+"/libortools.9.dylib");
+            } catch (Exception e2) {
+                throw new RuntimeException("Error loading or-tools libraries", e2);
+            }
+        }
+        MPSolver solver = MPSolver.createSolver("SCIP");
+        solver.solve();
+    }
+     */
 
     //For a given service, the system must not be in a transition state (i.e. booting instances).
     // In that case, only forced adaptation options are allowed.

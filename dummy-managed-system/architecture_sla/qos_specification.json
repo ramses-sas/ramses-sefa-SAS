@@ -1,0 +1,34 @@
+{
+	"services"	: [
+		{
+			"service_id":"A-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.9
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 120
+				}
+			]
+		},
+		{
+			"service_id":"B-SERVICE",
+			"qos" : [
+				{
+					"name" : "availability",
+					"weight" : 0.5,
+					"min_threshold" : 0.92
+				},
+				{
+					"name" : "average_response_time",
+					"weight" : 0.5,
+					"max_threshold": 80
+				}
+			]
+		}
+	]
+}
