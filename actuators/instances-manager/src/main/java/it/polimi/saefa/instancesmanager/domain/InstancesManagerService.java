@@ -60,8 +60,8 @@ public class InstancesManagerService {
             case "Scenario1":
                 simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
-                    new SimulationInstanceParams(0.9, 1.0, 0.2),
                     new SimulationInstanceParams(0.01, 0.15, 0.04),
+                    new SimulationInstanceParams(0.9, 1.0, 0.2),
                     new SimulationInstanceParams(0.0, 0.01, 0.01)
                 ));
                 break;

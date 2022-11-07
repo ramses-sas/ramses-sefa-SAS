@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -22,7 +21,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 @Component
@@ -35,6 +33,18 @@ public class RequestsGenerator {
     private long trialDurationMinutes;
     @Value("${spring.task.execution.pool.core-size}")
     private int poolSize;
+    @Value("${FAKE_SLOW_ORDERING_COUNTER_1}")
+    private Integer fakeSlowOrderingCounter1;
+    @Value("${FAKE_SLOW_ORDERING_COUNTER_2}")
+    private Integer fakeSlowOrderingCounter2;
+    @Value("${FAKE_SLOW_ORDERING_DELAY_1}")
+    private Integer fakeSlowOrderingDelay1;
+    @Value("${FAKE_SLOW_ORDERING_DELAY_2}")
+    private Integer fakeSlowOrderingDelay2;
+    @Value("${FAKE_UNREACHABLE_RESTAURANT_COUNTER}")
+    private Integer fakeUnreachableRestaurantCounter;
+    @Value("${FAKE_UNREACHABLE_RESTAURANT_DELAY}")
+    private Integer fakeUnreachableRestaurantDelay;
 
     @Autowired
     private RequestGeneratorService requestGeneratorService;
@@ -68,6 +78,55 @@ public class RequestsGenerator {
         };
         Timer startManagingTimer = new Timer("StartManagingTimer");
         startManagingTimer.schedule(startManagingTask, 1000*10);
+
+        // DOPO fakeSlowOrderingDelay1 MINUTI chiedi di simulare COUNTER comportamenti anomali
+        if (fakeSlowOrderingCounter1 != 0) {
+            TimerTask fakeSlowOrderingTask1 = new TimerTask() {
+                public void run() {
+                    log.info("Faking slow ordering 1");
+                    try {
+                        adaptationController.setFakeCounter(fakeSlowOrderingCounter1);
+                    } catch (Exception e) {
+                        log.error("Error while slowing down ordering 1", e);
+                        System.exit(1);
+                    }
+                }
+            };
+            Timer fakeSlowOrderingTimer1 = new Timer("fakeSlowOrderingTimer1");
+            fakeSlowOrderingTimer1.schedule(fakeSlowOrderingTask1, 1000 * 60 * fakeSlowOrderingDelay1);
+        }
+        // DOPO fakeSlowOrderingDelay2 MINUTI chiedi di simulare COUNTER comportamenti anomali
+        if (fakeSlowOrderingCounter2 != 0) {
+            TimerTask fakeSlowOrderingTask2 = new TimerTask() {
+                public void run() {
+                    log.info("Faking slow ordering 2");
+                    try {
+                        adaptationController.setFakeCounter(fakeSlowOrderingCounter2);
+                    } catch (Exception e) {
+                        log.error("Error while slowing down ordering 2", e);
+                        System.exit(1);
+                    }
+                }
+            };
+            Timer fakeSlowOrderingTimer2 = new Timer("fakeSlowOrderingTimer2");
+            fakeSlowOrderingTimer2.schedule(fakeSlowOrderingTask2, 1000 * 60 * fakeSlowOrderingDelay2);
+        }
+        // DOPO fakeSlowOrderingDelay2 MINUTI chiedi di simulare COUNTER comportamenti anomali
+        if (fakeUnreachableRestaurantCounter != 0) {
+            TimerTask fakeUnreachableRestaurantTask = new TimerTask() {
+                public void run() {
+                    log.info("Faking unreachable restaurant");
+                    try {
+                        adaptationController.setFakeCounter(fakeUnreachableRestaurantCounter);
+                    } catch (Exception e) {
+                        log.error("Error while faking unreachable restaurant", e);
+                        System.exit(1);
+                    }
+                }
+            };
+            Timer fakeUnreachableRestaurantTimer = new Timer("fakeUnreachableRestaurantTimer");
+            fakeUnreachableRestaurantTimer.schedule(fakeUnreachableRestaurantTask, 1000 * 60 * fakeUnreachableRestaurantDelay);
+        }
 
         // Stop simulation after TRIAL_DURATION_MINUTES minutes
         TimerTask stopSimulationTask = new TimerTask() {

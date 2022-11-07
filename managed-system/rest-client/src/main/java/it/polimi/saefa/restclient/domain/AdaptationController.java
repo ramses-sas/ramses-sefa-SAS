@@ -16,6 +16,9 @@ public class AdaptationController {
     @Value("${PLAN_URL}")
     private String planURL;
 
+    @Value("${PROBE_URL}")
+    private String probeURL;
+
 
     public void startMonitorRoutine() {
         String url = monitorURL+"/rest/startRoutine";
@@ -33,5 +36,11 @@ public class AdaptationController {
         String url = planURL+"/rest/adaptationStatus?adapt={adaptValue}";
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.put(url, null, Map.of("adaptValue", String.valueOf(adapt)));
+    }
+
+    public void setFakeCounter(int counter) {
+        String url = probeURL+"/rest/fakeCounter?value={value}";
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.put(url, null, Map.of("value", String.valueOf(counter)));
     }
 }
