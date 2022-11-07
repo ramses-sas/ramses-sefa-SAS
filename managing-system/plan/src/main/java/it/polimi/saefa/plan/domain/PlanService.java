@@ -14,15 +14,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.util.ResourceUtils;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileReader;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +27,8 @@ public class PlanService {
     @Autowired
     private ExecuteClient executeClient;
 
-    @Autowired
-    private Environment env;
+    //@Autowired
+    //private Environment env;
 
     @Getter
     @Setter
@@ -134,7 +125,6 @@ public class PlanService {
                     else {
                         // If there is at least a forced option, all the other options are ignored
                         log.debug("{} has forced Adaptation options", serviceId);
-
                         //We first perform all the ShutdownInstanceOptions and then perform the final AddInstanceOption, if any. This same order must be respected by the Execute.
                         for (AdaptationOption option : forcedAdaptationOptions.stream().filter(option -> option.getClass().equals(ShutdownInstanceOption.class)).toList()) {
                             log.debug(option.toString());
