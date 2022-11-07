@@ -6529,12 +6529,12 @@
 										"$ref": "AAAAAAGD4Bets5JEMRk="
 									},
 									"font": "Arial;13;0",
-									"left": 1513,
-									"top": 103,
-									"width": 7.22998046875,
+									"left": 1502,
+									"top": 112,
+									"width": 16.22998046875,
 									"height": 13,
-									"alpha": -0.08178433941460428,
-									"distance": 43.278170016764804,
+									"alpha": 0.12635914338362753,
+									"distance": 37.589892258425,
 									"hostEdge": {
 										"$ref": "AAAAAAGD4Bets5JGhOo="
 									},
