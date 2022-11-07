@@ -54,6 +54,7 @@ public class ProbeRestController {
                             previousSnapshot.getHttpMetrics().forEach((key, previousHttpMetrics) -> {
                                 HttpEndpointMetrics currentHttpMetrics = snapshot.getHttpMetrics().get(key);
                                 int previousCountOfSuccessful = previousHttpMetrics.getTotalCountOfSuccessful();
+                                double previousDurationOfSuccessful = previousHttpMetrics.getTotalDurationOfSuccessful();
                                 int currentCountOfSuccessful = currentHttpMetrics.getTotalCountOfSuccessful();
                                 double currentDurationOfSuccessful = currentHttpMetrics.getTotalDurationOfSuccessful();
                                 if (currentCountOfSuccessful > previousCountOfSuccessful) {
