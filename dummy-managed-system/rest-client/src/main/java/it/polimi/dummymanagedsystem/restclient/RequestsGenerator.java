@@ -26,6 +26,7 @@ public class RequestsGenerator {
     private long trialDurationMinutes;
     @Value("${spring.task.execution.pool.core-size}")
     private int poolSize;
+    
 
     @Autowired
     private RequestGeneratorService requestGeneratorService;

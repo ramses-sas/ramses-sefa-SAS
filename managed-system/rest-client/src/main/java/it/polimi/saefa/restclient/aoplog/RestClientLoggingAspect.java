@@ -70,8 +70,11 @@ public class RestClientLoggingAspect {
         try {
             return joinPoint.proceed();
         } catch (HttpStatusCodeException e) {
-            if (!Objects.requireNonNull(e.getMessage()).toLowerCase().contains("artificial"))
-                logException(joinPoint, e);
+            if (!Objects.requireNonNull(e.getMessage()).toLowerCase().contains("artificial")) {
+                final String args = Arrays.toString(joinPoint.getArgs());
+                final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
+                log.debug("     HTTP error IN RestClient.{} {}. -> {}", methodName, args, e.getMessage());
+            }
             return null;
         } catch (Throwable e) {
             logException(joinPoint, e);

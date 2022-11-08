@@ -14,14 +14,19 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Component
 @Aspect
 @Slf4j
+@RestController
 public class InstrumentationAspect {
-    private final Double sleepMean;
-    private final Double sleepVariance;
-    private final Double exceptionProbability;
+    private Double sleepMean;
+    private Double sleepVariance;
+    private Double exceptionProbability;
     @Autowired
     private Environment env;
     
@@ -113,6 +118,30 @@ public class InstrumentationAspect {
             log.warn("Throwing artificial exception");
             throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
         }
+    }
+
+
+    @PutMapping("/rest/instrumentation/sleepMean")
+    public void setSleepMean(@RequestParam Double sleepMean) {
+        log.debug("Setting sleepMean to {}", sleepMean);
+        this.sleepMean = sleepMean;
+        this.sleepVariance = 0.0;
+    }
+
+    @PutMapping("/rest/instrumentation/exceptionProbability")
+    public void setExceptionProbability(@RequestParam Double exceptionProbability) {
+        log.debug("Setting exceptionProbability to {}", exceptionProbability);
+        this.exceptionProbability = exceptionProbability;
+    }
+    
+    @GetMapping("/rest/instrumentation/sleepMean")
+    public String getSleepMean() {
+        return sleepMean == null ? "0.0" : sleepMean.toString();
+    }
+    
+    @GetMapping("/rest/instrumentation/exceptionProbability")
+    public String getExceptionProbability() {
+        return exceptionProbability == null ? "0.0" :  exceptionProbability.toString();
     }
 
 }

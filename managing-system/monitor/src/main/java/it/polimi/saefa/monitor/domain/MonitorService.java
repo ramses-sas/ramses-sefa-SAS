@@ -39,11 +39,6 @@ public class MonitorService {
     @Autowired
     private ProbeClient probeClient;
 
-    @Value("${INTERNET_CONNECTION_CHECK_HOST}")
-    private String internetConnectionCheckHost;
-    @Value("${INTERNET_CONNECTION_CHECK_PORT}")
-    private int internetConnectionCheckPort;
-
     @Getter
     @Value("${SCHEDULING_PERIOD}")
     private int schedulingPeriod = 5000; // monitor scheduling period [ms]
@@ -76,7 +71,7 @@ public class MonitorService {
         public void run() {
             log.debug("\nA new Monitor routine iteration started");
             try {
-                Map<String, ServiceInfo> probeServiceRuntimeArchitecture = probeClient.getSystemArchitecture();
+                /*Map<String, ServiceInfo> probeServiceRuntimeArchitecture = probeClient.getSystemArchitecture();
                 servicesMap = knowledgeClient.getServicesMap();
                 probeServiceRuntimeArchitecture.forEach((serviceId, serviceInfo) -> {
                     // TODO remove after testing
@@ -87,7 +82,7 @@ public class MonitorService {
                         }
                         log.debug("Service: {} - [{}]", serviceId, serviceInfo.getInstances().stream().reduce((a, b) -> a + ", " + b).orElse("no instances"));
                     }
-                });
+                });*/
 
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
                 List<Thread> threads = new LinkedList<>();
@@ -96,16 +91,16 @@ public class MonitorService {
                 managedServices.forEach(serviceId -> {
                     Thread thread = new Thread( () -> {
                         try {
-                            if (probeServiceRuntimeArchitecture.containsKey(serviceId)) {
-                                List<InstanceMetricsSnapshot> instancesSnapshots = probeClient.takeSnapshot(serviceId);
-                                if (instancesSnapshots == null) {
-                                    invalidIteration.set(true);
-                                } else {
-                                    metricsList.addAll(instancesSnapshots);
-                                }
+                            //if (probeServiceRuntimeArchitecture.containsKey(serviceId)) {
+                            List<InstanceMetricsSnapshot> instancesSnapshots = probeClient.takeSnapshot(serviceId);
+                            if (instancesSnapshots == null) {
+                                invalidIteration.set(true);
                             } else {
-                                log.warn("No instances for service {} is not in the runtime architecture!", serviceId);
+                                metricsList.addAll(instancesSnapshots);
                             }
+                            //} else {
+                             //   log.warn("No instances for service {} is not in the runtime architecture!", serviceId);
+                            //}
                         } catch (Exception e) {
                             log.error("Error while taking snapshot for service {}", serviceId, e);
                             invalidIteration.set(true);

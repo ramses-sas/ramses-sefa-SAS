@@ -37,8 +37,13 @@ public class ProbeService {
     public List<InstanceMetricsSnapshot> createServiceSnapshot(String serviceId) {
         AtomicBoolean invalidIteration = new AtomicBoolean(false);
         final List<InstanceMetricsSnapshot> instanceMetricsSnapshots = new LinkedList<>();
-        discoveryClient.getApplication(serviceId).getInstances().forEach(instance -> {
-            if(invalidIteration.get()) return;
+        Application application = discoveryClient.getApplication(serviceId);
+        if (application == null) {
+            log.error("Service {} not found in Eureka", serviceId);
+            return instanceMetricsSnapshots;
+        }
+        application.getInstances().forEach(instance -> {
+            if (invalidIteration.get()) return;
             InstanceMetricsSnapshot instanceMetricsSnapshot;
             try {
                 instanceMetricsSnapshot = prometheusParser.parse(instance);
@@ -85,8 +90,6 @@ public class ProbeService {
     private ServiceInfo getService(Application application) {
         ServiceInfo serviceInfo = new ServiceInfo(application.getName());
         application.getInstances().forEach(instance -> serviceInfo.addInstance(instance.getInstanceId()));
-        if(serviceInfo.getInstances().isEmpty())
-            throw new RuntimeException("No instances found for service " + serviceInfo.getServiceId());
         serviceInfo.setCurrentImplementationId(application.getInstances().get(0).getInstanceId().split("@")[0]);
         return serviceInfo;
     }

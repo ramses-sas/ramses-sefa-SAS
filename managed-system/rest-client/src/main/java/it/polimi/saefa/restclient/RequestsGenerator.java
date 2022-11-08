@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -22,7 +21,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 @Component
@@ -94,7 +92,7 @@ public class RequestsGenerator {
     public void scheduleFixedRateTaskAsync() {
         try {
             Thread.sleep((long) (Math.random() * 500));
-            log.info("Starting simulation routine");
+            log.debug("Starting simulation routine");
             Collection<GetRestaurantResponse> restaurants = requestGeneratorService.getAllRestaurants();
             if (restaurants == null || restaurants.size() < 1)
                 throw new RuntimeException("No restaurants available");
