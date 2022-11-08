@@ -37,6 +37,7 @@ public class ProbeRestController {
     @GetMapping("/service/{serviceId}/snapshot")
     public List<InstanceMetricsSnapshot> takeSnapshot(@PathVariable("serviceId") String serviceId) {
         List<InstanceMetricsSnapshot> snapshots = probeService.createServiceSnapshot(serviceId);
+        /*
         if (fakeSlowOrdering.equalsIgnoreCase("Y") && snapshots != null && !snapshots.isEmpty() && serviceId.equalsIgnoreCase("ordering-service")) {
             int counter;
             synchronized (lock) {
@@ -69,6 +70,7 @@ public class ProbeRestController {
                 latestInstancesSnapshot = new HashMap<>();
             }
         }
+         */
         if (fakeUnreachableRestaurant.equalsIgnoreCase("Y") && snapshots != null && !snapshots.isEmpty() && serviceId.equalsIgnoreCase("restaurant-service")) {
             synchronized (lock) {
                 if (fakeCounter > 0) {

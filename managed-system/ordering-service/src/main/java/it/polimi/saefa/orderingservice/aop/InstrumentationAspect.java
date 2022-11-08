@@ -7,6 +7,10 @@ import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -14,10 +18,11 @@ import java.util.Random;
 @Component
 @Aspect
 @Slf4j
+@RestController
 public class InstrumentationAspect {
-    private final Double sleepMean;
-    private final Double sleepVariance;
-    private final Double exceptionProbability;
+    private Double sleepMean;
+    private Double sleepVariance;
+    private Double exceptionProbability;
     @Autowired
     private Environment env;
 
@@ -110,5 +115,26 @@ public class InstrumentationAspect {
         }
     }
 
+    @PutMapping("/rest/instrumentation/sleepMean")
+    public void setSleepMean(@RequestParam Double sleepMean) {
+        log.debug("Setting sleepMean to {}", sleepMean);
+        this.sleepMean = sleepMean;
+    }
+
+    @PutMapping("/rest/instrumentation/exceptionProbability")
+    public void setExceptionProbability(@RequestParam Double exceptionProbability) {
+        log.debug("Setting exceptionProbability to {}", exceptionProbability);
+        this.exceptionProbability = exceptionProbability;
+    }
+    
+    @GetMapping("/rest/instrumentation/sleepMean")
+    public String getSleepMean() {
+        return sleepMean == null ? "0.0" : sleepMean.toString().toString();
+    }
+    
+    @GetMapping("/rest/instrumentation/exceptionProbability")
+    public String getExceptionProbability() {
+        return exceptionProbability == null ? "0.0" :  exceptionProbability.toString().toString();
+    }
 }
 

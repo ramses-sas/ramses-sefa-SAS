@@ -17,7 +17,7 @@ def compute_area(problematic_values_coordinates: list, threshold_of_problematic_
         dy2 = abs(threshold_of_problematic_values[i+1] - problematic_values_coordinates[i+1][1])
         area += dx * (dy1 + dy2) / 2
     # Considero l'ultimo valore e immagino che sia costante fino al timestamp del valore che soddisfa il threshold
-    dx = timestamp_of_value_satisfying_threshold - problematic_values_coordinates[n_values-1][0]
+    dx = timestamp_of_value_satisfying_threshold.timestamp() - problematic_values_coordinates[n_values-1][0]
     dy = abs(threshold_of_problematic_values[n_values-1] - problematic_values_coordinates[n_values-1][1])
     area += dx * dy
     return area
