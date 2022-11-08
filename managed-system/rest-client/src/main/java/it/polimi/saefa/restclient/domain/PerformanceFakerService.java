@@ -135,6 +135,7 @@ public class PerformanceFakerService {
         try {
             discoveryClient.getApplication("ORDERING-SERVICE").getInstances().forEach(instance -> {
                 Double originalSleep = originalInstancesSleeps.get(instance.getInstanceId());
+                if (originalSleep == null) return;
                 String url = "http://" + instance.getHostName() + ":" + instance.getPort() + "/rest/instrumentation/sleepMean?sleepMean={sleepMean}";
                 RestTemplate restTemplate = new RestTemplate();
                 log.info("Changing sleep for instance {} from {} to {}", instance.getInstanceId(), originalSleep, sleepMean+originalSleep);

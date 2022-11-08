@@ -9,17 +9,21 @@ qoses = ["Availability", "AverageResponseTime"]
 def compute_area(problematic_values_coordinates: list, threshold_of_problematic_values: list, timestamp_of_value_satisfying_threshold) -> float:
     area = 0.0
     n_values = len(problematic_values_coordinates)
-    if n_values < 2:
+    if n_values == 0:
         return area
+    if n_values == 1:
+        dx = timestamp_of_value_satisfying_threshold.timestamp() - problematic_values_coordinates[n_values-1][0]
+        dy = abs(threshold_of_problematic_values[0] - problematic_values_coordinates[0][1])
+        return dx * dy/2
     for i in range(n_values-1): # Non considero l'ultimo valore
         dx = problematic_values_coordinates[i+1][0] - problematic_values_coordinates[i][0]
         dy1 = abs(threshold_of_problematic_values[i] - problematic_values_coordinates[i][1])
         dy2 = abs(threshold_of_problematic_values[i+1] - problematic_values_coordinates[i+1][1])
         area += dx * (dy1 + dy2) / 2
-    # Considero l'ultimo valore e immagino che sia costante fino al timestamp del valore che soddisfa il threshold
+    # Considero l'ultimo valore e immagino che sia lineare fino al timestamp del valore che soddisfa il threshold
     dx = timestamp_of_value_satisfying_threshold.timestamp() - problematic_values_coordinates[n_values-1][0]
     dy = abs(threshold_of_problematic_values[n_values-1] - problematic_values_coordinates[n_values-1][1])
-    area += dx * dy
+    area += dx * dy/2
     return area
 
 try:
@@ -86,6 +90,11 @@ try:
                                     problematic_values_coordinates = []
                                     threshold_of_problematic_values = []
                                     new_segment_found = False
+                    if new_segment_found:
+                        total_area += compute_area(problematic_values_coordinates, threshold_of_problematic_values, timestamps[i])
+                        problematic_values_coordinates = []
+                        threshold_of_problematic_values = []
+                        new_segment_found = False
                     print("Total area for "+qos+": "+str(total_area))
 
                     adapt_query = "SELECT a.discriminator, a.service_implementation_id, a.timestamp FROM adaptation_option a"
