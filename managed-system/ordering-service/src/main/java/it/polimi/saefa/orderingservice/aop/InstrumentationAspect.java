@@ -119,6 +119,7 @@ public class InstrumentationAspect {
     public void setSleepMean(@RequestParam Double sleepMean) {
         log.debug("Setting sleepMean to {}", sleepMean);
         this.sleepMean = sleepMean;
+        this.sleepVariance = 0.0;
     }
 
     @PutMapping("/rest/instrumentation/exceptionProbability")
@@ -129,12 +130,12 @@ public class InstrumentationAspect {
     
     @GetMapping("/rest/instrumentation/sleepMean")
     public String getSleepMean() {
-        return sleepMean == null ? "0.0" : sleepMean.toString().toString();
+        return sleepMean == null ? "0.0" : sleepMean.toString();
     }
     
     @GetMapping("/rest/instrumentation/exceptionProbability")
     public String getExceptionProbability() {
-        return exceptionProbability == null ? "0.0" :  exceptionProbability.toString().toString();
+        return exceptionProbability == null ? "0.0" :  exceptionProbability.toString();
     }
 }
 

@@ -125,6 +125,7 @@ public class InstrumentationAspect {
     public void setSleepMean(@RequestParam Double sleepMean) {
         log.debug("Setting sleepMean to {}", sleepMean);
         this.sleepMean = sleepMean;
+        this.sleepVariance = 0.0;
     }
 
     @PutMapping("/rest/instrumentation/exceptionProbability")
