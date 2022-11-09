@@ -393,22 +393,26 @@ public class PlanService {
         for(String implementationId: changeImplementationOption.getPossibleImplementations()){
             Class<? extends QoSSpecification> goal = changeImplementationOption.getQosGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
-            double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal()) * implementation.getPreference();
-            if(bestImplementationId == null) {
-                bestImplementationId = implementationId;
-                bestImplementationBenefit = benchmark;
-            }
-            else{
-                if(Availability.class == goal) {
-                    if (benchmark > bestImplementationBenefit) {
-                        bestImplementationId = implementationId;
-                        bestImplementationBenefit = benchmark;
-                    }
-                } else if(AverageResponseTime.class == goal) {
-                    if (benchmark < bestImplementationBenefit) {
-                        bestImplementationId = implementationId;
-                        bestImplementationBenefit = benchmark;
-                    }
+            double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal());
+            if(Availability.class == goal) {
+                benchmark = benchmark  * implementation.getPreference();
+                if(bestImplementationId == null) {
+                    bestImplementationId = implementationId;
+                    bestImplementationBenefit = benchmark;
+                }
+                if ( benchmark > bestImplementationBenefit) {
+                    bestImplementationId = implementationId;
+                    bestImplementationBenefit = benchmark;
+                }
+            } else if(AverageResponseTime.class == goal) {
+                benchmark = benchmark / implementation.getPreference();
+                if(bestImplementationId == null) {
+                    bestImplementationId = implementationId;
+                    bestImplementationBenefit = benchmark;
+                }
+                if (benchmark < bestImplementationBenefit) {
+                    bestImplementationId = implementationId;
+                    bestImplementationBenefit = benchmark;
                 }
             }
         }
