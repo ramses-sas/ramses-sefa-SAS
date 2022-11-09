@@ -139,7 +139,16 @@ public class PerformanceFakerService {
                 String url = "http://" + instance.getHostName() + ":" + instance.getPort() + "/rest/instrumentation/sleepMean?sleepMean={sleepMean}";
                 RestTemplate restTemplate = new RestTemplate();
                 log.info("Changing sleep for instance {} from {} to {}", instance.getInstanceId(), originalSleep, sleepMean+originalSleep);
-                restTemplate.put(url, null, Map.of("sleepMean", String.valueOf(originalSleep+sleepMean)));
+                try {
+                    restTemplate.put(url, null, Map.of("sleepMean", String.valueOf(originalSleep+sleepMean)));
+                } catch (Exception e) {
+                    if (sleepMean == 0.0) {
+                        log.error("Error while restoring ordering. The instance {} could have been shutdown", instance.getInstanceId());
+                    } else {
+                        log.error("Error while slowing down ordering", e);
+                        System.exit(1);
+                    }
+                }
             });
         } catch (Exception e) {
             log.error("Error while slowing down ordering", e);

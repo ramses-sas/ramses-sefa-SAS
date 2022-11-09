@@ -62,12 +62,6 @@ public class ConfigServerApplication {
         return "OK";
     }
 
-    @GetMapping(value = "/")
-    public String hello() {
-        notifyInstance(new DefaultServiceInstance("api-gateway-service@localhost:58081", "api-gateway-service","localhost", 58081, false));
-        return "OK";
-    }
-
     private void notifyInstance(ServiceInstance instance) {
         log.info("Notifying " + instance.getServiceId() + "@" + instance.getHost() + ":" + instance.getPort());
         String scheme = instance.getScheme() == null ? "http" : instance.getScheme();
