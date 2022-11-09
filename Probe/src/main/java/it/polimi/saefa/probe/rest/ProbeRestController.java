@@ -22,55 +22,17 @@ public class ProbeRestController {
     @Autowired
     ProbeService probeService;
 
-    @Value("${FAKE_SLOW_ORDERING}")
-    private String fakeSlowOrdering;
-
-    @Value("${FAKE_UNREACHABLE_RESTAURANT}")
+    @Value("${ENABLE_FAKE_UNREACHABLE_RESTAURANT}")
     private String fakeUnreachableRestaurant;
 
 
     private final Object lock = new Object();
     private Integer fakeCounter = 0;
     private String instanceToMakeUnreachable = null;
-    private Map<String, InstanceMetricsSnapshot> latestInstancesSnapshot = new HashMap<>();
 
     @GetMapping("/service/{serviceId}/snapshot")
     public List<InstanceMetricsSnapshot> takeSnapshot(@PathVariable("serviceId") String serviceId) {
         List<InstanceMetricsSnapshot> snapshots = probeService.createServiceSnapshot(serviceId);
-        /*
-        if (fakeSlowOrdering.equalsIgnoreCase("Y") && snapshots != null && !snapshots.isEmpty() && serviceId.equalsIgnoreCase("ordering-service")) {
-            int counter;
-            synchronized (lock) {
-                counter = fakeCounter;
-                fakeCounter--;
-            }
-            if (counter > 0) {
-                if (latestInstancesSnapshot.isEmpty()) {
-                    snapshots.forEach(s -> latestInstancesSnapshot.put(s.getInstanceId(), s));
-                } else {
-                    log.info("Faking slow ordering service. Counter: {}", counter);
-                    for (InstanceMetricsSnapshot snapshot : snapshots) {
-                        InstanceMetricsSnapshot previousSnapshot = latestInstancesSnapshot.get(snapshot.getInstanceId());
-                        if (previousSnapshot != null) {
-                            previousSnapshot.getHttpMetrics().forEach((key, previousHttpMetrics) -> {
-                                HttpEndpointMetrics currentHttpMetrics = snapshot.getHttpMetrics().get(key);
-                                int previousCountOfSuccessful = previousHttpMetrics.getTotalCountOfSuccessful();
-                                double previousDurationOfSuccessful = previousHttpMetrics.getTotalDurationOfSuccessful();
-                                int currentCountOfSuccessful = currentHttpMetrics.getTotalCountOfSuccessful();
-                                double currentDurationOfSuccessful = currentHttpMetrics.getTotalDurationOfSuccessful();
-                                if (currentCountOfSuccessful > previousCountOfSuccessful) {
-                                    currentHttpMetrics.getOutcomeMetrics().get("SUCCESS").setTotalDuration(currentDurationOfSuccessful + 2000 * (currentCountOfSuccessful - previousCountOfSuccessful));
-                                }
-                            });
-                        }
-                        latestInstancesSnapshot.put(snapshot.getInstanceId(), snapshot);
-                    }
-                }
-            } else {
-                latestInstancesSnapshot = new HashMap<>();
-            }
-        }
-         */
         if (fakeUnreachableRestaurant.equalsIgnoreCase("Y") && snapshots != null && !snapshots.isEmpty() && serviceId.equalsIgnoreCase("restaurant-service")) {
             synchronized (lock) {
                 if (fakeCounter > 0) {
