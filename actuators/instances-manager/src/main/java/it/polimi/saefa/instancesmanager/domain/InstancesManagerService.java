@@ -8,7 +8,6 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -57,16 +56,24 @@ public class InstancesManagerService {
         this.currentProfile = currentProfile;
         simulationInstanceParamsMap = new HashMap<>();
         switch (currentProfile) {
-            case "Scenario1":
-                simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "RestaurantPerfetto" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
-                    new SimulationInstanceParams(0.01, 0.15, 0.04),
-                    new SimulationInstanceParams(0.9, 1.0, 0.2),
                     new SimulationInstanceParams(0.0, 0.01, 0.01)
-                ));
-                break;
-            default:
-                break;
+            ));
+            case "RestaurantLentoOltreSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+                    // (failureRate, sleepDuration, sleepVariance)
+                    new SimulationInstanceParams(0.0, 0.1, 0.02)
+            ));
+            case "RestaurantMedioEntroSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+                    // (failureRate, sleepDuration, sleepVariance)
+                    new SimulationInstanceParams(0.04, 0.02, 0.001)
+            ));
+            case "RestaurantFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+                    // (failureRate, sleepDuration, sleepVariance)
+                    new SimulationInstanceParams(0.85, 0.015, 0.001)
+            ));
+            default -> {
+            }
         }
     }
 
@@ -99,7 +106,24 @@ public class InstancesManagerService {
         return serviceContainerInfos;
     }
 
-    public void removeInstance(String serviceImplementationName, String address, int port) {
+    public void startInstance(String serviceImplementationName, int port) {
+        List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).withNameFilter(Collections.singleton(serviceImplementationName+"_"+port)).exec();
+        if (containers.size() == 1) {
+            Container container = containers.get(0);
+            try {
+                dockerClient.startContainerCmd(container.getId()).exec();
+            } catch (NotFoundException|NotModifiedException e){
+                log.warn("Cannot start container {}", container.getId());
+            }
+            return;
+        } else if (containers.size() == 0){
+            log.warn("Container {}_{} not found. Considering it as crashed.", serviceImplementationName, port);
+            return;
+        }
+        throw new RuntimeException("Too many containers found: " + containers);
+    }
+
+    public void stopInstance(String serviceImplementationName, int port) {
         List<Container> containers = dockerClient.listContainersCmd().withNameFilter(Collections.singleton(serviceImplementationName+"_"+port)).exec();
         if (containers.size() == 1) {
             Container container = containers.get(0);
@@ -111,7 +135,7 @@ public class InstancesManagerService {
             }
             return;
         } else if (containers.size() == 0){
-            log.warn("Container {}:{} not found. Considering it as crashed.", serviceImplementationName, port);
+            log.warn("Container {}_{} not found. Considering it as crashed.", serviceImplementationName, port);
             return;
         }
         throw new RuntimeException("Too many containers found: " + containers);
@@ -129,15 +153,6 @@ public class InstancesManagerService {
         envVars.add("MYSQL_IP_PORT="+(mySqlIpPort == null ? localIp+":3306" : mySqlIpPort));
         envVars.add("SERVER_PORT="+serverPort);
         envVars.add("HOST="+dockerIp);
-
-        /*
-        // TO SIMULATE SOME SCENARIOS
-        double[] sleepMeanSecondsPool = new double[]{1, 2, 3, 4, 5};
-        double sleepMean = sleepMeanSecondsPool[new Random().nextInt(sleepMeanSecondsPool.length)]*1000;
-        double sleepVariance = 1500;
-        double[] exceptionProbabilitiesPool = new double[]{0, 0.2, 0.65, 0.9};
-        double exceptionProbability = exceptionProbabilitiesPool[new Random().nextInt(exceptionProbabilitiesPool.length)];
-        */
         envVars.add("SLEEP_MEAN="+simulationInstanceParams.getSleepDuration()*1000);
         envVars.add("SLEEP_VARIANCE="+simulationInstanceParams.getSleepVariance());
         envVars.add("EXCEPTION_PROBABILITY="+simulationInstanceParams.getExceptionProbability());

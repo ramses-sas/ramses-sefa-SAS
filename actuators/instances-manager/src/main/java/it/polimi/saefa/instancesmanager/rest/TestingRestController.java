@@ -2,13 +2,11 @@ package it.polimi.saefa.instancesmanager.rest;
 
 import it.polimi.saefa.instancesmanager.domain.InstancesManagerService;
 import it.polimi.saefa.instancesmanager.domain.ServiceContainerInfo;
-import it.polimi.saefa.instancesmanager.restinterface.AddInstancesRequest;
 import it.polimi.saefa.instancesmanager.restinterface.AddInstancesResponse;
 import it.polimi.saefa.instancesmanager.restinterface.AddInstancesTESTRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Array;
 import java.util.List;
 
 @RestController
@@ -29,7 +27,7 @@ public class TestingRestController {
 
     @GetMapping("/removeContainer/{dockerPort}")
     public String removeContainer(@PathVariable("dockerPort") String dockerPort) {
-        instancesManagerService.removeInstance("payment-proxy-1-service", instancesManagerService.getDockerIp(), Integer.parseInt(dockerPort));
+        instancesManagerService.stopInstance("payment-proxy-1-service", Integer.parseInt(dockerPort));
         return "OK";
     }
 

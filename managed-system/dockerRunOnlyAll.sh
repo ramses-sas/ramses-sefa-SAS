@@ -84,16 +84,18 @@ for d in */; do
     if [ "${d: -8}" = "proxies/" ]; then
       cd "$d" || return
       for dd in */; do
-        echo; echo; echo
-        cd "$dd" || return
-        if [ "${dd: -25}" = "delivery-proxy-1-service/" ]; then
+	      if [ "${dd: -10}" = "1-service/" ] ; then
+          echo; echo; echo
+          cd "$dd" || return
+          # if [ "${dd: -25}" = "delivery-proxy-1-service/" ]; then
           PrintSuccess "Starting $dd"
           ExtractEnv
           docker create -p $PORT_MAPPING -e HOST=$HOST -e SERVER_PORT=$SERVICE_PORT -e EUREKA_IP_PORT=$EUREKA_IP_PORT -e API_GATEWAY_IP_PORT=$API_GATEWAY_IP_PORT -e MYSQL_IP_PORT=$MYSQL_IP_PORT -i -t --name "${SERVICE_IMPLEMENTATION_NAME}_${SERVICE_PORT}" $SERVICE_IMPLEMENTATION_NAME
           bash "$SCRIPTS_PATH/dockerRun.sh"
-        fi
-        cd ..
-        echo; echo; echo
+          # fi
+          cd ..
+          echo; echo; echo
+	      fi
       done
       cd ..
     fi

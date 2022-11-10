@@ -1,5 +1,7 @@
 package it.polimi.saefa.restclient.domain;
 
+import it.polimi.saefa.restclient.externalrestapi.RemoveInstanceRequest;
+import it.polimi.saefa.restclient.externalrestapi.StartInstanceRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class AdaptationController {
 
     @Value("${PROBE_URL}")
     private String probeURL;
+
+    @Value("${DOCKER_ACTUATOR_URL}")
+    private String dockerActuatorURL;
 
 
     public void startMonitorRoutine() {
@@ -43,4 +48,26 @@ public class AdaptationController {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.put(url, null, Map.of("value", String.valueOf(counter)));
     }
+
+    public void startInstance(String instanceId) {
+        String url = dockerActuatorURL+"/rest/startInstance";
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject(url,
+                new StartInstanceRequest(instanceId.split("@")[0],
+                        instanceId.split("@")[1].split(":")[0],
+                        Integer.parseInt(instanceId.split("@")[1].split(":")[1]))
+                , String.class);
+    }
+    
+    public void stopInstance(String instanceId) {
+        String url = dockerActuatorURL+"/rest/removeInstance";
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject(url, 
+                new RemoveInstanceRequest(
+                        instanceId.split("@")[0],
+                        instanceId.split("@")[1].split(":")[0], 
+                        Integer.parseInt(instanceId.split("@")[1].split(":")[1]))
+                , String.class);
+    }
+
 }
