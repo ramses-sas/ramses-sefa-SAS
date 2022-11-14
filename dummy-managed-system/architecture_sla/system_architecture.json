@@ -1,10 +1,10 @@
 {
 	"services"	: [
 		{
-			"service_id":"A-SERVICE",
+			"service_id":"RANDINT-VENDOR-SERVICE",
 			"implementations" : [
 				{
-					"implementation_id" : "a-service",
+					"implementation_id" : "randint-vendor-service",
 					"implementation_trust" : 1,
 					"preference" : 1,
 					"instance_load_shutdown_threshold" : 0.4
@@ -13,15 +13,15 @@
 			],
 			"dependencies" : [
 				{
-					"name" : "B-SERVICE"
+					"name" : "RANDINT-PRODUCER-SERVICE"
 				}
 			]
 		},
 		{
-			"service_id":"B-SERVICE",
+			"service_id":"RANDINT-PRODUCER-SERVICE",
 			"implementations" : [
 				{
-					"implementation_id" : "b-service",
+					"implementation_id" : "randint-producer-service",
 					"implementation_trust" : 1,
 					"preference" : 1,
 					"instance_load_shutdown_threshold" : 0.4

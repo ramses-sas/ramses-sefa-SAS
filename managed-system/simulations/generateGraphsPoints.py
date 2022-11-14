@@ -6,23 +6,26 @@ FILEPATH = os.path.dirname(os.path.realpath(__file__))
 services = ["RESTAURANT-SERVICE", "ORDERING-SERVICE", "PAYMENT-PROXY-SERVICE", "DELIVERY-PROXY-SERVICE"]
 qoses = ["Availability", "AverageResponseTime"]
 
-def compute_area(problematic_values_coordinates: list, threshold_of_problematic_values: list, timestamp_of_value_satisfying_threshold) -> float:
+def compute_area(problematic_values_coordinates: list, threshold_of_problematic_values: list, x_coord_of_value_satis_thresh) -> float:
     area = 0.0
     n_values = len(problematic_values_coordinates)
     if n_values == 0:
         return area
     if n_values == 1:
-        dx = timestamp_of_value_satisfying_threshold.timestamp() - problematic_values_coordinates[n_values-1][0]
+        dx = x_coord_of_value_satis_thresh - problematic_values_coordinates[n_values-1][0]
         dy = abs(threshold_of_problematic_values[0] - problematic_values_coordinates[0][1])
+        #print("Nval1 dx: ", dx, "dy: ", dy)
         return dx * dy/2
     for i in range(n_values-1): # Non considero l'ultimo valore
         dx = problematic_values_coordinates[i+1][0] - problematic_values_coordinates[i][0]
         dy1 = abs(threshold_of_problematic_values[i] - problematic_values_coordinates[i][1])
         dy2 = abs(threshold_of_problematic_values[i+1] - problematic_values_coordinates[i+1][1])
         area += dx * (dy1 + dy2) / 2
+        #print("dx: ", dx, "dy1: ", dy1, "dy2: ", dy2, "area: ", area)
     # Considero l'ultimo valore e immagino che sia lineare fino al timestamp del valore che soddisfa il threshold
-    dx = timestamp_of_value_satisfying_threshold.timestamp() - problematic_values_coordinates[n_values-1][0]
+    dx = x_coord_of_value_satis_thresh - problematic_values_coordinates[n_values-1][0]
     dy = abs(threshold_of_problematic_values[n_values-1] - problematic_values_coordinates[n_values-1][1])
+    #print("FinalVal dx: ", dx, "dy: ", dy)
     area += dx * dy/2
     return area
 
@@ -57,10 +60,12 @@ try:
                         invalidates.append(row[4])
                         timestamps.append(row[5])
                     min_timestamp = timestamps[0].timestamp()
-                    values_coordinates = [((timestamps[i].timestamp() - min_timestamp)/60, values[i]) for i in range(len(values))]
-                    thresholds_coordinates = [((timestamps[i].timestamp() - min_timestamp)/60, thresholds[i]) for i in range(len(thresholds))]
-                    current_values_coordinates = [((timestamps[i].timestamp() - min_timestamp)/60, current_values[i]) for i in range(len(current_values)) if current_values[i] is not None]
-                    invalidates_coordinates = [((timestamps[i].timestamp() - min_timestamp)/60, values[i]) for i in range(len(invalidates)) if invalidates[i] == 1]
+                    for i in range(len(timestamps)): # Scala tutti i timestamp in modo che il primo sia 0. In minuti
+                        timestamps[i] = (timestamps[i].timestamp() - min_timestamp)/60
+                    values_coordinates = [(timestamps[i], values[i]) for i in range(len(values))]
+                    thresholds_coordinates = [(timestamps[i], thresholds[i]) for i in range(len(thresholds))]
+                    current_values_coordinates = [(timestamps[i], current_values[i]) for i in range(len(current_values)) if current_values[i] is not None]
+                    invalidates_coordinates = [(timestamps[i], values[i]) for i in range(len(invalidates)) if invalidates[i] == 1]
 
                     total_area = 0.0
                     new_segment_found = False
@@ -95,6 +100,8 @@ try:
                         problematic_values_coordinates = []
                         threshold_of_problematic_values = []
                         new_segment_found = False
+                    if qos == "Availability":
+                        total_area *= 1000
                     print("Total area for "+qos+": "+str(total_area))
 
                     adapt_query = "SELECT a.discriminator, a.service_implementation_id, a.timestamp FROM adaptation_option a"
@@ -110,14 +117,14 @@ try:
                             # print(row)
                             option_applied.append(row[0])
                             option_implementation_ids.append(row[1])
-                            option_timestamps.append(row[2])
+                            option_timestamps.append(row[2].timestamp()/60)
                     
                     # In realtà basta farlo solo per un QoS
                     adaptation_coordinates = []
                     for i in range(len(option_timestamps)):
                         for j in range(len(timestamps)-1):
                             if option_timestamps[i] >= timestamps[j] and option_timestamps[i] < timestamps[j+1] and option_implementation_ids[i] == implementation_ids[j]:
-                                adaptation_coordinates.append((timestamps[j].timestamp() - min_timestamp)/60)
+                                adaptation_coordinates.append(timestamps[j])
                                 break           
                     
                     # adaptation_coordinates = [(i+1) for i in range(len(values)) if timestamps[i] in option_timestamps and implementation_ids[i] in option_implementation_ids]
