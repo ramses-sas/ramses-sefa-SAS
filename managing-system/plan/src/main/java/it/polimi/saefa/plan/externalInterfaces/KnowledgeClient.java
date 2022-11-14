@@ -24,12 +24,6 @@ public interface KnowledgeClient {
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
 
-    @PostMapping("/rest/addQoSValue")
-    ResponseEntity<String> addQoSValue(@RequestBody AddQoSValueRequest request);
-
-    @GetMapping("/rest/proposedAdaptationOptions")
-    Map<String, List<AdaptationOption>> proposedAdaptationOptions();
-
     @PostMapping("/rest/chooseAdaptationOptions")
     ResponseEntity<String> chooseAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions);
 
