@@ -13,15 +13,15 @@ public interface AnalyseClient {
     @GetMapping("/rest/")
     GetInfoResponse getInfo();
 
-    @PutMapping("/rest/changeMetricsWindowSize")
+    @PutMapping("/rest/metricsWindowSize")
     String changeMetricsWindowSize(@RequestParam int value);
-    @PutMapping("/rest/changeAnalysisWindowSize")
+    @PutMapping("/rest/analysisWindowSize")
     String changeAnalysisWindowSize(@RequestParam int value);
-    @PutMapping("/rest/changeFailureRateThreshold")
+    @PutMapping("/rest/failureRateThreshold")
     String changeFailureRateThreshold(@RequestParam double value);
-    @PutMapping("/rest/changeUnreachableRateThreshold")
+    @PutMapping("/rest/unreachableRateThreshold")
     String changeUnreachableRateThreshold(@RequestParam double value);
-    @PutMapping("/rest/changeQoSSatisfactionRate")
+    @PutMapping("/rest/qoSSatisfactionRate")
     String changeQoSSatisfactionRate(@RequestParam double value);
 
     @Getter

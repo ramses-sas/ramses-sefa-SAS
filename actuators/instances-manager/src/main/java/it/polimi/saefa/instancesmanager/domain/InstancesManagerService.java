@@ -47,28 +47,32 @@ public class InstancesManagerService {
                 .withDockerHost("tcp://"+dockerIp+":"+dockerPort)
                 .build();
         log.warn("Docker host: {}", config.getDockerHost());
+        this.currentProfile = currentProfile;
+        simulationInstanceParamsMap = new HashMap<>();
         dockerClient = DockerClientBuilder.getInstance(config).build();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             //log.warn("Container: {}", container);
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
-        this.currentProfile = currentProfile;
-        simulationInstanceParamsMap = new HashMap<>();
         switch (currentProfile) {
-            case "RestaurantPerfetto" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "InstanzaPerfetta" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.01, 0.01)
             ));
-            case "RestaurantLentoOltreSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "InstanzaLenta100ms" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.1, 0.02)
             ));
-            case "RestaurantMedioEntroSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "InstanzaPocoFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+                    // (failureRate, sleepDuration, sleepVariance)
+                    new SimulationInstanceParams(0.02, 0.01, 0.001)
+            ));
+            case "InstanzaMediaEntroSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.04, 0.02, 0.001)
             ));
-            case "RestaurantFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "InstanzaFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.85, 0.015, 0.001)
             ));
@@ -83,7 +87,7 @@ public class InstancesManagerService {
         List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
         List<SimulationInstanceParams> simulationInstanceParamsList;
         synchronized (lock) {
-            if (serviceImplementationName.equalsIgnoreCase("restaurant-service"))
+            if (serviceImplementationName.equalsIgnoreCase("restaurant-service") || serviceImplementationName.startsWith("payment-proxy"))
                 simulationInstanceParamsList = simulationInstanceParamsMap.get(currentProfile);
             else
                 simulationInstanceParamsList = List.of(new SimulationInstanceParams(0.0, 0.0, 0.0));

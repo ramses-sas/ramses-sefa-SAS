@@ -17,31 +17,31 @@ public class AnalyseRestController {
         return "OK";
     }
 
-    @PutMapping("/changeMetricsWindowSize")
+    @PutMapping("/metricsWindowSize")
     public String changeMetricsWindowSize(@RequestParam int value) {
         analyseService.setNewMetricsWindowSize(value);
         return "OK";
     }
 
-    @PutMapping("/changeAnalysisWindowSize")
+    @PutMapping("/analysisWindowSize")
     public String changeAnalysisWindowSize(@RequestParam int value) {
         analyseService.setNewAnalysisWindowSize(value);
         return "OK";
     }
 
-    @PutMapping("/changeFailureRateThreshold")
+    @PutMapping("/failureRateThreshold")
     public String changeFailureRateThreshold(@RequestParam double value) {
         analyseService.setNewFailureRateThreshold(value);
         return "OK";
     }
 
-    @PutMapping("/changeUnreachableRateThreshold")
+    @PutMapping("/unreachableRateThreshold")
     public String changeUnreachableRateThreshold(@RequestParam double value) {
         analyseService.setNewUnreachableRateThreshold(value);
         return "OK";
     }
 
-    @PutMapping("/changeQoSSatisfactionRate")
+    @PutMapping("/qoSSatisfactionRate")
     public String changeQoSSatisfactionRate(@RequestParam double value) {
         analyseService.setQosSatisfactionRate(value);
         return "OK";

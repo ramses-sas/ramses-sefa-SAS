@@ -37,7 +37,6 @@ public class SystemBenchmarkParser {
                         if (!QoSSpecification.class.isAssignableFrom(clazz))
                             throw new RuntimeException("The provided class " + clazz.getName() + " does not extend the QoS class.");
                         serviceImplementationBenchmarks.getQoSBenchmarks().put((Class<? extends QoSSpecification>) clazz, benchmark);
-
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }

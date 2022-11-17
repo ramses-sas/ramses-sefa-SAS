@@ -1,1 +1,0 @@
-java -jar openapi-to-plantuml-0.1.14-jar-with-dependencies.jar NOME.json PNG openapi.png

@@ -112,20 +112,24 @@ public class AnalyseService {
             servicesProposedAdaptationOptionsMap = new HashMap<>();
             analyse();
             adapt();
+            StringBuffer sb = new StringBuffer();
             for (String serviceId : servicesProposedAdaptationOptionsMap.keySet()) {
                 for (AdaptationOption opt : servicesProposedAdaptationOptionsMap.get(serviceId)) {
-                    log.debug("|--- {}", opt.getDescription());
+                    sb.append("|--- PROPOSED: ").append(opt.getDescription()).append("\n");
+                    //log.debug("|--- PROPOSED: {}", opt.getDescription());
                 }
             }
             for (String serviceId : servicesForcedAdaptationOptionsMap.keySet()) {
                 for (AdaptationOption opt : servicesForcedAdaptationOptionsMap.get(serviceId)) {
-                    log.debug("|--- {}", opt.getDescription());
+                    sb.append("|--- FORCED: ").append(opt.getDescription()).append("\n");
+                    //log.debug("|--- FORCED: {}", opt.getDescription());
                 }
                 if (servicesProposedAdaptationOptionsMap.containsKey(serviceId))
                     servicesProposedAdaptationOptionsMap.get(serviceId).addAll(servicesForcedAdaptationOptionsMap.get(serviceId));
                 else
                     servicesProposedAdaptationOptionsMap.put(serviceId, servicesForcedAdaptationOptionsMap.get(serviceId));
             }
+            log.debug("\n{}", sb);
             // Now servicesProposedAdaptationOptionsMap includes the forced
             // SEND THE ADAPTATION OPTIONS TO THE KNOWLEDGE FOR THE PLAN
             knowledgeClient.proposeAdaptationOptions(servicesProposedAdaptationOptionsMap);
@@ -364,7 +368,7 @@ public class AnalyseService {
         log.debug("{}: current ART value: {} @ {}", service.getServiceId(), service.getCurrentValueForQoS(AverageResponseTime.class), service.getCurrentImplementation().getQoSCollection().getValuesHistoryForQoS(AverageResponseTime.class).get(analysisWindowSize-1).getTimestamp());
         proposedAdaptationOptions.addAll(handleAvailabilityAnalysis(service, serviceAvailabilityHistory));
         proposedAdaptationOptions.addAll(handleAverageResponseTimeAnalysis(service, serviceAvgRespTimeHistory));
-        if(service.shouldConsiderChangingImplementation()){
+        if (service.shouldConsiderChangingImplementation()) {
             proposedAdaptationOptions.add(createChangeImplementationOption(service, Availability.class));
             proposedAdaptationOptions.add(createChangeImplementationOption(service, AverageResponseTime.class));
         }

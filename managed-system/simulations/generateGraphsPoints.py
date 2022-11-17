@@ -117,7 +117,7 @@ try:
                             # print(row)
                             option_applied.append(row[0])
                             option_implementation_ids.append(row[1])
-                            option_timestamps.append(row[2].timestamp()/60)
+                            option_timestamps.append((row[2].timestamp()-min_timestamp)/60)
                     
                     # In realtà basta farlo solo per un QoS
                     adaptation_coordinates = []
@@ -128,7 +128,7 @@ try:
                                 break           
                     
                     # adaptation_coordinates = [(i+1) for i in range(len(values)) if timestamps[i] in option_timestamps and implementation_ids[i] in option_implementation_ids]
-
+                    # continue
                     files_to_generate = [values_coordinates, thresholds_coordinates, current_values_coordinates, invalidates_coordinates]
                     os.makedirs(FILEPATH+"/"+service, exist_ok = True)
                     for file_to_generate in files_to_generate:

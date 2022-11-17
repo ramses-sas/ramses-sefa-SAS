@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateBenchmarkRequest {
     private String serviceImplementationId;
-    private Class<? extends it.polimi.saefa.knowledge.domain.adaptation.specifications.QoSSpecification> qos;
+    private String qos;
     private Double newValue;
 }

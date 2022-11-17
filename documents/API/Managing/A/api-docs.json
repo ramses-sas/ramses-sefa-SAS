@@ -1,0 +1,219 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OpenAPI definition",
+        "version": "v0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:58002",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/rest/metricsWindowSize": {
+            "put": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "changeMetricsWindowSize",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/analysisWindowSize": {
+            "put": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "changeAnalysisWindowSize",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/qoSSatisfactionRate": {
+            "put": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "changeQoSSatisfactionRate",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/failureRateThreshold": {
+            "put": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "changeFailureRateThreshold",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/unreachableRateThreshold": {
+            "put": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "changeUnreachableRateThreshold",
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/": {
+            "get": {
+                "tags": [
+                    "analyse-rest-controller"
+                ],
+                "operationId": "getInfo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetInfoResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "GetInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "metricsWindowSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "analysisWindowSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "failureRateThreshold": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "unreachableRateThreshold": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "qosSatisfactionRate": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            }
+        }
+    }
+}

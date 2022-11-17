@@ -118,7 +118,7 @@ try:
                             # print(row)
                             option_applied.append(row[0])
                             option_implementation_ids.append(row[1])
-                            option_timestamps.append(row[2].timestamp()/60)
+                            option_timestamps.append((row[2].timestamp()-min_timestamp)/60)
                     
                     # In realtà basta farlo solo per un QoS
                     adaptation_coordinates = []
