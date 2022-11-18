@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 @LoadBalancerClients({
-    @LoadBalancerClient(name = "A-SERVICE", configuration = LoadBalancerConfig.class)
+    @LoadBalancerClient(name = "RANDINT-VENDOR-SERVICE", configuration = LoadBalancerConfig.class)
 })
 public class GatewayConfig {
 
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
-        String aServiceUrl = "lb://A-SERVICE";
+        String aServiceUrl = "lb://RANDINT-VENDOR-SERVICE";
 
 
         log.warn("Allocating route locator");

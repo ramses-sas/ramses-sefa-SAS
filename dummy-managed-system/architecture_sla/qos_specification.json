@@ -1,7 +1,7 @@
 {
 	"services"	: [
 		{
-			"service_id":"A-SERVICE",
+			"service_id":"RANDINT-VENDOR-SERVICE",
 			"qos" : [
 				{
 					"name" : "availability",
@@ -16,7 +16,7 @@
 			]
 		},
 		{
-			"service_id":"B-SERVICE",
+			"service_id":"RANDINT-PRODUCER-SERVICE",
 			"qos" : [
 				{
 					"name" : "availability",

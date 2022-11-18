@@ -1,0 +1,1892 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OpenAPI definition",
+        "version": "v0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:58005",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/rest/service/{serviceId}/responseTimeThreshold": {
+            "put": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateResponseTimeThreshold",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/implementation/{implementationId}/preference": {
+            "put": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateImplementationPreference",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "implementationId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/availabilityThreshold": {
+            "put": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateAvailabilityThreshold",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/failedModule": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getFailedModule",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MONITOR",
+                                        "ANALYSE",
+                                        "PLAN",
+                                        "EXECUTE"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "setFailedModule",
+                "parameters": [
+                    {
+                        "name": "module",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "MONITOR",
+                                "ANALYSE",
+                                "PLAN",
+                                "EXECUTE"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/activeModule": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getActiveModule",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "enum": [
+                                        "MONITOR",
+                                        "ANALYSE",
+                                        "PLAN",
+                                        "EXECUTE"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "notifyModuleStart",
+                "parameters": [
+                    {
+                        "name": "module",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "MONITOR",
+                                "ANALYSE",
+                                "PLAN",
+                                "EXECUTE"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/updateServicesQoSCollection": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateServicesQoSCollection",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "$ref": "#/components/schemas/QoSCollection"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/updateServiceQosCollection": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateServiceQosCollection",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateServiceQosCollectionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/rest/updateInstancesQoSCollection": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateInstancesQoSCollection",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/QoSCollection"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/updateBenchmarks": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateServiceBenchmarks",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateBenchmarkRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/setLoadBalancerWeights": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "setLoadBalancerWeights",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "format": "double"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/invalidateQosHistory": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "invalidateQosHistory",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/update": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "updateService",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Service"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/rest/proposeAdaptationOptions": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "proposeAdaptationOptions",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/AddInstanceOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ChangeImplementationOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ChangeLoadBalancerWeightsOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ShutdownInstanceOption"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/notifyShutdown": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "notifyShutdownInstance",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShutdownInstanceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/notifyChangeOfImplementation": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "notifyChangeOfImplementation",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangeOfImplementationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/notifyAddInstance": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "notifyAddInstance",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddInstanceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/metrics/addMetricsBuffer": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "addMetricsFromBuffer",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InstanceMetricsSnapshot"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/rest/metrics/{metricsId}": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getMetrics",
+                "parameters": [
+                    {
+                        "name": "metricsId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InstanceMetricsSnapshot"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/metrics/getLatest": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getLatestMetrics",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "instanceId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InstanceMetricsSnapshot"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/metrics/getLatestNOfCurrentInstance": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getLatestNMetricsOfCurrentInstance",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "instanceId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "n",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InstanceMetricsSnapshot"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/chooseAdaptationOptions": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "chooseAdaptationOptions",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/components/schemas/AddInstanceOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ChangeImplementationOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ChangeLoadBalancerWeightsOption"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/ShutdownInstanceOption"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/changeConfiguration": {
+            "post": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "changeConfiguration",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "$ref": "#/components/schemas/ServiceConfiguration"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/services": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getServices",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Service"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/servicesMap": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getServicesMap",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/Service"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getService",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/latestAdaptationDate": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getServiceLatestAdaptationDate",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/service/{serviceId}/instance/{instanceId}": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getInstance",
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Instance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/proposedAdaptationOptions": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getProposedAdaptationOptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/AddInstanceOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeImplementationOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeLoadBalancerWeightsOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ShutdownInstanceOption"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/chosenAdaptationOptions": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getChosenAdaptationOptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/AddInstanceOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeImplementationOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeLoadBalancerWeightsOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ShutdownInstanceOption"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rest/chosenAdaptationOptionsHistory": {
+            "get": {
+                "tags": [
+                    "knowledge-rest-controller"
+                ],
+                "operationId": "getChosenAdaptationOptionsHistory",
+                "parameters": [
+                    {
+                        "name": "n",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/AddInstanceOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeImplementationOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ChangeLoadBalancerWeightsOption"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/ShutdownInstanceOption"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Availability": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/QoSSpecification"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "min_threshold": {
+                                "type": "number",
+                                "format": "double"
+                            }
+                        }
+                    }
+                ]
+            },
+            "AverageResponseTime": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/QoSSpecification"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "max_threshold": {
+                                "type": "number",
+                                "format": "double"
+                            }
+                        }
+                    }
+                ]
+            },
+            "QoSCollection": {
+                "type": "object",
+                "properties": {
+                    "qoSHistoryMap": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/QoSHistoryQoSSpecification"
+                        }
+                    },
+                    "allQoSSpecifications": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/Availability"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/AverageResponseTime"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "QoSHistoryQoSSpecification": {
+                "type": "object",
+                "properties": {
+                    "specification": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Availability"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AverageResponseTime"
+                            }
+                        ]
+                    },
+                    "valuesStack": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        }
+                    },
+                    "currentValue": {
+                        "$ref": "#/components/schemas/Value"
+                    }
+                }
+            },
+            "QoSSpecification": {
+                "type": "object",
+                "properties": {
+                    "weight": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "constraintDescription": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Value": {
+                "type": "object",
+                "properties": {
+                    "invalidatesThisAndPreviousValues": {
+                        "type": "boolean"
+                    },
+                    "doubleValue": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateServiceQosCollectionRequest": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "newInstancesValues": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/components/schemas/Value"
+                            }
+                        }
+                    },
+                    "newServiceValues": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/Value"
+                        }
+                    },
+                    "newInstancesCurrentValues": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/components/schemas/Value"
+                            }
+                        }
+                    },
+                    "newServiceCurrentValues": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/Value"
+                        }
+                    }
+                }
+            },
+            "UpdateBenchmarkRequest": {
+                "type": "object",
+                "properties": {
+                    "serviceImplementationId": {
+                        "type": "string"
+                    },
+                    "qos": {
+                        "type": "string"
+                    },
+                    "newValue": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            },
+            "Instance": {
+                "type": "object",
+                "properties": {
+                    "instanceId": {
+                        "type": "string"
+                    },
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "serviceImplementationId": {
+                        "type": "string"
+                    },
+                    "currentStatus": {
+                        "type": "string",
+                        "enum": [
+                            "BOOTING",
+                            "ACTIVE",
+                            "UNREACHABLE",
+                            "FAILED",
+                            "SHUTDOWN"
+                        ]
+                    },
+                    "qoSCollection": {
+                        "$ref": "#/components/schemas/QoSCollection"
+                    },
+                    "latestInstanceMetricsSnapshot": {
+                        "$ref": "#/components/schemas/InstanceMetricsSnapshot"
+                    }
+                }
+            },
+            "Service": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "currentImplementationId": {
+                        "type": "string"
+                    },
+                    "configuration": {
+                        "$ref": "#/components/schemas/ServiceConfiguration"
+                    },
+                    "dependencies": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "possibleImplementations": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/ServiceImplementation"
+                        }
+                    },
+                    "qoSSpecifications": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/Availability"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/AverageResponseTime"
+                                }
+                            ]
+                        }
+                    },
+                    "latestAdaptationDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "allQoS": {
+                        "type": "array",
+                        "writeOnly": true,
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/Availability"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/AverageResponseTime"
+                                }
+                            ]
+                        }
+                    },
+                    "loadBalancerWeights": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    }
+                }
+            },
+            "ServiceImplementation": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "implementationId": {
+                        "type": "string"
+                    },
+                    "instances": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/Instance"
+                        }
+                    },
+                    "qoSCollection": {
+                        "$ref": "#/components/schemas/QoSCollection"
+                    },
+                    "qoSBenchmarks": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    },
+                    "preference": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "trust": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "penalty": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "instanceLoadShutdownThreshold": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "allQoSSpecifications": {
+                        "type": "array",
+                        "writeOnly": true,
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "$ref": "#/components/schemas/Availability"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/AverageResponseTime"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "AdaptationOption": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "serviceImplementationId": {
+                        "type": "string"
+                    },
+                    "comment": {
+                        "type": "string"
+                    },
+                    "forced": {
+                        "type": "boolean"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "AddInstanceOption": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/AdaptationOption"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "oldInstancesNewWeights": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "format": "double"
+                                }
+                            },
+                            "newInstanceWeight": {
+                                "type": "number",
+                                "format": "double"
+                            },
+                            "instancesToShutdownIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "ChangeImplementationOption": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/AdaptationOption"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "possibleImplementations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "newImplementationId": {
+                                "type": "string"
+                            },
+                            "numberOfInstances": {
+                                "type": "integer",
+                                "format": "int32"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ChangeLoadBalancerWeightsOption": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/AdaptationOption"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "newWeights": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "format": "double"
+                                }
+                            },
+                            "instancesToShutdownIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "ShutdownInstanceOption": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/AdaptationOption"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "instanceToShutdownId": {
+                                "type": "string"
+                            },
+                            "newWeights": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "number",
+                                    "format": "double"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "ShutdownInstanceRequest": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "instanceId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ChangeOfImplementationRequest": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "newImplementationId": {
+                        "type": "string"
+                    },
+                    "newInstancesAddresses": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "AddInstanceRequest": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "newInstanceAddress": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ServiceInfo": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "currentImplementationId": {
+                        "type": "string"
+                    },
+                    "instances": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "CircuitBreakerMetrics": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "type": "string",
+                        "enum": [
+                            "CLOSED",
+                            "OPEN",
+                            "HALF_OPEN",
+                            "DISABLED"
+                        ]
+                    },
+                    "bufferedCallsCount": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "callDuration": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    },
+                    "callMaxDuration": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    },
+                    "callCount": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "slowCallCount": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "notPermittedCallsCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "failureRate": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "slowCallRate": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "totalCallsCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "HttpEndpointMetrics": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "endpoint": {
+                        "type": "string"
+                    },
+                    "httpMethod": {
+                        "type": "string"
+                    },
+                    "outcomeMetrics": {
+                        "$ref": "#/components/schemas/OutcomeMetrics"
+                    }
+                }
+            },
+            "InstanceMetricsSnapshot": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "instanceId": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "BOOTING",
+                            "ACTIVE",
+                            "UNREACHABLE",
+                            "FAILED",
+                            "SHUTDOWN"
+                        ]
+                    },
+                    "circuitBreakerMetrics": {
+                        "$ref": "#/components/schemas/CircuitBreakerMetrics"
+                    },
+                    "httpMetrics": {
+                        "$ref": "#/components/schemas/HttpEndpointMetrics"
+                    },
+                    "cpuUsage": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "diskTotalSpace": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "diskFreeSpace": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "shutdown": {
+                        "type": "boolean"
+                    },
+                    "unreachable": {
+                        "type": "boolean"
+                    },
+                    "failed": {
+                        "type": "boolean"
+                    },
+                    "booting": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "OutcomeMetrics": {
+                "type": "object",
+                "properties": {
+                    "outcome": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalDuration": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "maxDuration": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            },
+            "CircuitBreakerConfiguration": {
+                "type": "object",
+                "properties": {
+                    "circuitBreakerName": {
+                        "type": "string"
+                    },
+                    "registerHealthIndicator": {
+                        "type": "boolean"
+                    },
+                    "permittedNumberOfCallsInHalfOpenState": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "waitDurationInOpenState": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "slowCallDurationThreshold": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "slowCallRateThreshold": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "failureRateThreshold": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "eventConsumerBufferSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "minimumNumberOfCalls": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "slidingWindowSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "slidingWindowType": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ServiceConfiguration": {
+                "type": "object",
+                "properties": {
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "loadBalancerWeights": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        }
+                    },
+                    "loadBalancerType": {
+                        "type": "string",
+                        "enum": [
+                            "WEIGHTED_RANDOM",
+                            "UNKNOWN"
+                        ]
+                    },
+                    "circuitBreakersConfiguration": {
+                        "$ref": "#/components/schemas/CircuitBreakerConfiguration"
+                    }
+                }
+            }
+        }
+    }
+}

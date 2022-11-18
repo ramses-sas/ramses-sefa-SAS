@@ -49,7 +49,7 @@
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.95
+							"benchmark": 0.93
 						}
 					]
 				},
@@ -62,7 +62,7 @@
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.94
+							"benchmark": 0.85
 						}
 					]
 				},
@@ -75,7 +75,7 @@
 						},
 						{
 							"name": "availability",
-							"benchmark": 0.95
+							"benchmark": 0.85
 						}
 					]
 				}

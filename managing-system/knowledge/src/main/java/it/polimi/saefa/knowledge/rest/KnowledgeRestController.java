@@ -77,8 +77,9 @@ public class KnowledgeRestController {
     }
     
     @PostMapping("/service/{serviceId}/updateBenchmarks")
-    public void updateServiceBenchmarks(@PathVariable String serviceId, @RequestBody UpdateBenchmarkRequest request) {
+    public String updateServiceBenchmarks(@PathVariable String serviceId, @RequestBody UpdateBenchmarkRequest request) {
         knowledgeService.updateBenchmark(serviceId, request.getServiceImplementationId(), request.getQos(), request.getNewValue());
+        return "Benchmark correctly updated";
     }
 
 

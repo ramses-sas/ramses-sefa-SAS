@@ -1,0 +1,64 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OpenAPI definition",
+        "version": "v0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:58003",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/rest/adaptationStatus": {
+            "get": {
+                "tags": [
+                    "plan-rest-controller"
+                ],
+                "operationId": "getAdaptationStatus",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "plan-rest-controller"
+                ],
+                "operationId": "setAdaptationStatus",
+                "parameters": [
+                    {
+                        "name": "adapt",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {}
+}

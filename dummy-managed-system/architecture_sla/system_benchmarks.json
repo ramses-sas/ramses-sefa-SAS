@@ -1,14 +1,14 @@
 {
 	"services" : [
 		{
-			"service_id":"A-SERVICE",
+			"service_id":"RANDINT-VENDOR-SERVICE",
 			"implementations" : [
 				{
-					"implementation_id" : "a-service",
+					"implementation_id" : "randint-vendor-service",
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 50
+							"benchmark": 90
 						},
 						{
 							"name": "availability",
@@ -19,14 +19,14 @@
 			]
 		},
 		{
-			"service_id":"B-SERVICE",
+			"service_id":"RANDINT-PRODUCER-SERVICE",
 			"implementations" : [
 				{
-					"implementation_id" : "b-service",
+					"implementation_id" : "randint-producer-service",
 					"adaptation_benchmarks" : [
 						{
 							"name": "average_response_time",
-							"benchmark": 40
+							"benchmark": 70
 						},
 						{
 							"name": "availability",

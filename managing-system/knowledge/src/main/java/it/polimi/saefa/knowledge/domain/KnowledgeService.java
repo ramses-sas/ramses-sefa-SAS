@@ -294,8 +294,18 @@ public class KnowledgeService {
 
 
 
-    public void updateBenchmark(String serviceId, String serviceImplementationId, Class<? extends QoSSpecification> qosClass, Double value) { //TODO è thread safe?
-        servicesMap.get(serviceId).getPossibleImplementations().get(serviceImplementationId).getQoSBenchmarks().put(qosClass, value);
+    public void updateBenchmark(String serviceId, String serviceImplementationId, String simpleClassName, Double value) { //TODO è thread safe?
+        String qosSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + simpleClassName;
+        Class<? extends QoSSpecification> qosClass;
+        try {
+            qosClass = (Class<? extends QoSSpecification>) Class.forName(qosSpecificationClassName);
+            if (!QoSSpecification.class.isAssignableFrom(qosClass))
+                throw new RuntimeException("The provided class " + qosClass.getName() + " does not extend the QoS class.");
+            servicesMap.get(serviceId).getPossibleImplementations().get(serviceImplementationId).getQoSBenchmarks().put(qosClass, value);
+            log.info("Updated "+simpleClassName+" benchmark for service " + serviceId + " of implementation " + serviceImplementationId + " to " + value);
+        } catch (ClassNotFoundException | ClassCastException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setLoadBalancerWeights(String serviceId, Map<String, Double> weights) { // serviceId, Map<instanceId, weight>

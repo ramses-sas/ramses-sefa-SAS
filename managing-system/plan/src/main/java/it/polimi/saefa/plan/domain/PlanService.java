@@ -390,23 +390,23 @@ public class PlanService {
         String bestImplementationId = null;
         double bestImplementationBenefit = 0;
         //Deve prendere la lista di possible implementation,
-        for(String implementationId: changeImplementationOption.getPossibleImplementations()){
+        for (String implementationId: changeImplementationOption.getPossibleImplementations()) {
             Class<? extends QoSSpecification> goal = changeImplementationOption.getQosGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
             double benchmark = implementation.getBenchmark(changeImplementationOption.getQosGoal());
-            if(Availability.class == goal) {
-                benchmark = benchmark  * implementation.getPreference();
-                if(bestImplementationId == null) {
+            if (Availability.class == goal) {
+                benchmark = benchmark * implementation.getPreference();
+                if (bestImplementationId == null) {
                     bestImplementationId = implementationId;
                     bestImplementationBenefit = benchmark;
                 }
-                if ( benchmark > bestImplementationBenefit) {
+                if (benchmark > bestImplementationBenefit) {
                     bestImplementationId = implementationId;
                     bestImplementationBenefit = benchmark;
                 }
             } else if(AverageResponseTime.class == goal) {
                 benchmark = benchmark / implementation.getPreference();
-                if(bestImplementationId == null) {
+                if (bestImplementationId == null) {
                     bestImplementationId = implementationId;
                     bestImplementationBenefit = benchmark;
                 }
@@ -431,7 +431,7 @@ public class PlanService {
 
         for (AdaptationOption adaptationOption : toCompare) {
             List<Instance> instances = service.getInstances();
-            if(adaptationOption.getQosGoal() == Availability.class) {
+            if (adaptationOption.getQosGoal() == Availability.class) {
                 double availabilityEstimation = 0.0;
                 if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
                     if (ChangeLoadBalancerWeightsOption.class.equals(adaptationOption.getClass())) {
@@ -473,14 +473,15 @@ public class PlanService {
                         availabilityEstimation /= instances.size() - 1;
                     }
                 }
-                if(ChangeImplementationOption.class.equals(adaptationOption.getClass())) {
+                if (ChangeImplementationOption.class.equals(adaptationOption.getClass())) {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
+                    // Perché la nuove istanze sono equamente bilanciate
                     availabilityEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(Availability.class);
                 }
                 double newBenefit = availabilityEstimation / service.getCurrentValueForQoS(Availability.class).getDoubleValue();
                 log.debug(service.getServiceId() + ": " + adaptationOption.getClass().getSimpleName() + " option for Availability. BENEFIT: " + newBenefit);
 
-                if(newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))){
+                if (newBenefit > 1 && (!benefits.containsKey(Availability.class) || newBenefit > benefits.get(Availability.class))) {
                     benefits.put(Availability.class, newBenefit);
                     bestOptionForGoal.put(Availability.class, adaptationOption);
                 }

@@ -1,0 +1,94 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OpenAPI definition",
+        "version": "v0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:58001",
+            "description": "Generated server url"
+        }
+    ],
+    "paths": {
+        "/rest/schedulingPeriod": {
+            "get": {
+                "tags": [
+                    "monitor-rest-controller"
+                ],
+                "operationId": "getSchedulingPeriod",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "monitor-rest-controller"
+                ],
+                "operationId": "changeSchedulingPeriod",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/rest/": {
+            "get": {
+                "tags": [
+                    "monitor-rest-controller"
+                ],
+                "operationId": "getInfo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetInfoResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "GetInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "schedulingPeriod": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "routineRunning": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    }
+}
