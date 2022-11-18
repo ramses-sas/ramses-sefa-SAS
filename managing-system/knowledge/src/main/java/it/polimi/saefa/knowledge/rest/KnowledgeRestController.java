@@ -23,7 +23,6 @@ public class KnowledgeRestController {
     @Autowired
     private KnowledgeService knowledgeService;
 
-
     @GetMapping("/activeModule")
     public Modules getActiveModule() {
         return knowledgeService.getActiveModule();
@@ -34,7 +33,6 @@ public class KnowledgeRestController {
         knowledgeService.setActiveModule(module);
         return ResponseEntity.ok().body("Module start correctly notified");
     }
-
 
     @GetMapping("/failedModule")
     public Modules getFailedModule() {
@@ -47,7 +45,6 @@ public class KnowledgeRestController {
         knowledgeService.setFailedModule(module);
         return "Failed module " + module + " correctly set";
     }
-
 
     @GetMapping("/services")
     public List<Service> getServices() {
@@ -85,13 +82,11 @@ public class KnowledgeRestController {
     }
 
 
-
     // Monitor-related functions
     @PostMapping("/metrics/addMetricsBuffer")
     public void addMetricsFromBuffer(@RequestBody Queue<List<InstanceMetricsSnapshot>> metricsSnapshotBuffer) {
         knowledgeService.addMetricsFromBuffer(metricsSnapshotBuffer);
     }
-
 
     // Analyse-related functions
     @GetMapping("/metrics/getLatestNOfCurrentInstance")
@@ -145,8 +140,6 @@ public class KnowledgeRestController {
         knowledgeService.updateServiceQosCollection(request.getServiceId(), request.getNewInstancesValues(), request.getNewServiceValues(), request.getNewInstancesCurrentValues(), request.getNewServiceCurrentValues());
     }
 
-
-
     // Plan-related functions
     @GetMapping("/chosenAdaptationOptions")
     public Map<String, List<AdaptationOption>> getChosenAdaptationOptions() {
@@ -165,18 +158,6 @@ public class KnowledgeRestController {
         knowledgeService.changeServicesConfigurations(request);
         return ResponseEntity.ok("Configuration changed");
     }
-
-    /*
-    @PostMapping("/addNewQoSValue")
-    public ResponseEntity<String> addNewQoSValue(@RequestBody AddQoSValueRequest request){
-        if (request.getInstanceId() == null){
-            knowledgeService.addNewServiceQoSValue(request.getServiceId(), request.getQoSClass(), request.getValue(), request.getDate());
-        } else if (request.getInstanceId() != null){
-            knowledgeService.addNewInstanceQoSValue(request.getServiceId(), request.getInstanceId(), request.getQoSClass(), request.getValue(), request.getDate());
-        }
-        return ResponseEntity.ok().body("QoS value added");
-    }
-     */
 
     @PostMapping("/service/{serviceId}/setLoadBalancerWeights")
     public ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights) {

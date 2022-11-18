@@ -20,12 +20,6 @@ public interface KnowledgeClient {
     @PutMapping("/rest/activeModule")
     ResponseEntity<String> notifyModuleStart(@RequestParam Modules module);
 
-    @GetMapping("/rest/services")
-    List<Service> getServices();
-
-    @GetMapping("/rest/servicesMap")
-    Map<String, Service> getServicesMap();
-
     @GetMapping("/rest/service/{serviceId}")
     Service getService(@PathVariable String serviceId);
 
@@ -35,9 +29,6 @@ public interface KnowledgeClient {
     @PostMapping("/rest/service/{serviceId}/setLoadBalancerWeights")
     ResponseEntity<String> setLoadBalancerWeights(@PathVariable String serviceId, @RequestBody Map<String, Double> instanceWeights);
 
-    @PostMapping("/rest/service/update")
-    void updateService(@RequestBody Service service);
-
     @PostMapping("/rest/notifyShutdown")
     ResponseEntity<String> notifyShutdownInstance(@RequestBody ShutdownInstanceRequest request);
 
@@ -46,7 +37,6 @@ public interface KnowledgeClient {
 
     @PostMapping("/rest/notifyChangeOfImplementation")
     ResponseEntity<String> notifyChangeOfImplementation(@RequestBody ChangeOfImplementationRequest request);
-
 
     @PutMapping("/rest/failedModule")
     String setFailedModule(@RequestParam Modules module);
