@@ -10,7 +10,7 @@ plugins {
 }
 
 subprojects {
-	group = "it.polimi.saefa"
+	group = "it.polimi.sofa"
 	version = "latest"
 
 	apply plugin: "java"
@@ -41,7 +41,7 @@ subprojects {
 			implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
 			// add all the custom libraries (in Jar format) from the libs folder
-			implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
+			implementation fileTree(dir: '../libs', include: ['**/*.jar'])
 
 			// Additional dependencies
 			compileOnly 'org.projectlombok:lombok:1.18.24'

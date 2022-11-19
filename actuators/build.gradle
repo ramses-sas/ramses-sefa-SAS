@@ -13,7 +13,7 @@ repositories {
 }
 
 subprojects {
-	group = "it.polimi.saefa"
+	group = "it.polimi.sofa"
 	version = "latest"
 
 	apply plugin: "org.springframework.boot"

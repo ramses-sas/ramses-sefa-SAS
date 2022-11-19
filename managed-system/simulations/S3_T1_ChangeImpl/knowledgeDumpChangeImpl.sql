@@ -41,7 +41,7 @@ CREATE TABLE `adaptation_option` (
 
 LOCK TABLES `adaptation_option` WRITE;
 /*!40000 ALTER TABLE `adaptation_option` DISABLE KEYS */;
-INSERT INTO `adaptation_option` VALUES ('ADD_INSTANCE',1,'The service avg availability specification is not satisfied',_binary '\0','it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:42:43'),('CHANGE_LOAD_BALANCER_WEIGHTS',2,'At least one instance satisfies the avg Availability specifications',_binary '\0','it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:44:36'),('CHANGE_IMPLEMENTATION',3,'Changing implementation',_binary '\0','it.polimi.saefa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:52:05');
+INSERT INTO `adaptation_option` VALUES ('ADD_INSTANCE',1,'The service avg availability specification is not satisfied',_binary '\0','it.polimi.sofa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:42:43'),('CHANGE_LOAD_BALANCER_WEIGHTS',2,'At least one instance satisfies the avg Availability specifications',_binary '\0','it.polimi.sofa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:44:36'),('CHANGE_IMPLEMENTATION',3,'Changing implementation',_binary '\0','it.polimi.sofa.knowledge.domain.adaptation.specifications.Availability','PAYMENT-PROXY-SERVICE','payment-proxy-1-service','2022-11-16 14:52:05');
 /*!40000 ALTER TABLE `adaptation_option` ENABLE KEYS */;
 UNLOCK TABLES;
 

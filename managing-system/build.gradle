@@ -15,7 +15,7 @@ plugins {
 
 
 subprojects {
-	group = "it.polimi.saefa"
+	group = "it.polimi.ramses"
 	version = "latest"
 
 	repositories {
