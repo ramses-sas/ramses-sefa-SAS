@@ -46,14 +46,11 @@ public class MonitorService {
     private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
     private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
 
-    // TODO remove after testing
-    private Map<String, Service> servicesMap;
 
     public MonitorService(KnowledgeClient knowledgeClient, ThreadPoolTaskScheduler taskScheduler) {
         this.knowledgeClient = knowledgeClient;
         this.taskScheduler = taskScheduler;
-        servicesMap = knowledgeClient.getServicesMap();
-        servicesMap.values().forEach(service -> managedServices.add(service.getServiceId()));
+        knowledgeClient.getServicesMap().values().forEach(service -> managedServices.add(service.getServiceId()));
     }
 
     /*
@@ -64,26 +61,12 @@ public class MonitorService {
     }
      */
 
-    // ASSUNZIONE: IL PERIODO DEVE ESSERE "ABBASTANZA" MINORE DEL PERIODO DI AGGIORNAMENTO DEL DISCOVERY SERVICE (PER EUREKA DI DEFAULT 90SEC)
     // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)
     class MonitorRoutine implements Runnable {
         @Override
         public void run() {
             log.debug("\nA new Monitor routine iteration started");
             try {
-                /*Map<String, ServiceInfo> probeServiceRuntimeArchitecture = probeClient.getSystemArchitecture();
-                servicesMap = knowledgeClient.getServicesMap();
-                probeServiceRuntimeArchitecture.forEach((serviceId, serviceInfo) -> {
-                    // TODO remove after testing
-                    if (servicesMap.containsKey(serviceId)) {
-                        if (servicesMap.get(serviceId).getInstances().size() != serviceInfo.getInstances().size()) {
-                            log.warn("!!! Probe and Knowledge Service are not in sync for service {}", serviceId);
-                            log.warn("!!! Knowledge: {} - [{}]", serviceId, servicesMap.get(serviceId).getInstances().stream().map(i -> i.getInstanceId() + "_" + i.getCurrentStatus()).reduce((a, b) -> a + ", " + b).orElse("no instances"));
-                        }
-                        log.debug("Service: {} - [{}]", serviceId, serviceInfo.getInstances().stream().reduce((a, b) -> a + ", " + b).orElse("no instances"));
-                    }
-                });*/
-
                 List<InstanceMetricsSnapshot> metricsList = Collections.synchronizedList(new LinkedList<>());
                 List<Thread> threads = new LinkedList<>();
                 AtomicBoolean invalidIteration = new AtomicBoolean(false);
@@ -91,16 +74,12 @@ public class MonitorService {
                 managedServices.forEach(serviceId -> {
                     Thread thread = new Thread( () -> {
                         try {
-                            //if (probeServiceRuntimeArchitecture.containsKey(serviceId)) {
                             List<InstanceMetricsSnapshot> instancesSnapshots = probeClient.takeSnapshot(serviceId);
                             if (instancesSnapshots == null) {
                                 invalidIteration.set(true);
                             } else {
                                 metricsList.addAll(instancesSnapshots);
                             }
-                            //} else {
-                             //   log.warn("No instances for service {} is not in the runtime architecture!", serviceId);
-                            //}
                         } catch (Exception e) {
                             log.error("Error while taking snapshot for service {}", serviceId, e);
                             invalidIteration.set(true);
