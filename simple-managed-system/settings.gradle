@@ -1,0 +1,8 @@
+rootProject.name = 'simple-managed-system'
+
+include 'randint-vendor-service'
+include 'randint-producer-service'
+include 'api-gateway-service'
+
+include 'servers:eureka-registry-server'
+include 'servers:config-server'
