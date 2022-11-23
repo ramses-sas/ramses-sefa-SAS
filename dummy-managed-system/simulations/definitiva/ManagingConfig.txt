@@ -1,0 +1,5 @@
+MP=5 sec
+MWS=6
+AWS=5
+QoSSatRate=0.6
+Users=50

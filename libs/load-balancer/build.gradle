@@ -10,7 +10,7 @@ plugins {
 apply plugin: "java"
 apply plugin: "io.spring.dependency-management"
 
-group = "it.polimi.saefa"
+group = "it.polimi.ramses"
 version = "latest"
 sourceCompatibility = "16"
 

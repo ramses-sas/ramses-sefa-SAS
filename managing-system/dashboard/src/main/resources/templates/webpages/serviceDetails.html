@@ -33,32 +33,47 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="entry : ${instancesTable}">
-                                        <td th:if="${!#strings.equals(entry[1],'SHUTDOWN')}"><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
-                                        <td th:if="${#strings.equals(entry[1],'SHUTDOWN')}"><p th:text="${entry[0]}">instanceId here</p></td>
+                                        <td th:if="${#strings.equals(entry[1],'ACTIVE')}"><a th:href="@{'/service/'+${serviceId}+'/'+${entry[0]}}" th:text="${entry[0]}">instanceId here</a></td>
+                                        <td th:if="${!#strings.equals(entry[1],'ACTIVE')}" th:text="${entry[0]}"></td>
                                         <td th:text="${entry[1]}">Status goes here</td>
                                         <td th:if="${isLoadBalanced}" th:text="${entry[2]}">Weight goes here</td>
                                     </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="column">
-                            <div class="card">
+                                <br>
                                 <h5 class="cardElementTitle">Graph legend</h5>
                                 <div>
-                                    <span class="blue-color-box"></span>
-                                    <span><h6 class="cardElementContent">Before Adaptation</h6></span>
+                                    <div>
+                                        <span class="blue-color-box"></span>
+                                        <span><h6 class="cardElementContent">Before Adaptation</h6></span>
+                                    </div>
+                                    <div>
+                                        <span class="green-color-box"></span>
+                                        <span><h6 class="cardElementContent">After Adaptation</h6></span>
+                                    </div>
+                                    <div>
+                                        <span class="red-color-box"></span>
+                                        <span><h6 class="cardElementContent">Threshold</h6></span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="green-color-box"></span>
-                                    <span><h6 class="cardElementContent">After Adaptation</h6></span>
-                                </div>
-                                <div>
-                                    <span class="red-color-box"></span>
-                                    <span><h6 class="cardElementContent">Threshold</h6></span>
-                                </div>
+                                <br>
+                                <h5 class="cardElementTitle">QoS Current Values</h5>
+                                <table class="configTable">
+                                    <thead>
+                                    <tr>
+                                        <th>QoS</th>
+                                        <th>Value</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="entry : ${qoSCurrentValueTable}">
+                                        <td th:text="${entry[0]}">QoS goes here</td>
+                                        <td th:text="${entry[1]}">Value goes here</td>
+                                        <td th:text="${entry[2]}">Timestamp goes here</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -128,6 +143,8 @@
 
         var chart = new google.charts.Line(document.getElementById(yAxisName));
         chart.draw(data, google.charts.Line.convertOptions(options));
+        //var chart = new google.visualization.LineChart(document.getElementById(yAxisName));
+        //chart.draw(data, options);
 
     }
 </script>

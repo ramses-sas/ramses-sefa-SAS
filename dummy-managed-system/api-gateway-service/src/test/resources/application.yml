@@ -1,0 +1,69 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: customer_cart
+          uri: lb://ORDERING-SERVICE
+          predicates:
+            - Path=/customer/cart/**
+          filters:
+            - RewritePath=/customer/cart(?<segment>/?.*), /rest$\{segment}
+            - name: Retry
+              args:
+                retries: ${ORDERING_SERVICE_RETRIES} #va parametrizzato
+                statuses: INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 10ms
+                  maxBackoff: 50ms
+                  factor: 2
+                  basedOnPreviousValue: false
+        - id: customer_restaurant
+          uri: lb://RESTAURANT-SERVICE
+          predicates:
+            - Path=/customer/**
+          filters:
+            - PrefixPath=/rest
+            - name: Retry
+              args:
+                retries: ${RESTAURANT_SERVICE_RETRIES} #va parametrizzato
+                statuses: INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 10ms
+                  maxBackoff: 50ms
+                  factor: 2
+                  basedOnPreviousValue: false
+
+        - id: restaurant_admin
+          uri: lb://RESTAURANT-SERVICE
+          predicates:
+            - Path=/admin/**
+          filters:
+            - PrefixPath=/rest
+            - name: Retry
+              args:
+                retries: ${RESTAURANT_SERVICE_RETRIES} #va parametrizzato
+                statuses: INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 10ms
+                  maxBackoff: 50ms
+                  factor: 2
+                  basedOnPreviousValue: false
+        - id: restaurant_test
+          uri: lb://RESTAURANT-SERVICE
+          predicates:
+            - Path=/test/**
+          filters:
+            - PrefixPath=/rest
+            - name: Retry
+              args:
+                retries: ${RESTAURANT_SERVICE_RETRIES} #va parametrizzato
+                statuses: INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 10ms
+                  maxBackoff: 50ms
+                  factor: 2
+                  basedOnPreviousValue: false

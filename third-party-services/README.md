@@ -1,4 +1,4 @@
-# SAEFA - A Self Adaptive eFood App
+# SOFA - A Service Oreinted eFood Application
 MSc final thesis project by Vincenzo Riccio and Giancarlo Sorrentino.
 
 ## Third party services

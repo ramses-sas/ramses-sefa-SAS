@@ -1,0 +1,38 @@
+buildscript { ext {
+	set('SPRING_BOOT_VERSION', '2.7.3')
+	set('SPRING_CLOUD_VERSION', '2021.0.3')
+	set('SPRING_DEPENDENCY_MANAGEMENT_VERSION', '1.0.13.RELEASE')
+}}
+
+plugins {
+	id "org.springframework.boot" version "${SPRING_BOOT_VERSION}"
+	id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VERSION}"
+}
+
+
+group = "it.polimi.sofa"
+version = "latest"
+
+apply plugin: "java"
+sourceCompatibility = "16"
+
+repositories {
+	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${SPRING_CLOUD_VERSION}"
+	}
+}
+
+dependencies {
+	implementation fileTree(dir: 'libs', include: ['**/*.jar'])
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+	compileOnly 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
+}
+

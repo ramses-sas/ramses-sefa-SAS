@@ -1,0 +1,3 @@
+mysql --user=sofauser --password=SaefaPW0! < TruncateTablesStatements.sql
+
+mysqldump --user=sofauser --password=SaefaPW0! --add-drop-database --add-drop-table knowledge > knowledgeDumpNOMESIMULAZIONE.sql

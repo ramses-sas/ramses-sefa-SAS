@@ -1,5 +1,5 @@
 dependencies {
     implementation project(':knowledge')
     implementation fileTree(dir: '../libs', include: ['**/build/libs/*.jar'])
-    implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
+    //implementation fileTree(dir: '../../libs', include: ['**/build/libs/*.jar'])
 }

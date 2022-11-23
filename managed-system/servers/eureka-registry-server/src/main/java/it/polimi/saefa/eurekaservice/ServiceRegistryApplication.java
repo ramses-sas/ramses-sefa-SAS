@@ -1,4 +1,4 @@
-package it.polimi.saefa.eurekaservice;
+package it.polimi.sofa.eurekaservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
