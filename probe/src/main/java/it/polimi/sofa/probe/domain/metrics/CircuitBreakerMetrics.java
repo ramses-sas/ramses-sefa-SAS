@@ -4,31 +4,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 public class CircuitBreakerMetrics {
 
-    @Id
-    @GeneratedValue
     private Long id;
 
     private String name;
     private State state;
-    @ElementCollection
     private Map<CallOutcomeStatus, Integer> bufferedCallsCount;
-    @ElementCollection
     private Map<CallOutcomeStatus, Double> callDuration;
-    @ElementCollection
     private Map<CallOutcomeStatus, Double> callMaxDuration;
-    @ElementCollection
     private Map<CallOutcomeStatus, Integer> callCount;
-    @ElementCollection
     private Map<CallOutcomeStatus, Integer> slowCallCount;
     private int notPermittedCallsCount;
     private double failureRate;

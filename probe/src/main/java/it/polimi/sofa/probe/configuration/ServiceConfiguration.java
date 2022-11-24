@@ -4,43 +4,30 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@IdClass(ServiceConfiguration.CompositeKey.class)
 public class ServiceConfiguration {
-
-    protected static class CompositeKey implements Serializable {
-        private String serviceId;
-        @Temporal(TemporalType.TIMESTAMP)
-        private Date timestamp;
-    }
 
     public enum LoadBalancerType{
         WEIGHTED_RANDOM,
         UNKNOWN
     }
 
-    @Id
     private String serviceId;
 
-    @Id
-    @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
-    @ElementCollection // <instanceId, weight>
+    // <instanceId, weight>
     private Map<String, Double> loadBalancerWeights;
     private LoadBalancerType loadBalancerType;
 
-    @ElementCollection // <circuitBreakerName, circuitBreakerConfiguration>
+    // <circuitBreakerName, circuitBreakerConfiguration>
     private Map<String, CircuitBreakerConfiguration> circuitBreakersConfiguration = new HashMap<>();
 
     @Override
@@ -74,7 +61,6 @@ public class ServiceConfiguration {
 
     @Getter
     @Setter
-    @Embeddable
     public static class CircuitBreakerConfiguration {
         private String circuitBreakerName;
 

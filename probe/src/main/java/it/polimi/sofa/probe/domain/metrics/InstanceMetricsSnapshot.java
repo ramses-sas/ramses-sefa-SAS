@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,29 +15,24 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 public class InstanceMetricsSnapshot {
-    @Id
-    @GeneratedValue//(strategy = GenerationType.TABLE)
+
     private Long id;
 
     private String serviceId; //service name
     private String instanceId; //service implementation id @ip : port
 
-    @Enumerated(EnumType.STRING)
     private InstanceStatus status = InstanceStatus.ACTIVE;
     //@ElementCollection
     // Map<Endpoint, List<HttpRequestMetrics>>
     //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
-    @OneToMany(cascade = CascadeType.ALL)
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     // Map<HTTP-Method@endpoint, HttpRequestMetrics>
-    @OneToMany(cascade = CascadeType.ALL)
     Map<String, HttpEndpointMetrics> httpMetrics = new HashMap<>();
     private Double cpuUsage;
     private Double diskTotalSpace;
     private Double diskFreeSpace;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
 
     public InstanceMetricsSnapshot(String serviceId, String instanceId) {

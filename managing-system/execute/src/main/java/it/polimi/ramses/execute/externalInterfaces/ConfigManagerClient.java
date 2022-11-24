@@ -12,4 +12,7 @@ public interface ConfigManagerClient {
     @PostMapping(path = "/rest/changeProperty")
     void changeProperty(@RequestBody ChangePropertyRequest request);
 
+    @PostMapping(path = "/rest/changeLBWeights")
+    void changeLBWeights(@RequestBody ChangeLBWeightsRequest request);
+
 }

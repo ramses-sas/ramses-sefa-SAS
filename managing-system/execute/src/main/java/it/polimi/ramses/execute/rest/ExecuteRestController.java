@@ -21,10 +21,4 @@ public class ExecuteRestController {
         return "OK";
     }
 
-    // TODO remove after test
-    @GetMapping("/")
-    public String debug() {
-        executeService.breakpoint();
-        return "Hello from Execute Service";
-    }
 }

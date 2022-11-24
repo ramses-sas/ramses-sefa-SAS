@@ -16,7 +16,7 @@ public class TestingRestController {
     public String add() {
         try {
             configManagerService.pull();
-            configManagerService.changeProperty("test", "test", "application.properties");
+            configManagerService.changePropertyInFile("test", "test", "application.properties");
             configManagerService.commitAndPush("ConfigManagerActuator: changing properties");
         } catch (Exception e) {
             return "FAILED!\n"+e.getMessage();
@@ -28,7 +28,7 @@ public class TestingRestController {
     public String remove() {
         try {
             configManagerService.pull();
-            configManagerService.changeProperty("test", null, "application.properties");
+            configManagerService.changePropertyInFile("test", null, "application.properties");
             configManagerService.commitAndPush("ConfigManagerActuator: changing properties");
         } catch (Exception e) {
             return "FAILED!\n"+e.getMessage();

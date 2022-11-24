@@ -5,30 +5,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class HttpEndpointMetrics {
 
-    @Id
-    @GeneratedValue
     private Long id;
 
     private String endpoint;
     private String httpMethod;
 
-    @ElementCollection
     //Map<OutcomeStatus, OutcomeMetrics>
     private Map<String, OutcomeMetrics> outcomeMetrics = new HashMap<>();
 
-    @Embeddable
     @Getter
     @Setter
     @NoArgsConstructor
@@ -40,7 +34,6 @@ public class HttpEndpointMetrics {
         private double maxDuration = 0;
 
         @JsonIgnore
-        @Transient
         public double getAverageDuration() {
             if (count == 0)
                 return 0;

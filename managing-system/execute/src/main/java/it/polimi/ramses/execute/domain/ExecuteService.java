@@ -75,7 +75,7 @@ public class ExecuteService {
         Service service = knowledgeClient.getService(serviceId);
         if (!service.getCurrentImplementationId().equals(addInstanceOption.getServiceImplementationId()))
             throw new RuntimeException("Service implementation id mismatch. Expected: " + service.getCurrentImplementationId() + " Actual: " + addInstanceOption.getServiceImplementationId());
-        StartNewInstancesResponse instancesResponse = instancesManagerClient.addInstances(new StartNewInstancesRequest(addInstanceOption.getServiceImplementationId(), 1));
+        StartNewInstancesResponse instancesResponse = actuatorAddInstances(addInstanceOption.getServiceImplementationId(), 1);
 
         if (instancesResponse.getDockerizedInstances().isEmpty())
             throw new RuntimeException("No instances were added");
@@ -90,7 +90,8 @@ public class ExecuteService {
                 actuatorShutdownInstance(instanceToShutdownId);
                 knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, instanceToShutdownId));
             }
-            actuatorUpdateLoadbalancerWeights(service.getServiceId(), newWeights, addInstanceOption.getInstancesToShutdownIds());
+            //actuatorUpdateLoadbalancerWeights(service.getServiceId(), newWeights, addInstanceOption.getInstancesToShutdownIds());
+            configManagerClient.changeLBWeights(new ChangeLBWeightsRequest(service.getServiceId(), newWeights, addInstanceOption.getInstancesToShutdownIds()));
             knowledgeClient.setLoadBalancerWeights(serviceId, newWeights);
         }
     }
@@ -107,7 +108,8 @@ public class ExecuteService {
         actuatorShutdownInstance(instanceToShutdownId);
         knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, instanceToShutdownId));
         if (newWeights != null) {
-            actuatorUpdateLoadbalancerWeights(serviceId, newWeights, List.of(instanceToShutdownId));
+            configManagerClient.changeLBWeights(new ChangeLBWeightsRequest(serviceId, newWeights, List.of(instanceToShutdownId)));
+            //actuatorUpdateLoadbalancerWeights(serviceId, newWeights, List.of(instanceToShutdownId));
             knowledgeClient.setLoadBalancerWeights(serviceId, newWeights);
         }
     }
@@ -125,7 +127,8 @@ public class ExecuteService {
             actuatorShutdownInstance(instanceToShutdownId);
             knowledgeClient.notifyShutdownInstance(new ShutdownInstanceRequest(serviceId, instanceToShutdownId));
         });
-        actuatorUpdateLoadbalancerWeights(serviceId, newWeights, changeLoadBalancerWeightsOption.getInstancesToShutdownIds());
+        //actuatorUpdateLoadbalancerWeights(serviceId, newWeights, changeLoadBalancerWeightsOption.getInstancesToShutdownIds());
+        configManagerClient.changeLBWeights(new ChangeLBWeightsRequest(serviceId, newWeights, changeLoadBalancerWeightsOption.getInstancesToShutdownIds()));
         knowledgeClient.setLoadBalancerWeights(serviceId, newWeights);
     }
 
@@ -148,7 +151,8 @@ public class ExecuteService {
         // Remove the old implementation instances and their weights
         List<String> oldInstancesIds = oldImplementation.getInstances().values().stream().collect(LinkedList::new, (list, instance) -> list.add(instance.getInstanceId()), List::addAll);
         oldInstancesIds.forEach(this::actuatorShutdownInstance);
-        actuatorRemoveLoadBalancerWeights(serviceId, oldInstancesIds);
+        configManagerClient.changeLBWeights(new ChangeLBWeightsRequest(serviceId, null, oldInstancesIds));
+        //actuatorRemoveLoadBalancerWeights(serviceId, oldInstancesIds);
 
         // Update knowledge with the new instances
         List<String> newInstancesAddresses = instancesResponse.getDockerizedInstances().stream().collect(LinkedList::new, (list, instance) -> list.add(instance.getAddress()+":"+instance.getPort()), List::addAll);
@@ -158,6 +162,10 @@ public class ExecuteService {
 
 
     // Actuator methods
+
+    private StartNewInstancesResponse actuatorAddInstances(String serviceImplementationId, int numberOfInstances) {
+        return instancesManagerClient.addInstances(new StartNewInstancesRequest(serviceImplementationId, numberOfInstances));
+    }
 
     /**
      * Contacts the instanceManager actuator to shut down the instance.
@@ -169,6 +177,7 @@ public class ExecuteService {
         instancesManagerClient.removeInstance(new RemoveInstanceRequest(instanceToRemoveId.split("@")[0], ipPort[0], Integer.parseInt(ipPort[1])));
     }
 
+
     /**
      * Contacts the Config Manager actuator to change the weights of the load balancer of the specified service.
      *
@@ -176,7 +185,7 @@ public class ExecuteService {
      * @param weights the new weights of the load balancer for the active instances
      * @param instancesToShutdownIds the instances that will be shut down
      */
-    private void actuatorUpdateLoadbalancerWeights(String serviceId, Map<String, Double> weights, List<String> instancesToShutdownIds) {
+    /*private void actuatorUpdateLoadbalancerWeights(String serviceId, Map<String, Double> weights, List<String> instancesToShutdownIds) {
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
         weights.forEach((instanceId, weight) -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
@@ -187,7 +196,7 @@ public class ExecuteService {
             propertyToChangeList.add(new PropertyToChange(null, propertyKey));
         });
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
-    }
+    }*/
 
     /**
      * Contacts the Config Manager actuator to remove the weights of the load balancer of the specified service for a set of instances.
@@ -195,18 +204,12 @@ public class ExecuteService {
      * @param serviceId the id of the service to change the weights of
      * @param instanceIds the instances to remove the weights of
      */
-    private void actuatorRemoveLoadBalancerWeights(String serviceId, List<String> instanceIds) {
+    /*private void actuatorRemoveLoadBalancerWeights(String serviceId, List<String> instanceIds) {
         List<PropertyToChange> propertyToChangeList = new LinkedList<>();
         instanceIds.forEach(instanceId -> {
             String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
             propertyToChangeList.add(new PropertyToChange(null, propertyKey));
         });
         configManagerClient.changeProperty(new ChangePropertyRequest(propertyToChangeList));
-    }
-
-
-
-    public void breakpoint(){
-        log.info("breakpoint");
-    }
+    }*/
 }

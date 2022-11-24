@@ -93,6 +93,29 @@
                     }
                 }
             }
+        },
+        "/rest/changeLBWeights": {
+            "post": {
+                "tags": [
+                    "config-manager-rest-controller"
+                ],
+                "operationId": "changeLBWeights",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangeLBWeightsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "components": {
