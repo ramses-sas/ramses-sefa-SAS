@@ -10,7 +10,7 @@ qoses = ["Availability", "AverageResponseTime"]
 try:
     with connect(
         host="localhost",
-        user="sofauser",
+        user="saefauser",
         password="SaefaPW0!",
         database="knowledge"
     ) as connection:

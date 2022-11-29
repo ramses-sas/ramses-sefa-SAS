@@ -1,4 +1,4 @@
-# SOFA - Service Oriented eFood Application
+# SEFA - SErvice-based eFood Application
 MSc final thesis project by Vincenzo Riccio and Giancarlo Sorrentino.
 
 ## Project architecture and structure
@@ -73,7 +73,7 @@ By default, the microservices expose one port, according to the following table:
 
 |      Microservice       |       Port      |
 |     :-------------:     | :-------------: |
-|      Web Service        |      58080      |
+|       Web Service       |      58080      |
 |   API Gateway Service   |      58081      |
 | Eureka Registry Service |      58082      |
 |                         |                 |
@@ -90,15 +90,15 @@ By default, the microservices expose one port, according to the following table:
 
 The simulated third-party services are available at the following URLs:
 
-|         Service         |         URL        |
-|     :-------------:     |  :--------------:  |
-|    Payment Service 1    | 52.208.38.53:48090 |
-|    Payment Service 2    | 52.208.38.53:48091 |
-|    Payment Service 3    | 52.208.38.53:48092 |
-|                         |                    |
-|    Delivery Service 1   | 52.208.38.53:48095 |
-|    Delivery Service 2   | 52.208.38.53:48096 |
-|    Delivery Service 3   | 52.208.38.53:48097 |
+|         Service                                                                                  |
+|     :-------------:                                                                              |
+|    [Payment Service 1](https://xmximxmorpjwponbk2qp72p33i0fekhf.lambda-url.eu-west-1.on.aws/)    |
+|    [Payment Service 2](https://guzsl5ufk2ztqhlxdlbatl7dzy0vaani.lambda-url.eu-west-1.on.aws/)    |
+|    [Payment Service 3](https://aajv6txnny7uuycydk5lignrpy0fbrnq.lambda-url.eu-west-1.on.aws/)    |
+|                                                                                                  |
+|    [Delivery Service 1](https://x5xycqlbgwhi72r5lo2nwevrw40tomhi.lambda-url.eu-west-1.on.aws/)   |
+|    [Delivery Service 2](https://63lm7vm6mhuunmisf3ym3kmtpq0rsxll.lambda-url.eu-west-1.on.aws/)   |
+|    [Delivery Service 3](https://b7435mgabew2hf67gupfyyy2fe0tdmlj.lambda-url.eu-west-1.on.aws/)   |
 
 ## REST API Documentation
 Once the project is up and running, the REST API documentation of each microservice is available under `/api.html` of the microservice URL.

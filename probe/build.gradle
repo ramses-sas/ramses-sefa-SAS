@@ -15,7 +15,7 @@ id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VER
 
 
 
-group = "it.polimi.sofa"
+group = "it.polimi.sefa"
 version = "latest"
 
 repositories {

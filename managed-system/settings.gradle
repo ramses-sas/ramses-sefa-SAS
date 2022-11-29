@@ -1,4 +1,4 @@
-rootProject.name = 'sofa'
+rootProject.name = 'sefa'
 
 include 'services-restapi'
 

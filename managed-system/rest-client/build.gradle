@@ -10,7 +10,7 @@ plugins {
 }
 
 
-group = "it.polimi.sofa"
+group = "it.polimi.sefa"
 version = "latest"
 
 apply plugin: "java"
