@@ -45,14 +45,14 @@ To look at the configuration options of the scripts, run them with the `-h` opti
 - The instance IP is the public IP address of the host, obtained through an external service. The host must be reachable from that address (i.e., you might need to enable port forwarding).
 - The Eureka Registry address is the one specified in the `application.properties` file
 
-To execute all the microservices locally, run the `dockerRunAll.sh` bash script in the project root folder. If no option is specified, it uses the default Eureka Service made public for this project. Otherwise, run it with the `-e` option to run also the Eureka Service locally. 
+To execute all the microservices locally, run the `dockerRunAll.sh` bash script in the project root folder. If no option is specified, it runs everything locally. Run with the `-h` option to see the script help.
 
 ### Simple execution flow – default Eureka Service
 It requires that the machines hosting the microservices are publicly accessible from the Internet at the respective microservices ports. Hence, you may need to enable port forwarding on the gateway. **DO NOT USE THIS METHOD IF CONDITIONS ARE NOT MET.**
 
 1. Clone this GitHub repository
 2. Navigate to the project root directory
-3. Run `bash dockerRunAll.sh`. This will create and run a container for each microservice.
+3. Run `bash dockerRunAll.sh -r`. This will create and run a container for each microservice.
 4. The Web App can be reached at `localhost:58080`.
 5. The API Gateway (i.e., the REST API exposed by all the services) can be reached at `localhost:58081`.
 
@@ -61,7 +61,7 @@ It requires that the machines hosting the microservices are publicly accessible 
 Useful for testing all on the same machine.
 1. Clone this GitHub repository
 2. Navigate to the project root directory
-3. Run `bash dockerRunAll.sh -e`. This will create and run a container for each microservice.
+3. Run `bash dockerRunAll.sh`. This will create and run a container for each microservice.
 4. The Web App can be reached at `localhost:58080`.
 5. The API Gateway (i.e., the REST API exposed by all the services) can be reached at `localhost:58081`.
 
