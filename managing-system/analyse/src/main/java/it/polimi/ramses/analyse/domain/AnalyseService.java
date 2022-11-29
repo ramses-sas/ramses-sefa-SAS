@@ -196,20 +196,6 @@ public class AnalyseService {
                     servicesForcedAdaptationOptionsMap.get(service.getServiceId()).add(new ShutdownInstanceOption(service.getServiceId(), service.getCurrentImplementationId(), instance.getInstanceId(), "Instance failed or unreachable", true));
                     servicesToSkip.add(service.getServiceId());
                     continue;
-                    /*
-                    Se l'ultima metrica è failed, allora l'istanza è crashata. Va marcata come istanza spenta (lo farà l'EXECUTE) per non
-                    confonderla con una potenziale nuova istanza con stesso identificatore.
-                    Inoltre, per evitare comportamenti oscillatori, scegliamo di terminare istanze poco reliable che
-                    sono spesso unreachable o failed.
-
-                    se c'è una metrica unreachable abbiamo 4 casi, riassumibili con la seguente regex: UNREACHABLE+ FAILED* ACTIVE*
-                    Se c'è una failed di mezzo, la consideriamo come il caso di sotto.
-                    Se finisce con active, tutto a posto a meno di anomalie nell'unreachable rate
-
-                    //se c'è una failed ma non una unreachable, abbiamo 2 casi, riassumibili con la seguente regex: FAILED+ ACTIVE*.
-                    Caso solo failed: considerare l'istanza come spenta, ignorarla nel calcolo dei QoS.
-                    Caso last metric active: tutto ok, a meno di conti sul tasso di faild e unreachable
-                    */
                 }
 
                 List<InstanceMetricsSnapshot> activeMetrics = metrics.stream().filter(instanceMetricsSnapshot -> instanceMetricsSnapshot.isActive() && instanceMetricsSnapshot.getHttpMetrics().size()>0).toList(); //la lista contiene almeno un elemento grazie all'inactive rate

@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.util.LinkedList;
 import java.util.List;
 
+/*
 public class AnalysisWindow extends LinkedList<List<AdaptationOption>> {
     @Getter @Setter
     private int capacity;
@@ -28,3 +29,5 @@ public class AnalysisWindow extends LinkedList<List<AdaptationOption>> {
     }
 
 }
+
+ */
