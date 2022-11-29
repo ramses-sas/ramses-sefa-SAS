@@ -3,7 +3,7 @@ MSc final thesis project by Vincenzo Riccio and Giancarlo Sorrentino.
 
 ## Project architecture and structure
 
-![Component Diagram](../documents/Component%20Diagram.png)
+![Component Diagram](../documents/Managed System/HexagonComponentDiagram.png)
 
 The project is made of multiple microservices, which can be found in the directories named _***-service**_.
 
