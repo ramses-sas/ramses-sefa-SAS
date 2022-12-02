@@ -1,5 +1,5 @@
 # SEFA - SErvice-based eFood Application
-MSc final thesis project by Vincenzo Riccio and Giancarlo Sorrentino.
+SEFA is a microservice application used as Managed System for the MSc final thesis project *Engineering of Self-Adaptive Systems: the case of RAMSES* by Vincenzo Riccio and Giancarlo Sorrentino.
 
 ## Project architecture and structure
 
