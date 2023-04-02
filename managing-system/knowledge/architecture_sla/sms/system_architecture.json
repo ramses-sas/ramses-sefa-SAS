@@ -1,0 +1,33 @@
+{
+	"services"	: [
+		{
+			"service_id":"RANDINT-VENDOR-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "randint-vendor-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+
+			],
+			"dependencies" : [
+				{
+					"name" : "RANDINT-PRODUCER-SERVICE"
+				}
+			]
+		},
+		{
+			"service_id":"RANDINT-PRODUCER-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "randint-producer-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+			],
+			"dependencies" : []
+		}
+	]
+}

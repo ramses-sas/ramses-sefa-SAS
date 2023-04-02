@@ -3,3 +3,6 @@ RUN mkdir /app
 WORKDIR /app
 COPY build/libs/*-latest.jar ./spring-boot-application.jar
 ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
+ENV SERVER_PORT 58080
+ENV API_GATEWAY_IP_PORT sefa-api-gateway:58081
+EXPOSE 58080

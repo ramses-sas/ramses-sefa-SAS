@@ -1,4 +1,4 @@
-rootProject.name = 'managing-system'
+rootProject.name = 'ramses'
 include('monitor', 'analyse', 'plan', 'execute', 'knowledge')
 include 'dashboard'
 

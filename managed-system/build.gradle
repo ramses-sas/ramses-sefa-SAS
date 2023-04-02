@@ -37,8 +37,10 @@ subprojects {
 			implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 			// Spring Cloud dependencies, using the specified Spring Cloud version
-			implementation 'org.springframework.cloud:spring-cloud-starter-config'
-			implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+			if (project.name != "web-service") {
+				implementation 'org.springframework.cloud:spring-cloud-starter-config'
+				implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+			}
 
 			// add all the custom libraries (in Jar format) from the libs folder
 			implementation fileTree(dir: '../libs', include: ['**/*.jar'])
