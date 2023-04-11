@@ -8,10 +8,32 @@ if [[("${GITHUB_OAUTH}" = "") || ("${GITHUB_REPOSITORY_URL}" = "")]]; then
   exit 1
 fi
 
-if [[("${ARCH}" != "arm64") && ("${ARCH}" != "amd64")]]; then
-  PrintWarn "Env var ARCH not set or unknown. Supported values are 'arm64' and 'amd64'. Using 'arm64' as default option"
+usage() {
+  cat << EOF >&2
+Usage: [-a <arch>]
+
+-a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'
+EOF
+  exit 1
+}
+
+while getopts u:a:f: flag
+do
+    case "${flag}" in
+        a) ARCH=${OPTARG};;
+        *) usage;;
+    esac
+done
+
+echo ${ARCH}
+
+if [[(${ARCH} != "arm64") && ( ${ARCH} != "amd64")]]; then
+  PrintWarn "Desired architecture not specified or unknown. Supported values are 'arm64' and 'amd64'. Using 'arm64' as default option"
   ARCH="arm64"
+else
+   PrintSuccess "Running script with selceted architecture: ${ARCH}"
 fi
+
 
 ##### Network #####
 PrintSuccess "Creating new Docker network called 'ramses-sas-net'"
