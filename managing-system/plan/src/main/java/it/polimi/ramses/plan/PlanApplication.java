@@ -14,20 +14,20 @@ public class PlanApplication {
     public static void main(String[] args) throws Exception {
         String os = System.getProperty("os.name");
         String filename1;
-        if (os.contains("nux"))
+        if (os.toLowerCase().contains("nux"))
             filename1 = "libjniortools.so";
-        else if (os.contains("win"))
+        else if (os.toLowerCase().contains("win"))
             filename1 = "jniortools.dll";
-        else if (os.contains("mac"))
+        else if (os.toLowerCase().contains("mac"))
             filename1 = "libjniortools.dylib";
         else
             throw new RuntimeException("Unsupported OS: "+os);
         String filename2;
-        if (os.contains("nux"))
+        if (os.toLowerCase().contains("nux"))
             filename2 = "libortools.so.9";
-        else if (os.contains("win"))
+        else if (os.toLowerCase().contains("win"))
             filename2 = "ortools.dll";
-        else if (os.contains("mac"))
+        else if (os.toLowerCase().contains("mac"))
             filename2 = "libortools.9.dylib";
         else
             throw new RuntimeException("Unsupported OS: "+os);
