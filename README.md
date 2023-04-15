@@ -40,7 +40,9 @@ Use option `-a` to specify the system architecture. The available ones are amd64
 Once all the containers have been launched you can start interacting with both systems. 
 
 To easily interact with SEFA you can open your browser and go to the url exposed by the sefa-web-service container, which is visible in docker. 
-![Docker Container Example](./documents/Docker%20Container%20Example)
+
+![Docker Container Example](./documents/Docker%20Container%20Example.png)
+
 From there, you can interact with the app both as an admin, by adding and editing restaurants, or as a user, by placing orders. 
 
 To interact with the RAMSES dashboard, open your browser and go to the url exposed by the ramses-dashboard container. From there, you can see all the managed services in the Home page and all the applied adaptation options in the Adaptation page, and you can modify the systems hyperparameters from the Configuration page. Notice that the monitor routine must be started manually from the Configuration page, and the adaptation process can be manually enabled or disabled from the same page.
