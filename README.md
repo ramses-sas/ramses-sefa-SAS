@@ -22,18 +22,18 @@ To begin with, install [Docker](https://www.docker.com/) on your machine and run
 - Memory: 8GB
 - Swap: 1GB
 
-The next step involves the creation of a GitHub repository (if you don’t have one yet) to be used by the Managed System Configuration Server as the configuration repository. You can do so by forking [our repository](https://github.com/ramses-sas/config-server). Check that the application.properties file does not include any load balancer weight. If so, simply delete those lines and push on your repository. Once you have created your configuration repository, create an environmental variable storing its URL by running the following command, after replacing <YOUR_REPO_URL> with the URL of the repository you just created:
+The next step involves the creation of a GitHub repository (if you don’t have one yet) to be used by the Managed System Configuration Server as the configuration repository. You can do so by forking [our repository](https://github.com/ramses-sas/config-server). Check that the application.properties file does not include any load balancer weight. If so, simply delete those lines and push on your repository. Once you have created your configuration repository, create an environmental variable storing its URL by running the following command, after replacing ``<YOUR_REPO_URL>`` with the URL of the repository you just created:
 ```
 $ export GITHUB_REPOSITORY_URL=<YOUR_REPO_URL>
 ```
 
 Now, generate a GitHub personal access token to grant the Managed System the permission to push data on your repository. You can do so by following [this guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
-Once again, create an environmental variable storing your access token by running the following command, after replacing <YOUR_TOKEN> with the token you just created:
+Once again, create an environmental variable storing your access token by running the following command, after replacing ``<YOUR_TOKEN>`` with the token you just created:
 ```
 $ export GITHUB_OAUTH=<YOUR_TOKEN> 
 ```
 
-Finally, run the file SEFA_setup.sh if you want to run RAMSES together with SEFA. Otherwise, run the file SMS_setup.sh to run RAMSES together with the Simple Managed System.
+Finally, run the file ``SEFA_setup.sh`` if you want to run RAMSES together with SEFA. Otherwise, run the file ``SMS_setup.sh`` to run RAMSES together with the Simple Managed System.
 Use option `-a` to specify the system architecture. The available ones are amd64 and arm64. The latter is the default one.
 
 ## Usage Guide
