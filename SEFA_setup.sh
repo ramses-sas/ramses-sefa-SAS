@@ -13,19 +13,28 @@ usage() {
 Usage: [-a <arch>]
 
 -a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'
+-l: start only the load generator 
 EOF
   exit 1
 }
 
-while getopts u:a:f: flag
+loadgen() {
+    PrintSuccess "Setting up Load Generator"
+    docker pull sbi98/sefa-load-generator
+    docker run -P --name sefa-load-generator -d --network ramses-sas-net sbi98/sefa-load-generator:$ARCH
+    exit 0
+}
+LOADGEN=false
+while getopts a:l flag
 do
     case "${flag}" in
         a) ARCH=${OPTARG};;
+        l) LOADGEN=true;;
         *) usage;;
     esac
 done
 
-echo ${ARCH}
+echo $LOADGEN
 
 if [[(${ARCH} != "arm64") && ( ${ARCH} != "amd64")]]; then
   PrintWarn "Desired architecture not specified or unknown. Supported values are 'arm64' and 'amd64'. Using 'arm64' as default option"
@@ -38,6 +47,13 @@ fi
 PrintSuccess "Creating new Docker network called 'ramses-sas-net'"
 docker network create ramses-sas-net
 echo
+
+##### LOAD GENERATOR ####
+
+if $LOADGEN; then
+    echo "Ciao"
+    loadgen
+fi
 
 ##### MYSQL #####
 PrintSuccess "Setting up MySQL Server"
@@ -122,4 +138,12 @@ do
 done
 
 echo; PrintSuccess "DONE!"; echo 
-echo; PrintWarn "A load generator is also available on Docker Hub. The image is sbi98/sefa-load-generator"; echo 
+echo; PrintWarn "A load generator is also available on Docker Hub. The image is sbi98/sefa-load-generator. Do you want to run it? Y/n"; echo 
+read decision
+
+if [[$decision=="Y" || $decision=="y"]]; then
+    loadgen
+else echo "Exiting. You can run only the load generator by running this script with the -l flag."
+fi
+
+

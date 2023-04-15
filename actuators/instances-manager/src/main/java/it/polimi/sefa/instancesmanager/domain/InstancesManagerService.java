@@ -56,23 +56,23 @@ public class InstancesManagerService {
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
         switch (currentProfile) {
-            case "InstanzaPerfetta" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "PerfectInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.01, 0.01)
             ));
-            case "InstanzaLenta100ms" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "SlowInstance100ms" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.1, 0.02)
             ));
-            case "InstanzaPocoFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "aBitFaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.02, 0.01, 0.001)
             ));
-            case "InstanzaMediaEntroSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "AverageFaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.04, 0.02, 0.001)
             ));
-            case "InstanzaFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "FaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.85, 0.015, 0.001)
             ));
