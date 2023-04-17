@@ -52,7 +52,7 @@ From the Homepage you can track the availability and the average response time o
 ## Troubleshooting and known issues
 A known issue on macOS involves the Actuator component, that sometimes cannot directly contact the Docker interface to run or stop containers. This results in the Instances Manager container to fail its booting process. To solve this issue, install socat using [this guide](https://stackoverflow.com/questions/16808543/install-socat-on-mac) and run the command 
 ```
-$socat -d TCP-LISTEN:2375,range=0.0.0.0/0,reuseaddr,fork UNIX:/var/run/docker.sock
+$ socat -d TCP-LISTEN:2375,range=0.0.0.0/0,reuseaddr,fork UNIX:/var/run/docker.sock
 ```
 
 
