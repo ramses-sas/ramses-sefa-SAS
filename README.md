@@ -49,6 +49,11 @@ To interact with the RAMSES dashboard, open your browser and go to the url expos
 
 From the Homepage you can track the availability and the average response time of each service and of their instances. Notice that these values are available only if new requests are made to the services. To generate artificial requests to SEFA, you can use our automatic load generator. If you did not launch it when asked by the setup script, you can instanciate it by running again the same script with the `-l` flag.
 
+## Troubleshooting and known issues
+A known issue on macOS involves the Actuator component, that sometimes cannot directly contact the Docker interface to run or stop containers. This results in the Instances Manager container to fail its booting process. To solve this issue, install socat using [this guide](https://stackoverflow.com/questions/16808543/install-socat-on-mac) and run the command 
+```
+$socat -d TCP-LISTEN:2375,range=0.0.0.0/0,reuseaddr,fork UNIX:/var/run/docker.sock
+```
 
 
 
