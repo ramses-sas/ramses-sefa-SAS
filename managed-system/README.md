@@ -48,15 +48,15 @@ By default, each microservice exposes one port, according to the following table
 
 The simulated third-party services are hosted on Vercel and they are available at the following URLs:
 
-|         Service                                                                                  |
-|     :-------------:                                                                              |
+|         Service                                                        |
+|     :-------------:                                                    |
 |    [Payment Service 1](https://payment-service-ramses.vercel.app/1)    |
 |    [Payment Service 2](https://payment-service-ramses.vercel.app/2)    |
 |    [Payment Service 3](https://payment-service-ramses.vercel.app/3)    |
-|                                                                                                  |
-|    [Delivery Service 1](https://delivery-service-ramses.vercel.app/1)   |
-|    [Delivery Service 2](https://delivery-service-ramses.vercel.app/2)   |
-|    [Delivery Service 3](https://delivery-service-ramses.vercel.app/3)   |
+|                                                                        |
+|    [Delivery Service 1](https://delivery-service-ramses.vercel.app/1)  |
+|    [Delivery Service 2](https://delivery-service-ramses.vercel.app/2)  |
+|    [Delivery Service 3](https://delivery-service-ramses.vercel.app/3)  |
 
 
 Check the `application.properties` files of each microservice for the default properties. If you want to change the default properties and the environmental variables of a service, you need to manually create the container to override the default properties.
