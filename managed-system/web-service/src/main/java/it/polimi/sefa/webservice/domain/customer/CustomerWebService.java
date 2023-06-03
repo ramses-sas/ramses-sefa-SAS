@@ -58,7 +58,6 @@ public class CustomerWebService {
 		return response.getBody();
 	}
 
-	// NOT USED
 	public RemoveItemFromCartResponse removeItemFromCart(Long cartId, Long restaurantId, String itemId, int quantity) {
 		String url = getApiGatewayUrl()+"/customer/cart/"+cartId+"/removeItem";
 		RestTemplate restTemplate = new RestTemplate();
