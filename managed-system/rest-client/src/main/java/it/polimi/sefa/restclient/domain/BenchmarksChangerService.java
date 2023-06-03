@@ -27,7 +27,6 @@ public class BenchmarksChangerService {
         log.info("Change Implementation? {}", changeImplStr.equalsIgnoreCase("Y") ? "YES" : "NO");
         log.info("changeBenchmarkStart: {}", changeBenchmarkStart);
 
-        // DOPO changeBenchmarkStart MINUTI cambia il benchmark dell'availability per il payment-proxy-2-service
         if (changeImpl) {
             Timer timer = new Timer();
             TimerTask changeBenchmark = new TimerTask() {

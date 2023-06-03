@@ -55,7 +55,6 @@ public class PerformanceFakerService {
         log.info("fakeSlowOrdering2Duration: {}", fakeSlowOrdering2Duration);
         log.info("fakeUnreachableRestaurantCounter: {}", fakeUnreachableRestaurantCounter);
         log.info("fakeUnreachableRestaurantDelay: {}", fakeUnreachableRestaurantDelay);
-        // DOPO fakeSlowOrderingDelay1 MINUTI chiedi di simulare COUNTER comportamenti anomali
         if (fakeSlowOrdering) {
             TimerTask fakeSlowOrderingTask1Start = new TimerTask() {
                 public void run() {
@@ -96,8 +95,6 @@ public class PerformanceFakerService {
             fakeSlowOrderingTimer2End.schedule(fakeSlowOrderingTask2End, 1000L * (fakeSlowOrdering2Start+fakeSlowOrdering2Duration));
         }
 
-
-        // DOPO fakeUnreachableRestaurantDelay MINUTI chiedi di simulare COUNTER metriche unreachable
         if (fakeUnreachableRestaurantCounter != 0) {
             TimerTask fakeUnreachableRestaurantTask = new TimerTask() {
                 public void run() {
