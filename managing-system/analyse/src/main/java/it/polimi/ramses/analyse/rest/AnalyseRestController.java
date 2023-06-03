@@ -52,12 +52,4 @@ public class AnalyseRestController {
         return new GetInfoResponse(analyseService.getMetricsWindowSize(), analyseService.getAnalysisWindowSize(), 
                 analyseService.getFailureRateThreshold(), analyseService.getUnreachableRateThreshold(), analyseService.getQosSatisfactionRate());
     }
-
-    // TODO remove after test
-    @GetMapping("/break")
-    public String debug() {
-        analyseService.breakpoint();
-        return "Hello from Analysis Service";
-    }
-
 }

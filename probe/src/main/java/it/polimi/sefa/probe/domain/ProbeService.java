@@ -59,7 +59,7 @@ public class ProbeService {
                 instanceMetricsSnapshots.add(instanceMetricsSnapshot);
                 try {
                     if (!pingHost(internetConnectionCheckHost, internetConnectionCheckPort, 5000))
-                        invalidIteration.set(true); //iteration is invalid if monitor cannot reach a known host
+                        invalidIteration.set(true);
                 } catch (Exception e1) {
                     log.error("Error checking internet connection");
                     log.error(e1.getMessage());

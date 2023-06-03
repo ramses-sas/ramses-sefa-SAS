@@ -45,5 +45,4 @@ public class InstancesManagerRestController {
 		instancesManagerService.changeProfile(newProfile);
 		return "Profile changed to " + newProfile;
 	}
-
 }

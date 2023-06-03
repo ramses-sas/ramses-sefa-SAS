@@ -14,7 +14,6 @@ public class CartItem {
     private String name;
     private int quantity;
     private double price;
-    
 
     public CartItem(String id, int quantity) {
         this.id = id;
@@ -34,6 +33,4 @@ public class CartItem {
         this.quantity -= quantity;
         return this.quantity;
     }
-
-
 }

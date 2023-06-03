@@ -35,7 +35,6 @@ public class AdminRestController {
 	
     private final Logger logger = Logger.getLogger(AdminRestController.class.toString());
 
-	/* Crea un nuovo ristorante. */ 
 	@PostMapping("/restaurants")
 	public CreateRestaurantResponse createRestaurant(@RequestBody CreateRestaurantRequest request) {
 		String name = request.getName();
@@ -45,7 +44,6 @@ public class AdminRestController {
 		return new CreateRestaurantResponse(restaurant.getId(), restaurant.getName(), restaurant.getLocation());
 	}	
 
-	/* Crea o modifica il menu del del ristorante con restaurantId. */ 
 	@PutMapping("/restaurants/{restaurantId}/menu")
 	public CreateRestaurantMenuResponse createRestaurantMenu(@RequestBody CreateRestaurantMenuRequest request) {
 		logger.warning("REST CALL: starting createRestaurantMenu ");
@@ -61,7 +59,6 @@ public class AdminRestController {
 		return new CreateRestaurantMenuResponse(restaurant.getId());
 	}
 
-	/* Trova il ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}")
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurant " + restaurantId); 
@@ -69,7 +66,6 @@ public class AdminRestController {
 		return restaurantToGetRestaurantResponse(restaurant);
 	}
 	
-	/* Trova tutti i ristoranti. */ 
 	@GetMapping("/restaurants")
 	public GetRestaurantsResponse getRestaurants() {
 		logger.info("REST CALL: getAllRestaurants"); 
@@ -82,7 +78,6 @@ public class AdminRestController {
 		return new GetRestaurantsResponse(restaurantResponses);
 	}
 	
-	/* Trova il menu del ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}/menu")
 	public GetRestaurantMenuResponse getRestaurantMenu(@PathVariable Long restaurantId) {
 		logger.info("REST CALL: getRestaurantMenu " + restaurantId); 
@@ -94,7 +89,6 @@ public class AdminRestController {
 				.collect(Collectors.toList());
 		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
-
 
 	private GetRestaurantResponse restaurantToGetRestaurantResponse(Restaurant restaurant) {
 		if (restaurant != null) {
@@ -111,5 +105,4 @@ public class AdminRestController {
 	private MenuItem menuItemElementToMenuItem(MenuItemElement item) {
 		return new MenuItem(item.getId(), item.getName(), item.getPrice());
 	}
-
 }

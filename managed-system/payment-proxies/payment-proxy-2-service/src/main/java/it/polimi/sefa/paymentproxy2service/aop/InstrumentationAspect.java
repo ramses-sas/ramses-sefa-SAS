@@ -38,14 +38,12 @@ public class InstrumentationAspect {
     }
 
 
-    /* Pointcut per il servizio dei ristoranti */
     @Pointcut("execution(public * it.polimi.sefa.paymentproxy2service.domain.PaymentProxyService.*(..))")
     public void paymentProxyServiceMethods() {}
 
     @Pointcut("execution(public void it.polimi.sefa.paymentproxy2service.domain.PaymentProxyService.*(..))")
     public void paymentProxyServiceVoidMethods() {}
 
-	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
@@ -70,7 +68,6 @@ public class InstrumentationAspect {
         log.info("     ERROR IN PaymentProxyService.{} {} -> {}", methodName, args, exception.toString());
     }
 
-    /* Eseguito prima dell'esecuzione del metodo */
     @Before("paymentProxyServiceMethods()")
     public void logBeforeExecuteMethod(JoinPoint joinPoint) {
         try {
@@ -81,7 +78,6 @@ public class InstrumentationAspect {
         logInvocation(joinPoint);
     }
 
-    /* Eseguito quando il metodo è terminato (con successo) */
     @AfterReturning(value="paymentProxyServiceMethods() &&! paymentProxyServiceVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         // Throw an exception with a certain probability
@@ -89,7 +85,6 @@ public class InstrumentationAspect {
         logTermination(joinPoint, retValue);
     }
 
-    /* Eseguito quando il metodo (void) è terminato (con successo) */
     @AfterReturning("paymentProxyServiceVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         // Throw an exception with a certain probability
@@ -97,7 +92,6 @@ public class InstrumentationAspect {
         logVoidTermination(joinPoint);
     }
 
-    /* Eseguito se è stata sollevata un'eccezione */
     @AfterThrowing(value="paymentProxyServiceMethods() || paymentProxyServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
@@ -139,6 +133,5 @@ public class InstrumentationAspect {
     public String getExceptionProbability() {
         return exceptionProbability == null ? "0.0" :  exceptionProbability.toString();
     }
-
 }
 

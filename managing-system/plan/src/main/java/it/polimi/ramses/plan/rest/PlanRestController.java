@@ -30,12 +30,4 @@ public class PlanRestController {
         planService.setAdaptationAuthorized(adapt);
         return "OK";
     }
-
-    // TODO remove after test
-    @GetMapping("/")
-    public String debug() {
-        planService.breakpoint();
-        return "Hello from Plan Service";
-    }
-
 }

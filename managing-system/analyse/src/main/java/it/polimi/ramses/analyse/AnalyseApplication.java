@@ -7,7 +7,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 public class AnalyseApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(AnalyseApplication.class, args);
     }

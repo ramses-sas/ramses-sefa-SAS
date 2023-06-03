@@ -42,7 +42,6 @@ public class RequestsGenerator {
         log.info("Trial duration: {} minutes", trialDurationMinutes);
         log.info("Thread pool size: {}", poolSize);
 
-        // After 10 seconds start Monitor. Then enable adaptation if ADAPT env var is != 0
         TimerTask startManagingTask = new TimerTask() {
             public void run() {
                 log.info("Starting Monitor Routine");

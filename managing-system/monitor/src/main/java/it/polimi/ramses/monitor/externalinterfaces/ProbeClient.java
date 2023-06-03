@@ -13,7 +13,6 @@ import java.util.Map;
 
 @FeignClient(name = "PROBE", url = "${PROBE_URL}")
 public interface ProbeClient {
-
     @GetMapping("/rest/service/{serviceId}/snapshot")
     List<InstanceMetricsSnapshot> takeSnapshot(@PathVariable("serviceId") String serviceId);
 

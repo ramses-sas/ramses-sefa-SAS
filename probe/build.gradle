@@ -11,10 +11,6 @@ id "org.springframework.boot" version "${SPRING_BOOT_VERSION}"
 id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VERSION}"
 }
 
-//applicationDefaultJvmArgs = ["-Djava.library.path=libs/or-tools"]
-
-
-
 group = "it.polimi.sefa"
 version = "latest"
 
@@ -36,29 +32,16 @@ dependencyManagement {
 
 dependencies {
     // Spring Boot dependencies, using the specified Spring Boot version
-    // implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // Spring Cloud dependencies, using the specified Spring Cloud version
-    // implementation 'org.springframework.cloud:spring-cloud-starter-config'
-    //implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
-
 
     // Additional dependencies
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
-    //implementation 'io.micrometer:micrometer-registry-prometheus:1.9.3'
-    //implementation 'org.springdoc:springdoc-openapi-ui:1.6.6'
 
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation fileTree(dir: './libs', include: ['**/*.jar'])
     implementation 'org.jboss.logging:jboss-logging:3.5.0.Final'
-    // implementation fileTree(dir: './libs', include: ['**/build/libs/*.jar'])
-
-    //implementation 'org.hsqldb:hsqldb:2.7.0'
-    //implementation 'mysql:mysql-connector-java:8.0.30'
-    //implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 }
 

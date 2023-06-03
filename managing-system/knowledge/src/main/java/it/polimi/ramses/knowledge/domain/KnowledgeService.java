@@ -62,7 +62,7 @@ public class KnowledgeService {
     public void setActiveModule(Modules activeModule) {
         this.activeModule = activeModule;
         if (activeModule == Modules.MONITOR) {
-            // a new loop is started: reset the previous chosen options and the current proposed adaptation options
+            // A new loop is started: reset the previous chosen options and the current proposed adaptation options
             for (String serviceId : chosenAdaptationOptions.keySet()) {
                 servicesMap.get(serviceId).setLatestAdaptationDate(new Date());
             }
@@ -85,9 +85,6 @@ public class KnowledgeService {
         return servicesMap.values().stream().toList();
     }
 
-    public void breakpoint(){
-        log.info("breakpoint");
-    }
 
     public void addMetricsFromBuffer(Queue<List<InstanceMetricsSnapshot>> metricsBuffer) {
         try {
@@ -118,14 +115,12 @@ public class KnowledgeService {
                 }
                 // Failure detection of instances
                 if (!previouslyActiveInstances.isEmpty()) {
-                    // Dal set di istanze attive in precedenza tolgo quelle attive adesso e quelle che sono state spente
                     Set<Instance> failedInstances = new HashSet<>(previouslyActiveInstances);
                     failedInstances.removeAll(currentlyActiveInstances);
                     failedInstances.removeIf(instance -> instance.getCurrentStatus() == InstanceStatus.SHUTDOWN);
                     if (failedInstances.stream().anyMatch(instance -> instance.getCurrentStatus() == InstanceStatus.BOOTING)) {
-                        log.error("Marking as FAILED instances that are BOOTING!!!!!!!");
+                        log.error("Marking as FAILED instances that are BOOTING!");
                     }
-
                     // There should be only the instances that have been shutdown and are still monitored
                     failedInstances.forEach(instance -> {
                         instance.setCurrentStatus(InstanceStatus.FAILED);
@@ -205,8 +200,6 @@ public class KnowledgeService {
         }
     }
 
-
-
     public List<InstanceMetricsSnapshot> getLatestNMetricsOfCurrentInstance(String serviceId, String instanceId, int n) {
         QoSCollection qosCollection = servicesMap.get(serviceId).getInstance(instanceId).getQoSCollection();
         QoSHistory.Value availabilityLatestValue = qosCollection.getQoSHistory(Availability.class).getLatestValue();
@@ -217,8 +210,7 @@ public class KnowledgeService {
             artLatestValue = qosCollection.getQoSHistory(AverageResponseTime.class).getCurrentValue();
         if (availabilityLatestValue == null || artLatestValue == null)
             throw new RuntimeException("THIS SHOULD NOT HAPPEN");
-        List<InstanceMetricsSnapshot> toReturn = metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValue.getTimestamp().after(availabilityLatestValue.getTimestamp()) ? artLatestValue.getTimestamp() : availabilityLatestValue.getTimestamp(), Pageable.ofSize(n)).stream().toList();
-        return toReturn;
+        return metricsRepository.findLatestOfCurrentInstanceOrderByTimestampDesc(instanceId, artLatestValue.getTimestamp().after(availabilityLatestValue.getTimestamp()) ? artLatestValue.getTimestamp() : availabilityLatestValue.getTimestamp(), Pageable.ofSize(n)).stream().toList();
     }
 
     public List<InstanceMetricsSnapshot> getAllInstanceMetricsBetween(String instanceId, String startDateStr, String endDateStr) {
@@ -259,7 +251,6 @@ public class KnowledgeService {
 
     // Called by the Plan module to choose the adaptation options
     public void chooseAdaptationOptions(Map<String, List<AdaptationOption>> chosenAdaptationOptions) {
-        // add the options both to the repository and to the map
         this.chosenAdaptationOptions = chosenAdaptationOptions;
         this.chosenAdaptationOptions.values().forEach(serviceOptions -> {
             serviceOptions.forEach(option -> {
@@ -291,10 +282,7 @@ public class KnowledgeService {
         servicesMap.put(service.getServiceId(), service);
     }
 
-
-
-
-    public void updateBenchmark(String serviceId, String serviceImplementationId, String simpleClassName, Double value) { //TODO è thread safe?
+    public void updateBenchmark(String serviceId, String serviceImplementationId, String simpleClassName, Double value) {
         String qosSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + simpleClassName;
         Class<? extends QoSSpecification> qosClass;
         try {
@@ -362,17 +350,13 @@ public class KnowledgeService {
             else if (qosClass.equals(AverageResponseTime.class)) {
                 threshold = ((AverageResponseTime) qosSpecification).getMaxThreshold();
                 if (qosValue.getDoubleValue() > 5000)
-                    log.warn("HUGE ART! ");
+                    log.warn("Huge ART for service " + serviceId);
             }
             service.getCurrentImplementation().getQoSCollection().addNewQoSValue(qosClass, qosValue);
             qosRepository.save(new QoSValueEntity(serviceId, service.getCurrentImplementationId(), null,
                     qosClass.getSimpleName(), threshold, service.getCurrentValueForQoS(qosClass), qosValue));
         });
     }
-
-
-
-
 
     // Useful methods to investigate the metrics of the instances
 
@@ -427,51 +411,3 @@ public class KnowledgeService {
         ((AverageResponseTime)(service.getQoSSpecifications().get(AverageResponseTime.class))).setMaxThreshold(responseTimeThreshold);
     }
 }
-
-
-
-/*
-    public Service createNewInstances(String serviceId, String implementationId, List<String> instanceIds) {
-        Service service = servicesMap.get(serviceId);
-        int oldNumberOfInstances = service.getInstances().size();
-        int newNumberOfInstances = oldNumberOfInstances + instanceIds.size();
-        if(!service.getCurrentImplementationId().equals(implementationId)) {
-            throw new RuntimeException("Implementation id mismatch");
-        }
-
-        for (String instanceId : instanceIds) {
-                service.createInstance(instanceId);
-        }
-
-        for (Instance instance : service.getInstances()) {
-            if (instanceIds.contains(instance.getInstanceId())) {
-                service.setLoadBalancerWeight(instance, 1.0 / newNumberOfInstances);
-            } else {
-                service.setLoadBalancerWeight(instance, service.getLoadBalancerWeight(instance) * oldNumberOfInstances / newNumberOfInstances);
-            }
-        }
-        return service;
-    }
-
-    Non più necessario per l'inserimento della seguente riga di codice al metodo addMetricsFromBuffer:
-    shutdownInstances.removeIf(instance -> !currentlyActiveInstances.contains(instance)); //if the instance has been shut down and cannot be contacted from the monitor,
-    public void notifyBootInstance(String serviceId, String instanceId) {
-        shutdownInstances.remove(serviceId + "@" + instanceId);
-    }
-
-    public InstanceMetrics getMetrics(String serviceId, String instanceId, String timestamp) {
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
-        Date date = Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
-        return metricsRepository.findByServiceIdAndInstanceIdAndTimestamp(serviceId, instanceId, date);
-    }
-
-    public List<InstanceMetrics> getServiceMetrics(String serviceId) {
-        return metricsRepository.findAllByServiceId(serviceId).stream().toList();
-    }
-
-    public List<InstanceMetrics> getMetrics() {
-        List<InstanceMetrics> metrics = new LinkedList<>();
-        metricsRepository.findAll().iterator().forEachRemaining(metrics::add);
-        return metrics;
-    }
- */

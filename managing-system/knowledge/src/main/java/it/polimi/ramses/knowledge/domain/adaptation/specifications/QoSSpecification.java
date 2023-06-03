@@ -40,7 +40,6 @@ public abstract class QoSSpecification {
 
     abstract void fromJson(String json);
 
-
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "(Weight: " + weight + ", Constraint: " + getConstraintDescription() + ")"; //+ ", priority: " + priority;

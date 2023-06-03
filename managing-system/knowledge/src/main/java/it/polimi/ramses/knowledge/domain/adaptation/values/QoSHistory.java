@@ -26,7 +26,6 @@ public class QoSHistory<T extends QoSSpecification> {
         return valuesStack.get(0);
     }
 
-
     @JsonIgnore
     public Value getLatestValue() {
         if (valuesStack.size() > 0)

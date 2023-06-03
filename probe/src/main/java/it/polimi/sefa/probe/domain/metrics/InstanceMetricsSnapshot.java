@@ -18,13 +18,10 @@ public class InstanceMetricsSnapshot {
 
     private Long id;
 
-    private String serviceId; //service name
-    private String instanceId; //service implementation id @ip : port
+    private String serviceId;
+    private String instanceId; //[Service-implementation-id]@[ip]:[port]
 
     private InstanceStatus status = InstanceStatus.ACTIVE;
-    //@ElementCollection
-    // Map<Endpoint, List<HttpRequestMetrics>>
-    //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();
     // Map<HTTP-Method@endpoint, HttpRequestMetrics>

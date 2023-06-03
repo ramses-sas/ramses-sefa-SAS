@@ -62,21 +62,6 @@ public class AdminWebService {
 		restTemplate.put(url, new CreateRestaurantMenuRequest(id, menuItems));
 	}
 
-
-	// NOT USED
-	/*
- 	public Restaurant getRestaurantByName(String name) {
-		Restaurant restaurant = restaurantRepository.findByName(name);
-		return restaurant;
-	}
-	
-	public Collection<Restaurant> getAllRestaurantsByLocation(String location) {
-		Collection<Restaurant> restaurants = restaurantRepository.findAllByLocation(location);
-		return restaurants;
-	}
-	*/
-
-
 	private static HttpEntity<?> getHeaders() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
