@@ -14,14 +14,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-
 @Slf4j
 @Service
 public class ConfigManagerService {
     Git gitClient;
     CredentialsProvider credentialsProvider;
 
-    // Remember to set the auth token as an environment variable
     public ConfigManagerService(@Value("${GITHUB_REPOSITORY_URL}") String gitRepository) throws Exception {
         String token = System.getenv("GITHUB_OAUTH");
         if (token == null)
@@ -37,7 +35,7 @@ public class ConfigManagerService {
     public void commitAndPush(String message) throws Exception {
         gitClient.add().addFilepattern(".").call();
         gitClient.commit().setMessage(message).call();
-        gitClient.push().setRemote("origin").setForce(true).setCredentialsProvider(credentialsProvider).call(); //.setRefSpecs(new RefSpec("refs/heads/master:refs/heads/master"))
+        gitClient.push().setRemote("origin").setForce(true).setCredentialsProvider(credentialsProvider).call();
     }
 
     public void pull() throws Exception {
@@ -75,24 +73,6 @@ public class ConfigManagerService {
             changePropertyInFile(propertyToChange.getPropertyName(), propertyToChange.getValue(), filename);
         }
     }
-
-    /**
-     * Contacts the Config Manager actuator to remove the weights of the load balancer of the specified service for a set of instances.
-     *
-     * @param serviceId the id of the service to change the weights of
-     * @param instanceIds the instances to remove the weights of
-     */
-    /*private void removeLoadBalancerWeights(String serviceId, List<String> instanceIds) throws Exception {
-        List<PropertyToChange> propertyToChangeList = new LinkedList<>();
-        instanceIds.forEach(instanceId -> {
-            String propertyKey = CustomPropertiesWriter.buildLoadBalancerInstanceWeightPropertyKey(serviceId, instanceId.split("@")[1]);
-            propertyToChangeList.add(new PropertyToChange(null, propertyKey));
-        });
-        for (PropertyToChange propertyToChange : propertyToChangeList) {
-            String filename = propertyToChange.getServiceName() == null ? "application.properties" : propertyToChange.getServiceName().toLowerCase() + ".properties";
-            changePropertyInFile(propertyToChange.getPropertyName(), propertyToChange.getValue(), filename);
-        }
-    }*/
 
     /**
      * Changes a property in a file.
