@@ -1,9 +1,0 @@
-Delivery 1-3
-https://x5xycqlbgwhi72r5lo2nwevrw40tomhi.lambda-url.eu-west-1.on.aws/
-https://63lm7vm6mhuunmisf3ym3kmtpq0rsxll.lambda-url.eu-west-1.on.aws/
-https://b7435mgabew2hf67gupfyyy2fe0tdmlj.lambda-url.eu-west-1.on.aws/
-
-Payment 1-3
-https://xmximxmorpjwponbk2qp72p33i0fekhf.lambda-url.eu-west-1.on.aws/
-https://guzsl5ufk2ztqhlxdlbatl7dzy0vaani.lambda-url.eu-west-1.on.aws/
-https://aajv6txnny7uuycydk5lignrpy0fbrnq.lambda-url.eu-west-1.on.aws/
