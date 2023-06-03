@@ -53,28 +53,6 @@ public class CircuitBreakerMetrics {
         return slowCallCount.equals(that.slowCallCount);
     }
 
-    /*
-    @Override
-    public int hashCode() {
-        int result;
-        long temp;
-        result = 31 + name.hashCode();
-        result = 31 * result + state.hashCode();
-        result = 31 * result + bufferedCallsCount.hashCode();
-        result = 31 * result + callDuration.hashCode();
-        result = 31 * result + callMaxDuration.hashCode();
-        result = 31 * result + callCount.hashCode();
-        result = 31 * result + slowCallCount.hashCode();
-        result = 31 * result + notPermittedCallsCount;
-        temp = Double.doubleToLongBits(failureRate);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(slowCallRate);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
-
-     */
-
     public void setId(Long id) {
         this.id = id;
     }
