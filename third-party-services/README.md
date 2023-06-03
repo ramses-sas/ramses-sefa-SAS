@@ -11,13 +11,13 @@ If `cvv` is `0`, they return `HTTP.500` with a text response to simulate a serve
 
 They run in the port range `58090-58092` by default.
 
-To ease the development, they are also hosted in AWS Lambdas, which can be reached at the following URLs:
+To ease the development, they are also hosted on Vercel, which can be reached at the following URLs:
 
-|         Service                                                                                  |
-|     :-------------:                                                                              |
-|    [Payment Service 1](https://xmximxmorpjwponbk2qp72p33i0fekhf.lambda-url.eu-west-1.on.aws/)    |
-|    [Payment Service 2](https://guzsl5ufk2ztqhlxdlbatl7dzy0vaani.lambda-url.eu-west-1.on.aws/)    |
-|    [Payment Service 3](https://aajv6txnny7uuycydk5lignrpy0fbrnq.lambda-url.eu-west-1.on.aws/)    |
+|         Service                                                        |
+|     :-------------:                                                    |
+|    [Payment Service 1](https://payment-service-ramses.vercel.app/1)    |
+|    [Payment Service 2](https://payment-service-ramses.vercel.app/2)    |
+|    [Payment Service 3](https://payment-service-ramses.vercel.app/3)    |
 
 
 ### Delivery Service
@@ -28,10 +28,10 @@ If `number` is `0`, they return `HTTP.500` with a text response to simulate a se
 
 They run in the port range `58095-58097` by default.
 
-To ease the development, they are also hosted in AWS Lambdas, which can be reached at the following URLs:
+To ease the development, they are also hosted on Vercel, which can be reached at the following URLs:
 
-|         Service                                                                                  |
-|     :-------------:                                                                              |
-|    [Delivery Service 1](https://x5xycqlbgwhi72r5lo2nwevrw40tomhi.lambda-url.eu-west-1.on.aws/)   |
-|    [Delivery Service 2](https://63lm7vm6mhuunmisf3ym3kmtpq0rsxll.lambda-url.eu-west-1.on.aws/)   |
-|    [Delivery Service 3](https://b7435mgabew2hf67gupfyyy2fe0tdmlj.lambda-url.eu-west-1.on.aws/)   |
+|         Service                                                        |
+|     :-------------:                                                    |
+|    [Delivery Service 1](https://delivery-service-ramses.vercel.app/1)  |
+|    [Delivery Service 2](https://delivery-service-ramses.vercel.app/2)  |
+|    [Delivery Service 3](https://delivery-service-ramses.vercel.app/3)  |
