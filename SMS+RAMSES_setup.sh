@@ -9,23 +9,28 @@ if [[("${GITHUB_OAUTH}" = "") || ("${GITHUB_REPOSITORY_URL}" = "")]]; then
 fi
 
 usage() {
-  cat << EOF >&2
-Usage: [-a <arch>]
-
--a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'
-EOF
+  echo "Usage: [-a <arch>] [-l]"
+  echo "-a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'"
+  echo "-l: start only the load generator"
   exit 1
 }
 
-while getopts u:a:f: flag
-do
-    case "${flag}" in
-        a) ARCH=${OPTARG};;
-        *) usage;;
-    esac
-done
+loadgen() {
+  PrintSuccess "Setting up Load Generator"
+  docker pull sbi98/sefa-load-generator
+  docker run -P --name sefa-load-generator -d --network ramses-sas-net sbi98/sefa-load-generator:$ARCH
+  exit 0
+}
 
-echo ${ARCH}
+LOADGEN=false
+while getopts a:l option
+do
+  case "${option}" in
+    a) ARCH=${OPTARG};;
+    l) LOADGEN=true;;
+    *) usage;;
+  esac
+done
 
 if [[(${ARCH} != "arm64") && ( ${ARCH} != "amd64")]]; then
   PrintWarn "Desired architecture not specified or unknown. Supported values are 'arm64' and 'amd64'. Using 'arm64' as default option"

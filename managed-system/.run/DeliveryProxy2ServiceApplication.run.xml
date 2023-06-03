@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DeliveryProxy2ServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ALTERNATIVE_JRE_PATH" value="azul-16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <module name="sefa.delivery-proxies.delivery-proxy-2-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="it.polimi.sefa.deliveryproxy2service.DeliveryProxyServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

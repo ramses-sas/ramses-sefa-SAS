@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PaymentProxy3ServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ALTERNATIVE_JRE_PATH" value="azul-16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <module name="sefa.payment-proxies.payment-proxy-3-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="it.polimi.sefa.paymentproxy3service.PaymentProxyServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

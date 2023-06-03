@@ -9,32 +9,21 @@ if [[("${GITHUB_OAUTH}" = "") || ("${GITHUB_REPOSITORY_URL}" = "")]]; then
 fi
 
 usage() {
-  cat << EOF >&2
-Usage: [-a <arch>]
-
--a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'
--l: start only the load generator 
-EOF
+  echo "Usage: [-a <arch>] [-l]"
+  echo "-a <arch>: Desired architecture. Supported values are 'arm64' and 'amd64'. Default is 'arm64'"
+  echo "-l: start only the load generator"
   exit 1
 }
 
-loadgen() {
-    PrintSuccess "Setting up Load Generator"
-    docker pull sbi98/sefa-load-generator
-    docker run -P --name sefa-load-generator -d --network ramses-sas-net sbi98/sefa-load-generator:$ARCH
-    exit 0
-}
 LOADGEN=false
-while getopts a:l flag
+while getopts a:l option
 do
-    case "${flag}" in
-        a) ARCH=${OPTARG};;
-        l) LOADGEN=true;;
-        *) usage;;
-    esac
+  case "${option}" in
+    a) ARCH=${OPTARG};;
+    l) LOADGEN=true;;
+    *) usage;;
+  esac
 done
-
-echo $LOADGEN
 
 if [[(${ARCH} != "arm64") && ( ${ARCH} != "amd64")]]; then
   PrintWarn "Desired architecture not specified or unknown. Supported values are 'arm64' and 'amd64'. Using 'arm64' as default option"
@@ -49,10 +38,11 @@ docker network create ramses-sas-net
 echo
 
 ##### LOAD GENERATOR ####
-
 if $LOADGEN; then
-    echo "Ciao"
-    loadgen
+  PrintSuccess "Setting up Load Generator"
+  docker pull sbi98/sefa-load-generator:$ARCH
+  docker run -P --name sefa-load-generator -d --network ramses-sas-net sbi98/sefa-load-generator:$ARCH
+  exit 0
 fi
 
 ##### MYSQL #####
@@ -139,11 +129,12 @@ done
 
 echo; PrintSuccess "DONE!"; echo 
 echo; PrintWarn "A load generator is also available on Docker Hub. The image is sbi98/sefa-load-generator. Do you want to run it? Y/n"; echo 
-read decision
 
-if [[$decision=="Y" || $decision=="y"]]; then
-    loadgen
-else echo "Exiting. You can run only the load generator by running this script with the -l flag."
+read decision
+if [[$decision = "Y" || $decision = "y"]]; then
+   loadgen
+else 
+   echo "Exiting. You can run only the load generator by running this script with the -l flag."
 fi
 
 

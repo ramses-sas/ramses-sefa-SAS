@@ -53,7 +53,6 @@ if [ "$SERVICE_PORT" = "" ]; then
 fi
 
 ROOT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd && cd .. )"
-#PORT_MAPPING="${SERVICE_PORT}"
 PORT_MAPPING="${SERVICE_PORT}:${SERVICE_PORT}"
 TARGET="linux/arm64/v8"
 

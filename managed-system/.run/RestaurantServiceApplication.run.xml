@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="RestaurantServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ALTERNATIVE_JRE_PATH" value="azul-16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <envs>
+      <env name="MYSQL_IP_PORT" value="127.0.0.1:32769" />
+    </envs>
+    <module name="sefa.restaurant-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="it.polimi.sefa.restaurantservice.RestaurantServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
