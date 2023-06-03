@@ -23,16 +23,11 @@ Furthermore, a [REST client](./rest-client/) is provided to act as load generato
 
 
 ## Environment setup
-Each microservice is available as a Docker image on [Docker Hub](https://hub.docker.com/u/sbi98). Use the [installation script](../SEFA%2BRAMSES_setup.sh) for pulling and running all the microservices.. 
-
-### General rules for running a container
-Move to the main readme and Create this section. Explain how to run the containers (docker pull, docker create network, ...)
+Each microservice is available as a Docker image on [Docker Hub](https://hub.docker.com/u/sbi98). Use the [installation script](../SEFA%2BRAMSES_setup.sh) for pulling and running all the microservices. 
 
 
 ## Default deployment settings
-The **Eureka Registry Service** is the only service requiring a fixed IP address that the other microservices must know. That address, together with its port, must be specified as value of the key `EUREKA_IP_PORT` in the `application.properties` file of each microservice or set as an environmental variable (as before, with name `EUREKA_IP_PORT`).
-
-By default, the microservices expose one port, according to the following table:
+By default, each microservice exposes one port, according to the following table:
 
 |      Microservice       |       Port      |
 |     :-------------:     | :-------------: |
@@ -62,6 +57,9 @@ The simulated third-party services are hosted on Vercel and they are available a
 |    [Delivery Service 1](https://delivery-service-ramses.vercel.app/1)   |
 |    [Delivery Service 2](https://delivery-service-ramses.vercel.app/2)   |
 |    [Delivery Service 3](https://delivery-service-ramses.vercel.app/3)   |
+
+
+Check the `application.properties` files of each microservice for the default properties. If you want to change the default properties and the environmental variables of a service, you need to manually create the container to override the default properties.
 
 
 ## EXTRA
