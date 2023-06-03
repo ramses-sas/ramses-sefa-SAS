@@ -282,7 +282,7 @@ public class KnowledgeService {
         servicesMap.put(service.getServiceId(), service);
     }
 
-    public void updateBenchmark(String serviceId, String serviceImplementationId, String simpleClassName, Double value) { //TODO è thread safe?
+    public void updateBenchmark(String serviceId, String serviceImplementationId, String simpleClassName, Double value) {
         String qosSpecificationClassName = QoSSpecification.class.getPackage().getName() + "." + simpleClassName;
         Class<? extends QoSSpecification> qosClass;
         try {
