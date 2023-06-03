@@ -11,9 +11,6 @@ plugins {
 	id "io.spring.dependency-management" version "${SPRING_DEPENDENCY_MANAGEMENT_VERSION}"
 }
 
-//applicationDefaultJvmArgs = ["-Djava.library.path=libs/or-tools"]
-
-
 subprojects {
 	group = "it.polimi.ramses"
 	version = "latest"
@@ -36,12 +33,10 @@ subprojects {
 
 	dependencies {
 		// Spring Boot dependencies, using the specified Spring Boot version
-		// implementation 'org.springframework.boot:spring-boot-starter-aop'
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 		// Spring Cloud dependencies, using the specified Spring Cloud version
-		// implementation 'org.springframework.cloud:spring-cloud-starter-config'
 		implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
 
 

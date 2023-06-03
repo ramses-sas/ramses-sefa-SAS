@@ -46,5 +46,4 @@ public class PlanApplication {
         }
         SpringApplication.run(PlanApplication.class, args);
     }
-
 }

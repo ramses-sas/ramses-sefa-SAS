@@ -15,9 +15,6 @@ public class MonitorRestController {
         monitorService.setLoopIterationFinished(true);
     }
 
-
-
-
     // Configuration endpoints
     @GetMapping("/")
     public GetInfoResponse getInfo() {
@@ -47,14 +44,5 @@ public class MonitorRestController {
     @GetMapping("/isRoutineRunning")
     public boolean isRoutineRunning() {
         return monitorService.getMonitorRoutine() != null;
-    }
-
-
-
-    // TODO remove after test
-    @GetMapping("/break")
-    public String debug() {
-        monitorService.breakpoint();
-        return "Hello from Monitor Service";
     }
 }

@@ -17,9 +17,6 @@ public interface KnowledgeClient {
     @PutMapping("/rest/activeModule")
     ResponseEntity<String> notifyModuleStart(@RequestParam Modules module);
 
-    @GetMapping("/rest/services")
-    List<Service> getServices();
-
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
 
