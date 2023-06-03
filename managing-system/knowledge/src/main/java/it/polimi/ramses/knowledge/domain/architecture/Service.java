@@ -24,7 +24,6 @@ public class Service {
     @Setter
     private Date latestAdaptationDate = new Date();
 
-
     public Service(String serviceId) {
         this.serviceId = serviceId;
     }
@@ -150,23 +149,8 @@ public class Service {
 
     public void removeInstance(Instance shutdownInstance) {
         getCurrentImplementation().removeInstance(shutdownInstance);
-        /*if(configuration.getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM)
-            if(configuration.getLoadBalancerWeights().remove(shutdownInstance.getInstanceId())!=null)
-                throw new RuntimeException("THIS SHOULD NOT HAPPEN: Error while removing instance from load balancer weights");
-         */
     }
 
-    /*
-    public void removeShutdownInstances() {
-        List<Instance> shutdownInstances = new LinkedList<>();
-        getCurrentImplementation().getInstances().values().forEach(instance -> {
-            if (instance.getCurrentStatus() == InstanceStatus.SHUTDOWN)
-                shutdownInstances.add(instance);
-        });
-        shutdownInstances.forEach(this::removeInstance);
-    }
-
-     */
 
     public Instance getInstance(String instanceId) {
         return getCurrentImplementation().getInstance(instanceId);

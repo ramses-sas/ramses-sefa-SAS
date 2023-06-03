@@ -31,11 +31,9 @@ public class InstrumentationAspect {
         log.debug("InstrumentationAspect: sleepMean={}, sleepVariance={}, exceptionProbability={}", sleepMean, sleepVariance, exceptionProbability);
     }
 
-    /* Pointcut per il servizio dei ristoranti */
     @Pointcut("execution(public * it.polimi.dummymanagedsystem.randintvendorservice.domain.RandintVendorService.*(..))")
     public void randintVendorServiceMethods() {}
 
-    /* metodi di log */
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
@@ -54,7 +52,6 @@ public class InstrumentationAspect {
         log.info("     ERROR IN randintVendorService.{} {} -> {}", methodName, args, exception.toString());
     }
 
-    /* Eseguito prima dell'esecuzione del metodo */
     @Before("randintVendorServiceMethods()")
     public void logBeforeExecuteMethod(JoinPoint joinPoint) {
         try {
@@ -65,15 +62,12 @@ public class InstrumentationAspect {
         logInvocation(joinPoint);
     }
 
-    /* Eseguito quando il metodo è terminato (con successo) */
     @AfterReturning(value="randintVendorServiceMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         // Throw an exception with a certain probability
         shouldThrowException();
         logTermination(joinPoint, retValue);
     }
-
-    /* Eseguito se è stata sollevata un'eccezione */
     @AfterThrowing(value="randintVendorServiceMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);

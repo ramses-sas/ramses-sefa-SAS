@@ -36,9 +36,7 @@ public class InstancesManagerService {
 
     public InstancesManagerService(Environment env, @Value("${CURRENT_PROFILE}") String currentProfile){
         this.env = env;
-        localIp = getMachineLocalIp();//InetAddress.getLocalHost().getHostAddress();
-        //if (localIp.equals("127.0.0.1"))
-        //    throw new RuntimeException("The local IP address cannot be retrieved");
+        localIp = getMachineLocalIp();
         dockerIp = env.getProperty("DOCKER_IP") != null ? env.getProperty("DOCKER_IP") : localIp;
         String dockerPort = env.getProperty("DOCKER_PORT");
         if (dockerIp == null || dockerIp.isEmpty() || dockerPort == null || dockerPort.isEmpty())
@@ -52,27 +50,26 @@ public class InstancesManagerService {
         dockerClient = DockerClientBuilder.getInstance(config).build();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            //log.warn("Container: {}", container);
             log.warn("\nContainer name: {} \n\tports: {}", Arrays.stream(container.getNames()).findFirst().orElse("N/A"), Arrays.toString(container.getPorts()));
         }
         switch (currentProfile) {
-            case "InstanzaPerfetta" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "PerfectInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.01, 0.01)
             ));
-            case "InstanzaLenta100ms" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "SlowInstance100ms" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.0, 0.1, 0.02)
             ));
-            case "InstanzaPocoFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "aBitFaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.02, 0.01, 0.001)
             ));
-            case "InstanzaMediaEntroSoglia" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "AverageFaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.04, 0.02, 0.001)
             ));
-            case "InstanzaFaulty" -> simulationInstanceParamsMap.put(currentProfile, List.of(
+            case "FaultyInstance" -> simulationInstanceParamsMap.put(currentProfile, List.of(
                     // (failureRate, sleepDuration, sleepVariance)
                     new SimulationInstanceParams(0.85, 0.015, 0.001)
             ));
@@ -133,7 +130,6 @@ public class InstancesManagerService {
             Container container = containers.get(0);
             try {
                 dockerClient.stopContainerCmd(container.getId()).exec();
-                //dockerClient.removeContainerCmd(container.getId()).exec();
             } catch (NotFoundException|NotModifiedException e){
                 log.warn("Container {} already removed", container.getId());
             }
@@ -179,14 +175,6 @@ public class InstancesManagerService {
         }
     }
 
-    public String getDockerIp() {
-        return dockerIp;
-    }
-
-    public DockerClient getDockerClient() {
-        return dockerClient;
-    }
-
     private String getMachineLocalIp() {
         try (Socket socket = new Socket("1.1.1.1", 80)) {
             InetSocketAddress addr = (InetSocketAddress) socket.getLocalSocketAddress();
@@ -195,28 +183,6 @@ public class InstancesManagerService {
         } catch (IOException e) {
             throw new RuntimeException("Impossible to get local IP address", e);
         }
-    }
-
-    // Test methods
-    public List<ServiceContainerInfo> addInstances(String serviceImplementationName, int numberOfInstances, double exceptionRate, double sleepDuration, double sleepVariance) {
-        String imageName = serviceImplementationName;
-        List<ServiceContainerInfo> serviceContainerInfos = new ArrayList<>(numberOfInstances);
-        for (int i = 0; i < numberOfInstances; i++) {
-            int randomPort = getRandomPort();
-            ExposedPort serverPort = ExposedPort.tcp(randomPort);
-            Ports portBindings = new Ports();
-            portBindings.bind(serverPort, Ports.Binding.bindIpAndPort("0.0.0.0", randomPort));
-            List<String> envVars = buildContainerEnvVariables(randomPort, new SimulationInstanceParams(exceptionRate, sleepDuration, sleepVariance));
-            String newContainerId = dockerClient.createContainerCmd(imageName)
-                    .withName(imageName + "_" + randomPort)
-                    .withEnv(envVars)
-                    .withExposedPorts(serverPort)
-                    .withHostConfig(newHostConfig().withPortBindings(portBindings))
-                    .exec().getId();
-            dockerClient.startContainerCmd(newContainerId).exec();
-            serviceContainerInfos.add(new ServiceContainerInfo(imageName, newContainerId, imageName + "_" + randomPort, dockerIp, randomPort, envVars));
-        }
-        return serviceContainerInfos;
     }
 }
 

@@ -18,7 +18,6 @@ public class ConfigManagerLoggingAspect {
     @Pointcut("execution(public void it.polimi.sefa.configmanager.domain.ConfigManagerService.*(..))")
     public void configManagerVoidMethods() {}
 
-	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
@@ -43,23 +42,16 @@ public class ConfigManagerLoggingAspect {
         log.info("     ERROR IN InstancesManager.{} {} -> {}", methodName, args, exception.toString());
     }
 
-    /* Eseguito prima dell'esecuzione del metodo */
-    //@Before("restClientMethods()")
-    //public void logBeforeExecuteMethod(JoinPoint joinPoint) { logInvocation(joinPoint); }
-
-    /* Eseguito quando il metodo è terminato (con successo) */
     @AfterReturning(value="configManagerMethods() &&! configManagerVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         logTermination(joinPoint, retValue);
     }
 
-    /* Eseguito quando il metodo (void) è terminato (con successo) */
     @AfterReturning("configManagerVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         logVoidTermination(joinPoint);
     }
 
-    /* Eseguito se è stata sollevata un'eccezione */
     @AfterThrowing(value="configManagerMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);

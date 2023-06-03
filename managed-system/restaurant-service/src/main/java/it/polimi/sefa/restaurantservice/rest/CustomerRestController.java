@@ -20,7 +20,6 @@ public class CustomerRestController {
 	@Autowired 
 	private RestaurantService restaurantService;
 
-	/* Trova il ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}")
 	public GetRestaurantResponse getRestaurant(@PathVariable Long restaurantId) {
 		log.info("REST CALL: getRestaurant " + restaurantId);
@@ -28,7 +27,6 @@ public class CustomerRestController {
 		return restaurantToGetRestaurantResponse(restaurant);
 	}
 	
-	/* Trova tutti i ristoranti. */ 
 	@GetMapping("/restaurants")
 	public GetRestaurantsResponse getRestaurants() {
 		log.info("REST CALL: getAllRestaurants");
@@ -41,7 +39,6 @@ public class CustomerRestController {
 		return new GetRestaurantsResponse(restaurantResponses);
 	}
 	
-	/* Trova il menu del ristorante con restaurantId. */ 
 	@GetMapping("/restaurants/{restaurantId}/menu")
 	public GetRestaurantMenuResponse getRestaurantMenu(@PathVariable Long restaurantId) {
 		log.info("REST CALL: getRestaurantMenu " + restaurantId);
@@ -54,7 +51,6 @@ public class CustomerRestController {
 		return new GetRestaurantMenuResponse(restaurantId, menuItemElements);
 	}
 
-	/* Ottiene il prezzo del prodotto specificato dal menù del ristorante selezionato. */
 	@GetMapping("/restaurants/{restaurantId}/item/{itemId}")
 	public GetMenuItemDetailsResponse getMenuItemDetails(@PathVariable Long restaurantId, @PathVariable String itemId) {
 		log.info("REST CALL: getMenuItemPrice restaurant: " + restaurantId + " item: " + itemId);
@@ -66,10 +62,10 @@ public class CustomerRestController {
 		return new GetMenuItemDetailsResponse();
 	}
 
+	// Dummy method to simulate the restaurant notification functionality
 	@PostMapping("/restaurants/{restaurantId}/notify")
 	public NotifyRestaurantResponse notifyRestaurant(@PathVariable Long restaurantId, @RequestBody NotifyRestaurantRequest request) {
 		log.info("REST CALL: notifyRestaurant " + restaurantId + " order " + request.getOrderNumber());
-		//Dumb method to simulate restaurant functionality
 		return new NotifyRestaurantResponse(true);
 	}
 	private MenuItemElement menuItemToMenuItemElement(MenuItem item) {

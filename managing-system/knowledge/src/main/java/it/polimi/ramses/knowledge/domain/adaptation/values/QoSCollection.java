@@ -13,7 +13,6 @@ public class QoSCollection {
         return (QoSHistory<T>) qoSHistoryMap.get(qosClass);
     }
 
-
     // Functions on current value
     public QoSHistory.Value changeCurrentValueForQoS(Class<? extends QoSSpecification> qosSpecificationClass, double value, Date date) {
         qoSHistoryMap.get(qosSpecificationClass).setCurrentValue(new QoSHistory.Value(value, date));
@@ -60,22 +59,4 @@ public class QoSCollection {
     public <T extends QoSSpecification> List<QoSHistory.Value> getValuesHistoryForQoS(Class<T> qosClass) {
         return qoSHistoryMap.get(qosClass).getValuesStack();
     }
-
-
-    public boolean existsEmptyHistory() {
-        for (QoSHistory<? extends QoSSpecification> qoSHistory : qoSHistoryMap.values()) {
-            if (qoSHistory.getValuesStack().isEmpty())
-                return true;
-        }
-        return false;
-    }
-
-    public List<QoSSpecification> getAllQoSSpecifications() {
-        List<QoSSpecification> toReturn = new LinkedList<>();
-        qoSHistoryMap.values().forEach(
-                qoSSpecifications -> toReturn.add(qoSSpecifications.getSpecification())
-        );
-        return toReturn;
-    }
-
 }

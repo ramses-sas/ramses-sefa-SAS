@@ -16,8 +16,8 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 public class ServiceImplementation {
-    private String serviceId; //implemented service name
-    private String implementationId; //specific implementation id
+    private String serviceId;
+    private String implementationId;
 
     // <instanceId, Instance>
     private Map<String, Instance> instances = new HashMap<>();
@@ -25,12 +25,9 @@ public class ServiceImplementation {
     // <qosClass, qosBenchmark>
     private final Map<Class<? extends QoSSpecification>, Double> qoSBenchmarks = new HashMap<>();
 
-    private double preference; //valutazione di quanto è preferibile questa implementazione rispetto ad altre
-    private int trust; //valutazione di quanto è affidabile questa implementazione
-    private int penalty = 0; //penalità associata a quanto adattamento è stato fatto su questa implementazione
-    //private double riskFactor; //fattore di rischio associato a quanto è rischioso avviare un'intanza di questa implementazione senza conoscenze pregresse sui QoS
-    // ratio between the number of requests processed by an instance and the number of requests processed in an ideal case (when the load if equally split) that triggers the shutdown of an instance
-    // should be seen as rate/threshold (i.e., shutdown the instances which process less than this threshold percentage with respect to the ideal case)
+    private double preference;
+    private int trust;
+    private int penalty = 0;
     private double instanceLoadShutdownThreshold;
 
     public ServiceImplementation(String implementationId, double preference, int trust, double instanceLoadShutdownThreshold) {
@@ -100,7 +97,6 @@ public class ServiceImplementation {
     public Instance getInstance(String instanceId) {
         return instances.get(instanceId);
     }
-
 
     public void incrementPenalty() {
         this.penalty += 1;

@@ -32,7 +32,6 @@ public class LoadBalancerConfig {
             case ROUND_ROBIN:
                 return new RoundRobinLoadBalancer(supplier);
             case WEIGHTED_ROUND_ROBIN:
-                // Se il load balancer è di tipo weighted leggi i pesi dal config
                 WeightedRoundRobinLoadBalancer wlb = new WeightedRoundRobinLoadBalancer(supplier, 1);
                 if (instances != null) {
                     String instanceWeight;
@@ -66,5 +65,4 @@ public class LoadBalancerConfig {
                 throw new IllegalArgumentException("Unknown load balancer type: " + type);
         }
     }
-
 }

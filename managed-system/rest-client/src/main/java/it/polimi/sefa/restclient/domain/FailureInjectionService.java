@@ -43,7 +43,6 @@ public class FailureInjectionService {
         log.info("failureInjection2Duration: {}", failureInjection2Duration);
         log.info("idOfInstanceToFail: {}", idOfInstanceToFail);
 
-        // DOPO failureInjection1Start MINUTI chiedi di simulare failureInjection1Duration comportamenti anomali
         if (injectFailure) {
             Timer timer = new Timer();
             TimerTask failureInjection1StartTask = new TimerTask() {
@@ -77,11 +76,6 @@ public class FailureInjectionService {
             timer.schedule(failureInjection1StartTask, failureInjection1Start * 1000L);
             if (failureInjection1Duration != 0)
                 timer.schedule(failureInjection1StopTask, (failureInjection1Start+failureInjection1Duration) * 1000L);
-            /*
-            timer.schedule(failureInjection2StartTask, failureInjection2Start * 1000L);
-            if (failureInjection2Duration != 0)
-                timer.schedule(failureInjection2StopTask, (failureInjection2Start+failureInjection2Duration) * 1000L);
-             */
         }
     }
 

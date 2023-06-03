@@ -43,7 +43,7 @@ public class MonitorService {
     private int schedulingPeriod = 5000; // monitor scheduling period [ms]
 
     private final AtomicBoolean loopIterationFinished = new AtomicBoolean(true);
-    private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>(); //linkedlist is FIFO
+    private final Queue<List<InstanceMetricsSnapshot>> instanceMetricsListBuffer = new LinkedList<>();
 
 
     public MonitorService(KnowledgeClient knowledgeClient, ThreadPoolTaskScheduler taskScheduler) {
@@ -53,14 +53,13 @@ public class MonitorService {
     }
 
     /*
-    // decomment to start routine on startup
+    // Decomment to start routine on startup instead of manually starting it
     @PostConstruct
     public void initRoutine() {
         monitorRoutine = taskScheduler.scheduleWithFixedDelay(new MonitorRoutine(), schedulingPeriod);
     }
      */
 
-    // ASSUNZIONE CHE QUANDO UN'ISTANZA è SU EUREKA HA TERMINATO IL PROCESSO DI STARTUP (ERGO NON C'è INIT DOPO LA REGISTRAZIONE A EUREKA)
     class MonitorRoutine implements Runnable {
         @Override
         public void run() {
@@ -102,7 +101,7 @@ public class MonitorService {
                     return;
                 }
 
-                instanceMetricsListBuffer.add(metricsList); //bufferizzare fino alla notifica dell' E prima di attivare l'analisi
+                instanceMetricsListBuffer.add(metricsList);
                 if (getLoopIterationFinished()) {
                     log.debug("Monitor routine completed. Updating Knowledge and notifying the Analyse to start the next iteration.\n");
                     knowledgeClient.addMetricsFromBuffer(instanceMetricsListBuffer);
@@ -158,14 +157,5 @@ public class MonitorService {
 
     public void breakpoint(){
         log.info("breakpoint");
-    }
-
-    private boolean pingHost(String host, int port, int timeout) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), timeout);
-            return true;
-        } catch (IOException e) {
-            return false; // Either timeout or unreachable or failed DNS lookup.
-        }
     }
 }

@@ -35,8 +35,6 @@ public class ServiceConfiguration {
         return "Configuration of service: " + serviceId + "\n" +
                 "\tcaptured at: " + timestamp + "\n\n" +
                 "\tloadBalancerType: " + loadBalancerType.name() + "\n" +
-                //pesi commentati altrimenti la stampa può esplodere. Si possono ottenere nella stampa di una singola istanza
-                //(loadBalancerWeights.isEmpty() ? "" : ("loadBalancerWeights: " + loadBalancerWeights + "\n")) +
                 (circuitBreakersConfiguration.isEmpty() ? "" : circuitBreakersConfiguration.values());
     }
 
@@ -77,7 +75,7 @@ public class ServiceConfiguration {
 
         @Override
         public String toString() {
-            return //"CircuitBreakerConfiguration:\n"+
+            return "CircuitBreakerConfiguration:\n"+
                 "\ncircuitBreakerName: " + circuitBreakerName + "\n" +
                 "\tregisterHealthIndicator: " + registerHealthIndicator + "\n" +
                 "\tpermittedNumberOfCallsInHalfOpenState: " + permittedNumberOfCallsInHalfOpenState + "\n" +
@@ -134,15 +132,5 @@ public class ServiceConfiguration {
         }
 
     }
-
-
-    /*
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ServiceConfiguration that = (ServiceConfiguration) o;
-        return serviceId.equals(that.serviceId);
-    }*/
 }
 

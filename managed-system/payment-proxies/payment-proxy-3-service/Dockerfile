@@ -3,3 +3,7 @@ RUN mkdir /app
 WORKDIR /app
 COPY build/libs/*-latest.jar ./spring-boot-application.jar
 ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
+ENV HOST=sefa-payment-proxy-3-service
+ENV EUREKA_IP_PORT=sefa-eureka:58082
+ENV SERVER_PORT 58092
+EXPOSE 58092

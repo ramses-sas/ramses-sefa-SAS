@@ -32,11 +32,6 @@ public class Cart {
         items = new HashMap<>();
     }
 
-    public Cart(Long restaurantId, Map<String, CartItem> items) {
-        this.restaurantId = restaurantId;
-        this.items = items;
-    }
-
     public boolean addItem(String itemId, Long restaurantId, int quantity) {
         if (!paid)
             if(Objects.equals(restaurantId, this.restaurantId)) {
@@ -73,7 +68,5 @@ public class Cart {
                 .stream()
                 .map(id -> items.get(id))
                 .collect(Collectors.toList());
-
     }
-
 }

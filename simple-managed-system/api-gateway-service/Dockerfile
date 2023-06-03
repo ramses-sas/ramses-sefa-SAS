@@ -3,3 +3,7 @@ RUN mkdir /app
 WORKDIR /app
 COPY build/libs/*-latest.jar ./spring-boot-application.jar
 ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
+ENV HOST=sms-api-gateway
+ENV EUREKA_IP_PORT=sms-eureka:58082
+ENV SERVER_PORT 58081
+EXPOSE 58081

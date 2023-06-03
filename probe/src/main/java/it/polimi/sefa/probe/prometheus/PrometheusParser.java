@@ -39,7 +39,6 @@ public class PrometheusParser {
             String propertyName = metricFamily.getName(); //e.g. http_server_requests_seconds
             //MetricType metricType = elem.getType(); //e.g. GAUGE
             metricFamily.getMetrics().forEach(metric -> { //e.g., one metric is the http_server_requests_seconds for the endpoint X
-                //log.debug("Metric {}: {}", metric.getName(), metric.getLabels());
                 Map<String, String> labels = metric.getLabels();
                 switch (propertyName) {
                     case PrometheusMetrics.HTTP_REQUESTS_TIME ->

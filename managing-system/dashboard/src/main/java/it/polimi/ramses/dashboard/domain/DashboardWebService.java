@@ -35,10 +35,6 @@ public class DashboardWebService {
 		return knowledgeClient.getInstance(serviceId, instanceId);
 	}
 
-	public Date getServiceLatestAdaptationDate(String serviceId) {
-		return knowledgeClient.getServiceLatestAdaptationDate(serviceId);
-	}
-
 	public Map<String, Service> getArchitecture() {
 		return knowledgeClient.getServicesMap();
 	}
@@ -97,29 +93,4 @@ public class DashboardWebService {
 	public void changeAdaptationStatus(boolean isAdaptationEnabled) {
 		planClient.setAdaptationStatus(isAdaptationEnabled);
 	}
-
-	public void breakpoint(){
-		log.info("breakpoint");
-	}
 }
-
-
-/*
-	public InstanceMetricsSnapshot getLatestMetrics(String serviceId, String instanceId) {
-		List<InstanceMetricsSnapshot> l = knowledgeClient.getLatestMetrics(serviceId, instanceId);
-		if (l == null || l.isEmpty())
-			return null;
-		return l.get(0);
-	}
-
-	public Map<String, List<AdaptationOption>> getProposedAdaptationOptions() {
-		return knowledgeClient.getProposedAdaptationOptions();
-	}
-
-	public Map<String, List<AdaptationOption>> getChosenAdaptationOptions() {
-		return knowledgeClient.getChosenAdaptationOptions();
-	}
-
-
- */
-

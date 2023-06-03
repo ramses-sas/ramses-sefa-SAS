@@ -15,13 +15,6 @@ import java.util.Map;
 
 @FeignClient(name = "KNOWLEDGE", url = "${KNOWLEDGE_URL}")
 public interface KnowledgeClient {
-
-    @GetMapping("/rest/metrics/getLatest")
-    List<InstanceMetricsSnapshot> getLatestMetrics(@RequestParam(required = false) String serviceId, @RequestParam(required = false) String instanceId);
-
-    @GetMapping("/rest/services")
-    List<Service> getServices();
-
     @GetMapping("/rest/servicesMap")
     Map<String, Service> getServicesMap();
 
@@ -31,19 +24,10 @@ public interface KnowledgeClient {
     @GetMapping("/rest/service/{serviceId}/instance/{instanceId}")
     Instance getInstance(@PathVariable String serviceId, @PathVariable String instanceId);
 
-    @GetMapping("/rest/service/{serviceId}/latestAdaptationDate")
-    Date getServiceLatestAdaptationDate(@PathVariable String serviceId);
-
 
     // Adaptation status functions
     @GetMapping("/rest/activeModule")
     Modules getActiveModule();
-
-    @GetMapping("/rest/proposedAdaptationOptions")
-    Map<String, List<AdaptationOption>> getProposedAdaptationOptions();
-
-    @GetMapping("/rest/chosenAdaptationOptions")
-    Map<String, List<AdaptationOption>> getChosenAdaptationOptions();
 
     @GetMapping("/rest/chosenAdaptationOptionsHistory")
     Map<String, List<AdaptationOption>> getChosenAdaptationOptionsHistory(@RequestParam int n);

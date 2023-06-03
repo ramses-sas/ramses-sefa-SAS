@@ -62,7 +62,7 @@ public class GraphData {
                 point.add(null); // y1
                 point.add(pointToAdd.getDoubleValue()); // y2
             }
-            point.add(threshold); // threshold
+            point.add(threshold);
             points.add(point);
         }
     }

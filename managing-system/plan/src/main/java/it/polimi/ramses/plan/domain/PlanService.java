@@ -27,54 +27,11 @@ public class PlanService {
     @Autowired
     private ExecuteClient executeClient;
 
-    //@Autowired
-    //private Environment env;
-
     @Getter
     @Setter
     private boolean adaptationAuthorized = false;
 
-    /*
-    static {
-        try {
-            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
-            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
-        } catch (Exception e) {
-            try {
-                ClassLoader classLoader = PlanService.class.getClassLoader();
-                System.load(Objects.requireNonNull(classLoader.getResource(jarDir+"libjniortools.dylib")).getPath());
-                System.load(Objects.requireNonNull(classLoader.getResource(jarDir+"libortools.9.dylib")).getPath());
-            } catch (Exception e2) {
-                throw new RuntimeException("Error loading or-tools libraries", e2);
-            }
-        }
-    }
-     */
-
-    /*
-    @PostConstruct
-    public void init() {
-        log.info("PlanService initialized");
-        try {
-            System.load(ResourceUtils.getFile("classpath:libjniortools.dylib").getAbsolutePath());
-            System.load(ResourceUtils.getFile("classpath:libortools.9.dylib").getAbsolutePath());
-        } catch (Exception e) {
-            try {
-                ClassLoader classLoader = PlanService.class.getClassLoader();
-                String libDir = env.getProperty("LIB_DIR");
-                log.debug("libDir: {}", libDir);
-                System.load(libDir+"/libjniortools.dylib");
-                System.load(libDir+"/libortools.9.dylib");
-            } catch (Exception e2) {
-                throw new RuntimeException("Error loading or-tools libraries", e2);
-            }
-        }
-        MPSolver solver = MPSolver.createSolver("SCIP");
-        solver.solve();
-    }
-     */
-
-    //For a given service, the system must not be in a transition state (i.e. booting instances).
+    // For a given service, the system must not be in a transition state.
     // In that case, only forced adaptation options are allowed.
     public void startPlan() {
         try {
@@ -142,16 +99,12 @@ public class PlanService {
                     if (!chosenAdaptationOptionList.isEmpty())
                         chosenAdaptationOptions.put(serviceId, chosenAdaptationOptionList);
                 });
-                // call new recursive func
                 Set<String> servicesAlreadyProcessed = new HashSet<>();
-
                 servicesMap.forEach((serviceId, service) -> {
-                    // se il servizio ha delle opzioni di adattamento da applicare o è in uno stato transitorio, invalida la sua QoS History, quella dei servizi che dipendono da lui e così a ritroso
                     if (service.isInTransitionState() || chosenAdaptationOptions.containsKey(serviceId)) {
                         invalidateQoSHistoryOfServiceAndDependants(servicesMap, serviceId, servicesAlreadyProcessed);
                     }
                 });
-
                 knowledgeClient.chooseAdaptationOptions(chosenAdaptationOptions);
             }
             log.info("Ending plan. Notifying the Execute module to start the next iteration.");
@@ -168,7 +121,6 @@ public class PlanService {
         if (servicesAlreadyProcessed.contains(serviceId))
             return;
         servicesAlreadyProcessed.add(serviceId);
-
         Service service = servicesMap.get(serviceId);
         log.debug("{}: invalidating QoS history", serviceId);
         invalidateAllQoSHistories(service);
@@ -188,7 +140,6 @@ public class PlanService {
         knowledgeClient.invalidateQosHistory(service.getServiceId());
     }
 
-    //quando è forced vanno aggiornati i pesi nel servizio, in modo che tutte le altre opzioni di adattamento siano coerenti con le opzioni che verranno applicate
     private ShutdownInstanceOption handleShutdownInstance(ShutdownInstanceOption shutdownInstanceOption, Service service, boolean isForced) {
         if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             shutdownInstanceOption.setNewWeights(redistributeWeight(service.getLoadBalancerWeights(), List.of(shutdownInstanceOption.getInstanceToShutdownId())));
@@ -200,7 +151,7 @@ public class PlanService {
         return shutdownInstanceOption;
     }
 
-    // returns the new weights after redistributing the weight of the instances to shutdown. The instances shutdown are removed from the map. They can be retrieved computing the key set difference
+    // Returns the new weights after redistributing the weight of the instances to shutdown. The instances shutdown are removed from the map. They can be retrieved computing the key set difference.
     private Map<String, Double> recursivelyRemoveInstancesUnderThreshold(Map<String, Double> originalWeights, double threshold) {
         List<String> instancesToShutdownIds = originalWeights.entrySet().stream().filter(entry -> entry.getValue() < threshold).map(Map.Entry::getKey).toList();
         if (instancesToShutdownIds.isEmpty()) // Stop when no instances are under the threshold
@@ -210,7 +161,7 @@ public class PlanService {
         return recursivelyRemoveInstancesUnderThreshold(newWeights, newThreshold);
     }
 
-    //We assume that only one AddInstance option per service for each loop iteration is proposed by the Analyse module.
+    // We assume that only one AddInstance option per service for each loop iteration is proposed by the Analyse module.
     private AddInstanceOption handleAddInstance(AddInstanceOption addInstanceOption, Service service) {
         if (service.getConfiguration().getLoadBalancerType() == ServiceConfiguration.LoadBalancerType.WEIGHTED_RANDOM) {
             double shutdownThreshold = service.getCurrentImplementation().getInstanceLoadShutdownThreshold() / (service.getInstances().size()+1);
@@ -256,13 +207,13 @@ public class PlanService {
             activationsVariables.put(instance.getInstanceId(), activation);
             sumOfWeights.setCoefficient(weight, 1);
 
-            // w_i - a_i*shutdownThreshold >= 0 OVVERO
+            // w_i - a_i*shutdownThreshold >= 0 <=>
             // w_i >= a_i * shutdownThreshold
             MPConstraint lowerBoundConstraint = solver.makeConstraint(0, Double.POSITIVE_INFINITY, instance.getInstanceId() + "_activation_lowerBoundConstraint");
             lowerBoundConstraint.setCoefficient(weight, 1);
             lowerBoundConstraint.setCoefficient(activation, -shutdownThreshold);
 
-            // w_i - a_i<=0 OVVERO
+            // w_i - a_i<=0 <=>
             // w_i <= a_i
             MPConstraint upperBoundConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 0, instance.getInstanceId() + "_activation_upperBoundConstraint");
             upperBoundConstraint.setCoefficient(weight, 1);
@@ -292,9 +243,7 @@ public class PlanService {
             double k_i = instanceAvailability_i / instanceAvgRespTime_i;
             double z_i = k_i / k_s;
 
-            if (k_i == 0) { //fatto nel for di sopra
-                //MPConstraint forceZeroWeight = solver.makeConstraint(0, 0, instance_i.getInstanceId() + "_forceZeroWeight");
-                //forceZeroWeight.setCoefficient(weight_i, 1);
+            if (k_i == 0) {
                 continue;
             }
 
@@ -313,26 +262,13 @@ public class PlanService {
                 double k_ij = k_i / k_j;
 
                 if (k_i >= k_j) {
-                    // w_i - k_i/k_j * w_j + a_j  <= 1 OVVERO
+                    // w_i - k_i/k_j * w_j + a_j  <= 1 <=>
                     // w_i <= k_i/k_j * w_j + (1 - a_j)
                     MPConstraint weightsBalancingConstraint = solver.makeConstraint(Double.NEGATIVE_INFINITY, 1, instance_i + "constraint4");
                     weightsBalancingConstraint.setCoefficient(weight_i, 1);
                     weightsBalancingConstraint.setCoefficient(weight_j, -k_ij);
                     weightsBalancingConstraint.setCoefficient(activationsVariables.get(instance_j.getInstanceId()), 1);
                 }
-                    /*
-
-                    else{// Caso k_i<k_j il costraint viene implicato da sopra
-                        // w_i - k_i/k_j * w_j - a_i  >= -1 OVVERO
-                        // w_i >= k_i/k_j * w_j - (1 - a_i)
-                        MPConstraint maxDecreaseUpperBoundConstraint = solver.makeConstraint(-1, Double.POSITIVE_INFINITY, instance_i + "maxDecreaseUpperBoundConstraint");
-                        maxDecreaseUpperBoundConstraint.setCoefficient(weight_i, 1);
-                        maxDecreaseUpperBoundConstraint.setCoefficient(weight_j, -z_ij);
-                        maxDecreaseUpperBoundConstraint.setCoefficient(activations.get(instance_i.getInstanceId()), -1);
-                    }
-                   */
-
-
             }
         }
 
@@ -389,7 +325,6 @@ public class PlanService {
     public ChangeImplementationOption handleChangeImplementation(ChangeImplementationOption changeImplementationOption, Service service){
         String bestImplementationId = null;
         double bestImplementationBenefit = 0;
-        //Deve prendere la lista di possible implementation,
         for (String implementationId: changeImplementationOption.getPossibleImplementations()) {
             Class<? extends QoSSpecification> goal = changeImplementationOption.getQosGoal();
             ServiceImplementation implementation = service.getPossibleImplementations().get(implementationId);
@@ -455,7 +390,6 @@ public class PlanService {
                                 availabilityEstimation += shutdownInstanceOption.getNewWeights().get(instance.getInstanceId()) * instance.getCurrentValueForQoS(Availability.class).getDoubleValue();
                         }
                     }
-
                 }
                 else {
                     if (AddInstanceOption.class.equals(adaptationOption.getClass())) {
@@ -475,7 +409,6 @@ public class PlanService {
                 }
                 if (ChangeImplementationOption.class.equals(adaptationOption.getClass())) {
                     ChangeImplementationOption changeImplementationOption = (ChangeImplementationOption) adaptationOption;
-                    // Perché la nuove istanze sono equamente bilanciate
                     availabilityEstimation = service.getPossibleImplementations().get(changeImplementationOption.getNewImplementationId()).getBenchmark(Availability.class);
                 }
                 double newBenefit = availabilityEstimation / service.getCurrentValueForQoS(Availability.class).getDoubleValue();
@@ -557,32 +490,6 @@ public class PlanService {
         log.debug("\n\t\t\t\t{}: Selected option {} for {} with benefit {}. \n\t\t\t\tDetails: {}", service.getServiceId(), bestOptionForGoal.get(bestBenefitClass).getClass().getSimpleName(), bestBenefitClass.getSimpleName(), benefits.get(bestBenefitClass), bestOptionForGoal.get(bestBenefitClass));
         return bestOptionForGoal.get(bestBenefitClass);
     }
-
-    public void breakpoint(){
-        log.info("breakpoint");
-    }
-
-    /*
-     * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.
-     *
-     * @param originalWeights
-     * @param instanceToRemoveId
-     * @return the new originalWeights map
-     *
-    private Map<String, Double> redistributeWeight(Map<String, Double> originalWeights, String instanceToRemoveId) {
-        Map<String, Double> newWeights = new HashMap<>();
-        double instanceWeight = originalWeights.get(instanceToRemoveId);
-        for (String instanceId : originalWeights.keySet()) {
-            double weight = originalWeights.get(instanceId);
-            if (!instanceId.equals(instanceToRemoveId)) {
-                weight += instanceWeight / (originalWeights.size() - 1);
-                newWeights.put(instanceId, weight);
-            }
-        }
-        return newWeights;
-    }
-    */
-
 
     /**
      * Redistributes the weight of an instance that will be shutdown to all the other instances of the service.

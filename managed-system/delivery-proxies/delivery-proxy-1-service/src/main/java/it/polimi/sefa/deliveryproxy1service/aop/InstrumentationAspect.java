@@ -38,14 +38,12 @@ public class InstrumentationAspect {
     }
 
 
-    /* Pointcut per il servizio dei ristoranti */
     @Pointcut("execution(public * it.polimi.sefa.deliveryproxy1service.domain.DeliveryProxyService.*(..))")
     public void deliveryProxyServiceMethods() {}
 
     @Pointcut("execution(public void it.polimi.sefa.deliveryproxy1service.domain.DeliveryProxyService.*(..))")
     public void deliveryProxyServiceVoidMethods() {}
 
-	/* metodi di log */ 
     private void logInvocation(JoinPoint joinPoint) {
         final String args = Arrays.toString(joinPoint.getArgs());
         final String methodName = joinPoint.getSignature().getName().replace("(..)", "()");
@@ -81,7 +79,6 @@ public class InstrumentationAspect {
         logInvocation(joinPoint);
     }
 
-    /* Eseguito quando il metodo è terminato (con successo) */
     @AfterReturning(value="deliveryProxyServiceMethods() &&! deliveryProxyServiceVoidMethods()", returning="retValue")
     public void logSuccessMethod(JoinPoint joinPoint, Object retValue) {
         // Throw an exception with a certain probability
@@ -89,7 +86,6 @@ public class InstrumentationAspect {
         logTermination(joinPoint, retValue);
     }
 
-    /* Eseguito quando il metodo (void) è terminato (con successo) */
     @AfterReturning("deliveryProxyServiceVoidMethods()")
     public void logSuccessVoidMethod(JoinPoint joinPoint) {
         // Throw an exception with a certain probability
@@ -97,7 +93,6 @@ public class InstrumentationAspect {
         logVoidTermination(joinPoint);
     }
 
-    /* Eseguito se è stata sollevata un'eccezione */
     @AfterThrowing(value="deliveryProxyServiceMethods() || deliveryProxyServiceVoidMethods()", throwing="exception")
     public void logErrorApplication(JoinPoint joinPoint, Exception exception) {
         logException(joinPoint, exception);
@@ -115,7 +110,6 @@ public class InstrumentationAspect {
             throw new ForcedException("An artificial exception has been thrown! Host: "+ env.getProperty("HOST") + ":" + env.getProperty("SERVER_PORT"));
         }
     }
-
 
     @PutMapping("/rest/instrumentation/sleepMean")
     public void setSleepMean(@RequestParam Double sleepMean) {

@@ -102,18 +102,6 @@ public class KnowledgeRestController {
 
     @PostMapping("/proposeAdaptationOptions")
     public ResponseEntity<String> proposeAdaptationOptions(@RequestBody Map<String, List<AdaptationOption>> adaptationOptions) {
-        /*
-        Map<String, List<AdaptationOption>> servicesAdaptOptions = new HashMap<>();
-        adaptationOptions.forEach(adaptationOption -> {
-            if (servicesAdaptOptions.containsKey(adaptationOption.getServiceId())){
-                servicesAdaptOptions.get(adaptationOption.getServiceId()).add(adaptationOption);
-            } else {
-                List<AdaptationOption> adaptationOptionsList = new LinkedList<>();
-                adaptationOptionsList.add(adaptationOption);
-                servicesAdaptOptions.put(adaptationOption.getServiceId(), adaptationOptionsList);
-            }
-        });
-         */
         knowledgeService.proposeAdaptationOptions(adaptationOptions);
         return ResponseEntity.ok().body("Adaptation options correctly proposed");
     }
@@ -254,8 +242,6 @@ public class KnowledgeRestController {
                 return knowledgeService.getAllInstanceMetrics(instanceId);
         }
         throw new IllegalArgumentException("Invalid query arguments");
-        // TODO se da nessuna altra parte lanciamo eccezioni (e quindi non serve un handler),
-        // modificare il tipo di ritorno della funzione in "requestbody"
     }
 
 
@@ -281,54 +267,4 @@ public class KnowledgeRestController {
     ) {
         return knowledgeService.getNMetricsAfter(instanceId, timestamp, n);
     }
-
-
-
-    // TODO remove after test
-    @GetMapping("/")
-    public String debug() {
-        knowledgeService.breakpoint();
-        return "Hello from Knowledge Service";
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-    @GetMapping("/getAll")
-    public List<InstanceMetrics> getMetrics() {
-        return persistenceService.getMetrics();
-    }
-
-    @GetMapping("/getAll/{instanceId}")
-    public List<InstanceMetrics> getAllMetricsOfInstance(@PathVariable String instanceId) {
-        return persistenceService.getMetrics(instanceId);
-    }
-
-    @GetMapping("/getAll/{serviceId}")
-    public List<InstanceMetrics> getAllMetricsOfService(@PathVariable String serviceId) {
-        return persistenceService.getMetrics(serviceId);
-    }
-
-    @GetMapping("/getRecent/instance/{instanceId}")
-    public InstanceMetrics getRecentMetricsOfInstance(@PathVariable String instanceId) {
-        return persistenceService.getLatestByInstanceId(instanceId);
-    }
-
-    @GetMapping("/getRecent/service/{serviceId}")
-    public Collection<InstanceMetrics> getRecentMetricsOfService(@PathVariable String serviceId) {
-        return persistenceService.getAllLatestByServiceId(serviceId);
-    }
-
-     */

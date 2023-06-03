@@ -18,9 +18,8 @@ public class PaymentProxyService {
 		String cvv,
 		double amount
 	) {
-		String url = paymentServiceUri+"/pay/";
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.postForEntity(url, new PaymentRequest(cardNumber, expMonth, expYear, cvv, amount), String.class);
+		ResponseEntity<String> response = restTemplate.postForEntity(paymentServiceUri, new PaymentRequest(cardNumber, expMonth, expYear, cvv, amount), String.class);
 		return response.getStatusCode().is2xxSuccessful();
 	}
 }

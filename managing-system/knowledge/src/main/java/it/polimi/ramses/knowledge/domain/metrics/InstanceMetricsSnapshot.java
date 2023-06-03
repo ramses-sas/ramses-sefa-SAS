@@ -15,17 +15,14 @@ import java.util.*;
 @NoArgsConstructor
 public class InstanceMetricsSnapshot {
     @Id
-    @GeneratedValue//(strategy = GenerationType.TABLE)
+    @GeneratedValue
     private Long id;
 
-    private String serviceId; //service name
-    private String instanceId; //service implementation id @ip : port
+    private String serviceId;
+    private String instanceId; //[service implementation id]@[ip]:[port]
 
     @Enumerated(EnumType.STRING)
     private InstanceStatus status = InstanceStatus.ACTIVE;
-    //@ElementCollection
-    // Map<Endpoint, List<HttpRequestMetrics>>
-    //public Map<String, List<HttpRequestMetrics>> httpMetrics = new HashMap<>();
     @OneToMany(cascade = CascadeType.ALL)
     // Map<CircuitBreakerName, CircuitBreakerMetrics>
     private Map<String, CircuitBreakerMetrics> circuitBreakerMetrics = new HashMap<>();

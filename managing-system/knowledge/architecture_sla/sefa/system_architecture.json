@@ -1,0 +1,87 @@
+{
+	"services"	: [
+		{
+			"service_id":"RESTAURANT-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "restaurant-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+
+			],
+			"dependencies" : []
+		},
+		{
+			"service_id":"ORDERING-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "ordering-service",
+					"implementation_trust" : 1,
+					"preference" : 1,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+			],
+			"dependencies" : [
+				{
+					"name" : "RESTAURANT-SERVICE"
+				},
+				{
+					"name" : "PAYMENT-PROXY-SERVICE"
+				},
+				{
+					"name" : "DELIVERY-PROXY-SERVICE"
+				}
+			]
+		},
+		{
+			"service_id":"PAYMENT-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "payment-proxy-1-service",
+					"implementation_trust" : 2,
+					"preference" : 0.4,
+					"instance_load_shutdown_threshold" : 0.4
+				},
+				{
+					"implementation_id" : "payment-proxy-2-service",
+					"implementation_trust" : 3,
+					"preference" : 0.3,
+					"instance_load_shutdown_threshold" : 0.4
+				},
+				{
+					"implementation_id" : "payment-proxy-3-service",
+					"implementation_trust" : 4,
+					"preference" : 0.3,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+			],
+			"dependencies" : []
+		},
+		{
+			"service_id":"DELIVERY-PROXY-SERVICE",
+			"implementations" : [
+				{
+					"implementation_id" : "delivery-proxy-1-service",
+					"implementation_trust" : 4,
+					"preference" : 0.4,
+					"instance_load_shutdown_threshold" : 0.4
+				},
+				{
+					"implementation_id" : "delivery-proxy-2-service",
+					"implementation_trust" : 6,
+					"preference" : 0.3,
+					"instance_load_shutdown_threshold" : 0.4
+				},
+				{
+					"implementation_id" : "delivery-proxy-3-service",
+					"implementation_trust" : 7,
+					"preference" : 0.3,
+					"instance_load_shutdown_threshold" : 0.4
+				}
+			],
+			"dependencies" : []
+		}
+	]
+}

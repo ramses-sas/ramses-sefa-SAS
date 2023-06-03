@@ -3,3 +3,6 @@ RUN mkdir /app
 WORKDIR /app
 COPY build/libs/*-latest.jar ./spring-boot-application.jar
 ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
+ENV HOST=eureka
+ENV SERVER_PORT 58082
+EXPOSE 58082
