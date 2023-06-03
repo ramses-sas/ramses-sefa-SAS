@@ -43,14 +43,10 @@ public class KnowledgeInit implements InitializingBean {
             configDirPath = Paths.get("").toAbsolutePath().toString();
             log.warn("No configuration path specified. Using current working directory: {}", configDirPath);
         }
-        //ClassLoader classLoader = getClass().getClassLoader();
-        //Reader architectureReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_architecture.json")));
         FileReader architectureReader = new FileReader(ResourceUtils.getFile(configDirPath+"/system_architecture.json"));
         List<Service> serviceList = SystemArchitectureParser.parse(architectureReader);
-        //Reader qoSReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("qos_specification.json")));
         FileReader qoSReader = new FileReader(ResourceUtils.getFile(configDirPath+"/qos_specification.json"));
         Map<String, List<QoSSpecification>> servicesQoS = QoSParser.parse(qoSReader);
-        //Reader benchmarkReader = new InputStreamReader(Objects.requireNonNull(classLoader.getResourceAsStream("system_benchmarks.json")));
         FileReader benchmarkReader = new FileReader(ResourceUtils.getFile(configDirPath+"/system_benchmarks.json"));
         Map<String, List<SystemBenchmarkParser.ServiceImplementationBenchmarks>> servicesBenchmarks = SystemBenchmarkParser.parse(benchmarkReader);
 
@@ -81,7 +77,6 @@ public class KnowledgeInit implements InitializingBean {
             configurationRepository.save(service.getConfiguration());
             knowledgeService.addService(service);
         });
-        //configurationParser.parseGlobalProperties(knowledgeService.getServicesMap());
 
         for (Service service : serviceList) {
             ServiceConfiguration configuration = service.getConfiguration();
@@ -94,8 +89,6 @@ public class KnowledgeInit implements InitializingBean {
                 }
             }
         }
-
-
 
         for (Service service : serviceList) {
             log.debug(service.toString());

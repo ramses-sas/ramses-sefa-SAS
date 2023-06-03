@@ -22,7 +22,7 @@ public class ChangeLoadBalancerWeightsOption extends AdaptationOption {
     @ElementCollection
     // <instanceId, newWeight>
     private Map<String, Double> newWeights; //Contains only the weights of the instances that will remain active
-    @ElementCollection // TODO TODO TODO VA POPOLATO!!!!!!!
+    @ElementCollection
     private List<String> instancesToShutdownIds = new LinkedList<>();
 
 

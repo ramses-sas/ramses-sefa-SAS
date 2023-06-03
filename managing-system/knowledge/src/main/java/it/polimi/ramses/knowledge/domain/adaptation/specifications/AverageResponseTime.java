@@ -43,22 +43,4 @@ public class AverageResponseTime extends QoSSpecification {
     public String getConstraintDescription() {
         return "value < " + maxThreshold;
     }
-
-    /*
-    public AverageResponseTime(String json) {
-        super(json);
-    }
-
-    @JsonCreator
-    public AverageResponseTime(
-            @JsonProperty("weight") Double weight,
-            //@JsonProperty("priority") int priority,
-            @JsonProperty("max_threshold") Double max_threshold) {
-        //super(value, weight, priority);
-        super(weight);
-
-        this.maxThreshold = max_threshold;
-    }
-
-     */
 }

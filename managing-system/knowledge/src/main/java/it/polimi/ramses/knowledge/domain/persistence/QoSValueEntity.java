@@ -18,7 +18,7 @@ public class QoSValueEntity {
     private long id;
     private String serviceId;
     private String serviceImplementationId;
-    private String instanceId; //if null, the value is for the service
+    private String instanceId; //if null, the value refers for the service
     private String qos;
     private double value;
     private boolean invalidatesThisAndPrevious;
