@@ -45,8 +45,7 @@ public class DashboardWebController {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 
-
-	/* Mostra home page */
+	/* Home Page */
 	@GetMapping("/")
 	public String index(Model model) {
 		Collection<Service> services = dashboardWebService.getArchitecture().values();
@@ -117,7 +116,6 @@ public class DashboardWebController {
 	@GetMapping("/service/{serviceId}")
 	public String serviceDetails(Model model, @PathVariable String serviceId) {
 		Service service = dashboardWebService.getService(serviceId);
-		//log.info("Service: " + service);
 		// [[InstanceId, Status, LatestMetricsDescription]]
 		List<String[]> instancesTable = new ArrayList<>();
 		for (Instance instance : service.getInstances()) {
@@ -206,7 +204,6 @@ public class DashboardWebController {
 				service.getLatestAdaptationDate()));
 		return "webpages/instanceDetails";
 	}
-
 
 	/* Display current status */
 	@GetMapping("/adaptationStatus")
@@ -316,10 +313,7 @@ public class DashboardWebController {
 	}
 
 
-
-	// Configuration part
-
-	/* Show configuration page */
+	/* Configuration page */
 	@GetMapping("/configuration")
 	public String configuration(Model model) {
 		model.addAttribute("isAdaptationEnabled", dashboardWebService.isAdaptationEnabled());
