@@ -5,4 +5,5 @@ COPY build/libs/*-latest.jar ./spring-boot-application.jar
 ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
 ENV DOCKER_IP=host.docker.internal
 ENV DOCKER_PORT=2375
+ENV ARCH=arm64
 EXPOSE 58015

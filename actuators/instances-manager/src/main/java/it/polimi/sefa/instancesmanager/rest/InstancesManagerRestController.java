@@ -30,13 +30,13 @@ public class InstancesManagerRestController {
 
 	@PostMapping(path = "/startInstance")
 	public StartInstanceResponse startInstance(@RequestBody StartInstanceRequest request) {
-		instancesManagerService.startInstance(request.getServiceImplementationName(), request.getPort());
+		instancesManagerService.startInstance(request.getAddress(), request.getPort());
 		return new StartInstanceResponse(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 	}
 
 	@PostMapping(path = "/removeInstance")
 	public RemoveInstanceResponse removeInstance(@RequestBody RemoveInstanceRequest request) {
-		instancesManagerService.stopInstance(request.getServiceImplementationName(), request.getPort());
+		instancesManagerService.stopInstance(request.getAddress(), request.getPort());
 		return new RemoveInstanceResponse(request.getServiceImplementationName(), request.getAddress(), request.getPort());
 	}
 
